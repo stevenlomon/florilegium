@@ -13,7 +13,7 @@ export default async function ProfilePage() {
 
   // The rendering. All of this HTML will arrive in the browser fully baked with data! (dummy rendering with dummy CSS for now)
   return (
-    <main className="min-h-screen p-8 max-w-5xl mx-auto">
+    <div className="min-h-screen p-8 max-w-5xl mx-auto">
       <header className="mb-8 border-b border-gray-200 pb-4">
         <h1 className="text-3xl font-bold">Welcome back, {user.username}!</h1>
         <p className="text-gray-500 mt-2">Let's check in on your reading momentum.</p>
@@ -43,6 +43,6 @@ export default async function ProfilePage() {
         </section>
 
       </div>
-    </main>
+    </div>
   )
 }
