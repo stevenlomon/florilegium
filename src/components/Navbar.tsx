@@ -90,12 +90,13 @@ export default function Navbar() {
         </form>
 
         {/* PROFILE BUTTON */}
-        <button 
+        <Link 
+          href='/profile'
           className="h-9 w-9 rounded-full bg-[#424B2E] text-[#FCF9F2] flex items-center justify-center transition-transform hover:scale-105 shadow-sm"
           title="Profile"
         >
           <span className="text-sm font-sans">👤</span>
-        </button>
+        </Link>
 
         {/* THE DROPDOWN */}
         {isOpen && (
