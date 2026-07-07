@@ -2,12 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // Whitelist images from the Gutenberg API!
+  // Whitelist images from the Open Library API!
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'www.gutenberg.org',
+        hostname: 'covers.openlibrary.org',
         pathname: '/**', // Allow all image paths from this domain
       },
       {

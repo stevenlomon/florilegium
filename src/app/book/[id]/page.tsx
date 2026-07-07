@@ -2,15 +2,9 @@ import { getBookById } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 
-// Just like in the Pokémon project, this is an async server component. Important to note here is that Next.js URL params are always 
-// string so we can't do `id: number` immediately in the rfc definition here. We need to parse the string to an int before
-// passing it to our getBookById API function
 export default async function DetailedViewPage({ params }: { params: Promise<{ id: string }> }) { 
   const { id } = await params;
-  const bookData = await getBookById(Number(id)); // The id string is parsed to a number before handed off to getBookById
-
-  // The getBookById endpoint from Gutenberg returns the actual book object in a 'results' wrapper
-  const book = bookData.results ? bookData.results[0] : bookData;
+  const book = await getBookById(id);
 
   // Fallback if the API returns nothing
   if (!book) {
@@ -39,7 +33,7 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
             width={400} 
             height={600}
             priority={true} 
-            unoptimized={true} // <-- ADD THIS LINE
+            // We remove unoptimized={true} to let Next.js cache and compress the images for maximum speed
             className="w-full h-auto rounded shadow-sm object-cover border border-[#E5E0D8]"
           />
         </div>
@@ -58,7 +52,7 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
           <div className="flex flex-wrap gap-2 mb-8">
             {book.subjects?.slice(0, 4).map((subject: string, idx: number) => (
               <span key={idx} className="bg-[#EFEBE1] text-[#424B2E] text-xs font-sans px-3 py-1 rounded-full">
-                {/* Cleans up Gutenberg's format (e.g., "Courtship -- Fiction" -> "Courtship") */}
+                {/* Cleans up Open Library's format (e.g., "Courtship -- Fiction" -> "Courtship") */}
                 {subject.split(' -- ')[0]}
               </span>
             ))}

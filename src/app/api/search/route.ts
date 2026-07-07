@@ -1,4 +1,4 @@
-// Search Route Handler that acts as a Proxy between the Browser and the Gutenberg API. The Browser never calls Gutenberg directly!
+// Search Route Handler that acts as a Proxy between the Browser and the Open Library API. The Browser never calls Open Library directly!
 // Same pattern I used in the Pokémon collector project
 
 import { NextResponse } from 'next/server';
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Call our API function that communicates with Gutenberg here on the server, not in the Client Component Navbar
+    // Call our API function that communicates with Open Library here on the server, not in the Client Component Navbar
     const data = await searchBooks(query, 1, 5);
 
     // Send the clean JSON back to the Browser (client component)

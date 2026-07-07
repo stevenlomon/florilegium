@@ -1,4 +1,4 @@
-import { Book } from './types';
+import { Book, Author } from './types';
 
 // For our communication with the Open Library (dropped Gutenberg) where we'll get all book data
 const BASE_URL = 'https://openlibrary.org';
@@ -33,7 +33,7 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
       throw new Error(`Open Library API returned status: ${res.status}`);
     }
 
-    const data = await res.json(); // Parse the external JSON from Gutenberg into a JS object. But we don't return yet!
+    const data = await res.json(); // Parse the external JSON from Open Library into a JS object. But we don't return yet!
 
     // Map Open Library's layout into our 'Book' type
     const mappedBooks: Book[] = (data.docs || []).map((doc: any) => { // `any` since it's 3rd party data
@@ -69,22 +69,67 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
   }
 };
 
-export const getBookById = async (id: number) => { // Id is a number in this API! Not a string
+export const getBookById = async (id: string): Promise<Book> => {
   try {
-    const res = await fetch(`${BASE_URL}/books/${id}`, {
+    // Fetch the exact Work using the ID we stripped out during the search
+    const res = await fetch(`${BASE_URL}/works/${id}.json`, {
       headers: getHeaders(),
     });
 
-    if (!res.ok) throw new Error(`Gutenberg API returned status: ${res.status}`);
+    if (!res.ok) throw new Error(`Open Library API returned status: ${res.status}`);
     
-    return res.json();
+    const data = await res.json(); // Once again, we can't return yet. Open Library's data is.. extensive haha
+
+    // Safely extract the summary (handling Open Library's string vs. object quirk)
+    let summary = '';
+    if (typeof data.description === 'string') {
+      summary = data.description;
+    } else if (data.description && data.description.value) {
+      summary = data.description.value;
+    }
+
+    // Construct the Large (-L) cover image URL
+    const coverId = data.covers && data.covers.length > 0 ? data.covers[0] : null;
+    const coverUrl = coverId ? `${COVER_BASE_URL}/${coverId}-L.jpg` : '';
+
+    // Fetch Author Names in parallel using their Author Keys
+    const authors: Author[] = [];
+    if (data.authors && Array.isArray(data.authors)) {
+      // Map over the author keys and fire off simultaneous fetch requests
+      const authorPromises = data.authors.map(async (a: any) => {
+        if (a.author && a.author.key) {
+          const authorRes = await fetch(`${BASE_URL}${a.author.key}.json`, {
+            headers: getHeaders(),
+          });
+          if (authorRes.ok) {
+            const authorData = await authorRes.json();
+            return { name: authorData.name || 'Unknown Author' };
+          }
+        }
+        return { name: 'Unknown Author' };
+      });
+      
+      // Wait for all author names to return
+      const resolvedAuthors = await Promise.all(authorPromises);
+      authors.push(...resolvedAuthors);
+    }
+
+    // Map everything back into our UI's expected Book type
+    return {
+      id: id,
+      title: data.title || 'Unknown Title',
+      authors: authors.length > 0 ? authors : [{ name: 'Unknown Author' }],
+      subjects: data.subjects || [],
+      summary: summary,
+      cover_image: coverUrl,
+    };
   } catch (err) {
     console.error(`Server error fetching book details with id ${id} using getBookById:`, err);
 
     if (err instanceof Error) { 
       throw err; //
     } else {
-      throw new Error("An unexpected network error occurred while contacting Gutenberg."); //
+      throw new Error("An unexpected network error occurred while contacting Open Library."); //
     }
   }
 };

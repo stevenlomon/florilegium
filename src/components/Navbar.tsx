@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // This replaces useNavigate
-import type { Author, Book, GutenbergSearchResponse } from '@/lib/types';
+import type { Author, Book, OpenLibrarySearchResponse } from '@/lib/types';
 
 export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState('');

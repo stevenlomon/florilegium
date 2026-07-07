@@ -13,7 +13,7 @@ export interface Book {
 }
 
 // A type for the exact response shape from our Route Handler so the Navbar knows exactly what data structure to expect
-export interface GutenbergSearchResponse {
+export interface OpenLibrarySearchResponse {
   next: string | null;
   previous: string | null;
   results: Book[];
