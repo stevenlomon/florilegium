@@ -1,10 +1,10 @@
-// The shape of only the essntial core data we get from Gutenberg that makes the app functional and we store in our Book table
+// The shape of only the essntial core data we get from Open Library that makes the app functional and we store in our Book table
 export interface Author {
   name: string;
 }
 
 export interface Book {
-  id: number;
+  id: string; // Gutenberg used number but in switching to Open Library, we're back to string haha!
   title: string;
   authors: Author[];
   subjects: string[]; 
