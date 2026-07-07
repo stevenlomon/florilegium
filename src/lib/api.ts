@@ -21,7 +21,7 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
       q: query,
       page: page.toString(),
       limit: limit.toString(),
-      fields: 'key,title,author_name,subject,cover_i' // We explicitly ask only for what we need
+      fields: 'key,title,author_name,subject,cover_i,editions,editions.key,editions.number_of_pages' // We explicitly ask only for what we need. Now includes editions and page count
     });
 
     const res = await fetch(`${BASE_URL}/search.json?${params.toString()}`, {
@@ -39,16 +39,22 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
     const mappedBooks: Book[] = (data.docs || []).map((doc: any) => { // `any` since it's 3rd party data
       // Open Library Keys look like "/works/OL27448W". We split and grab the actual ID.
       const rawId = doc.key ? doc.key.split('/').pop() : Math.random().toString();
+
+      // Grab the "default" edition Open Library picked!
+      const bestEdition = doc.editions?.docs?.[0];
+      const editionId = bestEdition?.key ? bestEdition.key.split('/').pop() : null;
       
       return {
-        id: rawId,
+        id: rawId, // We keep the Work ID as the main ID
         title: doc.title || 'Unknown Title',
         authors: (doc.author_name || []).map((name: string) => ({ name })),
         subjects: doc.subject || [],
         summary: '', // Search API doesn't return summaries; we'll fetch this on the detailed view
         // If they have a cover_i (Cover ID), we manually construct the CDN URL
         // -M means Medium size. We use -L (Large) for the detailed view later.
-        cover_image: doc.cover_i ? `${COVER_BASE_URL}/${doc.cover_i}-M.jpg` : ''
+        cover_image: doc.cover_i ? `${COVER_BASE_URL}/${doc.cover_i}-M.jpg` : '',
+        page_count: bestEdition?.number_of_pages || null,
+        default_edition_id: editionId,
       };
     });
 
@@ -114,6 +120,35 @@ export const getBookById = async (id: string): Promise<Book> => {
       authors.push(...resolvedAuthors);
     }
 
+    // Grab the Open Library default "canonical" edition
+    let pageCount: number | null = null;
+    let defaultEditionId: string | undefined = undefined;
+
+    // Check if Open Library has provided a canonical edition key (e.g., "/books/OL3404981M")
+    if (data.cover_edition && data.cover_edition.key) {
+      try {
+        // Fetch that specific edition directly
+        const editionRes = await fetch(`${BASE_URL}${data.cover_edition.key}.json`, {
+          headers: getHeaders(),
+        });
+        
+        if (editionRes.ok) {
+          const editionData = await editionRes.json();
+          
+          // Grab the page count, falling back to null if this specific edition omitted it
+          pageCount = typeof editionData.number_of_pages === 'number' 
+            ? editionData.number_of_pages 
+            : null;
+            
+          // Clean the key (e.g., "/books/OL3404981M" -> "OL3404981M") for our database
+          defaultEditionId = data.cover_edition.key.split('/').pop();
+        }
+      } catch (err) {
+        // Fail silently so the Detailed Page still loads even if the Edition fetch fails
+        console.warn(`Could not fetch the canonical edition for Work ${id}:`, err);
+      }
+    }
+
     // Map everything back into our UI's expected Book type
     return {
       id: id,
@@ -122,6 +157,8 @@ export const getBookById = async (id: string): Promise<Book> => {
       subjects: data.subjects || [],
       summary: summary,
       cover_image: coverUrl,
+      page_count: pageCount, 
+      default_edition_id: defaultEditionId,
     };
   } catch (err) {
     console.error(`Server error fetching book details with id ${id} using getBookById:`, err);

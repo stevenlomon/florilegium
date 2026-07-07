@@ -10,6 +10,8 @@ export interface Book {
   subjects: string[]; 
   summary: string;    
   cover_image: string;
+  page_count: number | null; // Data won't always be available but the key will. `number` or `null`
+  default_edition_id?: string | null; // Won't always be available, not even the key. `string`, `null` or `undefined`
 }
 
 // A type for the exact response shape from our Route Handler so the Navbar knows exactly what data structure to expect
