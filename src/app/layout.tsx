@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { EB_Garamond, Source_Serif_4, Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/Sidebar';
 
 // Load the fonts exactly as specified in your UI Kit (Screenshot_2026-07-06_16-49-39.png)
 const ebGaramond = EB_Garamond({
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning className={`${ebGaramond.variable} ${sourceSerif.variable} ${inter.variable} h-full antialiased`}>
       <body suppressHydrationWarning className="min-h-full flex bg-[#FCF9F2] text-slate-800 font-serif">
         {/* Our Left Sidebar will go here */}
-        {/* <Sidebar /> */}
+        <Sidebar />
 
         {/* Main Content Wrapper */}
         <div className="flex flex-1 flex-col">
