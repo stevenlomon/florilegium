@@ -1,6 +1,7 @@
 import { getBookById } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
+import AddToBookshelfButton from '@/components/AddToBookshelfButton';
 
 export default async function DetailedViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -88,12 +89,9 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
           </div>
 
           <div className="mt-auto pt-4 flex flex-wrap gap-4">
-            {/* The "+ Add to Horizon" button has been intentionally REMOVED to protect your curation rules! */}
-            <button className="bg-[#424B2E] text-[#FCF9F2] font-sans text-sm font-medium tracking-wide px-6 py-2.5 rounded hover:bg-[#343b24] transition shadow-sm">
-              + Add to Library
-            </button>
+            < AddToBookshelfButton book={book} />
             <button className="bg-transparent border border-[#424B2E] text-[#424B2E] font-sans text-sm font-medium tracking-wide px-6 py-2.5 rounded hover:bg-[#EFEBE1] transition">
-              View Provenance
+              Something else to be added here
             </button>
           </div>
         </div>
