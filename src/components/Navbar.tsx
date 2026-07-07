@@ -120,6 +120,7 @@ export default function Navbar() {
                       {/* Author in Inter */}
                       <small className="text-[#5C613E] font-sans text-xs mt-1">
                         {book.authors?.[0]?.name || 'Unknown Author'}
+                        {book.page_count && ` • ${book.page_count} pages`}
                       </small>
                     </Link>
                   </li>
