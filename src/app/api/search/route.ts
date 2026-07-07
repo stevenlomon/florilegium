@@ -9,9 +9,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q");
 
-  // Return early if no query
-  if (!query) {
-    return NextResponse.json({ error: "Search query is required" }, { status: 400 });
+  // Return early with an empty array if the query is missing or too short
+  if (!query || query.trim().length < 3) {
+    return NextResponse.json({ results: [] }); 
   }
 
   try {

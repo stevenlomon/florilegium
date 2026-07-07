@@ -16,8 +16,8 @@ export default function Navbar() {
 
   // Our useEffect to achieve debouncing. Completely untouched compared to the Pokémon project!
   useEffect(() => {
-    // Don't navigate to a search result page for an empty string
-    if (!searchTerm.trim()) {
+    // Don't navigate to a search result page for an empty string AND also ensure we don't fire on strings shorter than 3 characters
+    if (searchTerm.trim().length < 3) {
       setIsOpen(false);
       setPreviews([]);
       return;
