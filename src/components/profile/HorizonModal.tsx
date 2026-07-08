@@ -62,8 +62,21 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
     try {
       if (source === 'UserBookshelf') {
         const userBookshelfItem = book as UserBookshelfItem // Type Assertion to calm TS down haha
-        console.log(`[Database Action] Moving local item ${userBookshelfItem.bookshelf_item_id} to Horizon Slot ${targetSlot}`);
-        // PUT/PATCH fetch request hereMy
+        
+        const res = await fetch('/api/bookshelf', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            bookshelf_item_id: userBookshelfItem.bookshelf_item_id,
+            horizon_slot: targetSlot
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to assign user bookshelf item to slot ${targetSlot}`);
+        }
       } else {
         const openLibraryBook = book as Book
         console.log(`[Database Action] Saving "${openLibraryBook.title}" to DB, then assigning to Horizon Slot ${targetSlot}`);
