@@ -18,7 +18,7 @@ export interface TrackBook {
 const TRACKS = [
   { id: 'fiction', title: 'Fiction', description: 'Immersive narratives and alternate realities.' },
   { id: 'non-fiction', title: 'Non-fiction', description: 'Expanding models of reality and actionable knowledge.' },
-  { id: 'bedtime', title: 'Before Bedtime', description: 'Wind-down reading. Low stakes, high comfort.' }
+  { id: 'before-bedtime', title: 'Before Bedtime', description: 'Wind-down reading. Low stakes, high comfort.' } // Changed from 'bedtime' to 'before-bedtime' for coherence and ease in db queries
 ];
 
 export default function ReadingTracksSection() {
