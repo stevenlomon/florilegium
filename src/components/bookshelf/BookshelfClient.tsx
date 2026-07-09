@@ -28,12 +28,18 @@ const TABS = [
 ];
 
 export default function BookshelfClient({ initialBooks }: BookshelfClientProps) {
-  const [books, setBooks] = useState<BookshelfItem[]>(initialBooks);
-  const [activeTab, setActiveTab] = useState('all');
+  const [books, setBooks] = useState<BookshelfItem[]>(initialBooks); // The master client-side state
+  const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
 
-  // Filter books based on the active tab
+  // Filter books based on the active tab. What is ultimately rendered in the return render statement is not `books`, but this filtered
+  // `filteredBooks` array!
   const filteredBooks = books.filter(book => {
-    if (activeTab === 'all') return true;
+    // The array `.filter()` method takes a boolean condition to do the filtering. Everything that *satisfies* the condition is let 
+    // through by the "gateway filter" condition. If activeTab is 'all', we let the gateway condition be `true`, a condition that *always*
+    // evaluates to.. `true` haha! *All* elements of the array are let through meaning `filteredBooks` is a perfect copy of `books`
+    if (activeTab === 'all') return true; 
+
+    // But only if activeTab is 'all'! Otherwise, we use the more intuitive "gateway filter" condition
     return book.status_id.toString() === activeTab;
   });
 
@@ -44,7 +50,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id)} // The crucial and essential onClick!
             className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${
               activeTab === tab.id 
                 ? 'bg-[#424B2E] text-white shadow-sm' 

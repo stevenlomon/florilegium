@@ -4,6 +4,10 @@ import { pool } from '@/lib/db';
 import BookshelfClient from '@/components/bookshelf/BookshelfClient';
 
 export default async function BookshelfPage() {
+  // Since this is a server component, we can do this! Use what the brain consider's "Backend functions"... in a Frontend component haha!
+  // This is truly where Next.js shines and shows that *there is no "backend" and no "frontend"; only full-stack!!
+  // I will dive back into *why* we use the GET Route Handlers for the Horizon and Reading Tracks sections and this way here in a day or
+  // two cuz right now it feels like my brain is about to implode and I wanna keep the flow momentum going hahaha
   const user = await getCurrentUser();
   if (!user) {
     redirect('/login');
