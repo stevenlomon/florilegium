@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ReadingTracksModal from './ReadingTracksModal';
 
 export interface TrackBook {
   track_id: string;
@@ -25,7 +26,7 @@ export default function ReadingTracksSection() {
   // TRACKS, "Currently Reading" has slotId 1 and "Follow-up" has slotId 2. It starts as null meaning if it's null, the modal is closed. The 
   // alternative would be three or six separate states which sounds like an absolute nightmare to maintain. A single active modal context allows
   // us to render exactly one ReadingTrackModal at the bottom of the page! activeModalContext it is haha!
-  const [activeModalContext, setActiveModalContext] = useState<{ trackId: string, slotId: number } | null>(null);
+  const [activeModalContext, setActiveModalContext] = useState<{ trackId: string, slotId: number, trackTitle: string } | null>(null); // Updated to include the title cased track title to make it easier in the modal
   const [trackBooks, setTrackBooks] = useState<TrackBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,11 +35,15 @@ export default function ReadingTracksSection() {
     // Fetch logic will go here
   }, []);
 
+  const refreshReadingTracks = () => {
+    // To be implemented
+  }
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-[#E5E0D8] -mx-4 xl:mx-0">
       {TRACKS.map((track) => (
         <section key={track.id} className="py-8 xl:py-0 px-4 xl:px-8 first:xl:pl-0 last:xl:pr-0 flex flex-col">
-          
+
           {/* Track Header */}
           <div className="mb-8 min-h-20">
             <h2 className="text-2xl font-heading text-[#2C302E]">{track.title}</h2>
@@ -88,7 +93,7 @@ export default function ReadingTracksSection() {
                   key={`${track.id}-${slot}`}
                   type='button'
                   className="group relative flex flex-col items-center justify-center aspect-2/3 border-2 border-dashed border-[#E5E0D8] rounded-md bg-white/30 hover:bg-[#EFEBE1]/50 hover:border-[#5C613E]/40 transition-all cursor-pointer w-full"
-                  onClick={() => setActiveModalContext({ trackId: track.id, slotId: slot })}
+                  onClick={() => setActiveModalContext({ trackId: track.id, slotId: slot, trackTitle: track.title })}
                 >
                   <div className="w-8 h-8 flex items-center justify-center border border-[#E5E0D8] rounded bg-white text-[#5C613E] group-hover:text-[#2C302E] group-hover:border-[#5C613E] transition-colors mb-3 shadow-sm">
                     <span className="text-lg font-light">+</span>
@@ -103,7 +108,15 @@ export default function ReadingTracksSection() {
               );
             })}
           </div>
-          
+
+          { /* The new Reading Track Modal */}
+          <ReadingTracksModal
+            isOpen={activeModalContext !== null} // Only open if activeModalContext is a valid object
+            onClose={() => setActiveModalContext(null)}
+            targetSlot={activeModalContext}
+            onSuccess={refreshReadingTracks}
+          />
+
         </section>
       ))}
     </div>

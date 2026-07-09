@@ -1,11 +1,12 @@
 'use client'
-// The modal that will be shown when clicking an empty Horizon Book slot on the Profile page
+// The modal that will be shown when clicking an empty Reading Track slot on the Home page. 
+// Will share a lot of DNA with the Horizon Modal. Will most likely refactor in the not-too-far future but for now I want
+// to keep the momentum going and prioritize speed
 
 import { useState, useEffect } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import type { Book } from '@/lib/types';
 
-// The exact data shape from GET route we just wrote at /app/api/bookshelf/route.ts
 export interface UserBookshelfItem {
   bookshelf_item_id: string;
   status_id: number;
@@ -17,25 +18,24 @@ export interface UserBookshelfItem {
   page_count: number | null;
 }
 
-interface HorizonModalProps {
+interface ReadingTracksModalProps {
   isOpen: boolean;
   onClose: () => void;
-  targetSlot: number | null; // 1, 2, 3, 4, or 5
-  onSuccess: () => void;     // Just a simple trigger to tell the Profile page to refresh
+  targetSlot: { trackId: string, slotId: number, trackTitle: string } | null // Straight from the Section component, now updated with the title too; not just a simple number anymore haha!
+  onSuccess: () => void;
 }
 
-export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }: HorizonModalProps) {
+export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSuccess }: ReadingTracksModalProps) {
   const [bookshelfBooks, setBookshelfBooks] = useState<UserBookshelfItem[]>([]);
   const [isLoadingUserBookshelf, setIsLoadingUserBookshelf] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
 
-  // Our Book search hook in action!
-  const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Horizon Modal Search Error:");
+  const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Reading Tracks Modal Search Error:");
 
-  const showExternalResults = searchTerm.trim().length >= 3; // Derived state! Does *not* need to be a state variable using `useState`!
+  const showExternalResults = searchTerm.trim().length >= 3;
 
   useEffect(() => {
-    if (!isOpen) return; // Early return guard clause
+    if (!isOpen) return;
 
     const fetchBookshelfItems = async () => {
       setIsLoadingUserBookshelf(true);
@@ -61,17 +61,18 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
 
     try {
       if (source === 'UserBookshelf') {
-        const userBookshelfItem = book as UserBookshelfItem // Type Assertion to calm TS down haha
-        console.log(`[Database Action] Assigning user bookshelf item ${userBookshelfItem.bookshelf_item_id} to Horizon Slot ${targetSlot}`);
+        const userBookshelfItem = book as UserBookshelfItem
+        console.log(`[Database Action] Assigning user bookshelf item ${userBookshelfItem.bookshelf_item_id} to Reading Track Slot ${targetSlot}`);
 
-        const res = await fetch('/api/bookshelf', {
-          method: 'PATCH',
+        const res = await fetch('/api/tracks/assign', {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            bookshelf_item_id: userBookshelfItem.bookshelf_item_id,
-            horizon_slot: targetSlot
+            track_id: targetSlot.trackId,
+            slot_id: targetSlot.slotId,
+            bookshelf_item_id: userBookshelfItem.bookshelf_item_id
           })
         });
 
@@ -80,7 +81,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
         }
       } else {
         const openLibraryBook = book as Book
-        console.log(`[Database Action] Saving "${openLibraryBook.title}" to DB, then assigning to Horizon Slot ${targetSlot}`);
+        console.log(`[Database Action] Saving "${openLibraryBook.title}" to DB, then assigning to Reading Track Slot ${targetSlot}`);
 
         // First we upsert the book into our local Book table
         const bookRes = await fetch('/api/book', {
@@ -98,20 +99,67 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
 
         if (!bookRes.ok) throw new Error("Failed to save book to local database");
         const bookData = await bookRes.json();
-        const localBookId = bookData.data.id; // We grab the new Postgres ID!
+        const localBookId = bookData.data.id;
 
-        // Now, we insert it into the user's Bookshelf and assign the Horizon slot
-        const bookshelfRes = await fetch('/api/bookshelf', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            book_id: localBookId,
-            status_id: 1, // Defaulting Horizon books as 1:"Want to Read" for now
-            horizon_slot: targetSlot // Passing the slot along! And this will need a change in the Route Handler
+        // Secondly we insert it into the user's Bookshelf and assign the Reading Track slot
+        // And this is conditional depending on which slot the user clicked!
+
+        const isAssigningCurrentlyReading = targetSlot.slotId === 1;
+        if (isAssigningCurrentlyReading) {
+          // Insert the Bookshelf Item with status 2: "Currently Reading"
+          const bookshelfRes = await fetch('/api/bookshelf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              book_id: localBookId,
+              status_id: 2,
+            })
+          });
+
+          if (!bookshelfRes.ok) throw new Error(`Failed to insert local book with id ${localBookId} into User Bookshelf`);
+
+          const bookshelfItemData = await bookshelfRes.json();
+          const newBookshelfItemId = bookshelfItemData.data.id;
+
+          // Now finally, with the item in the user's Bookshelf, we actually assign it using our new absolute unit of a Route Handler
+          const assigningRes = await fetch('/api/tracks/assign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              track_id: targetSlot.trackId,
+              slot_id: targetSlot.slotId,
+              bookshelf_item_id: newBookshelfItemId
+            })
           })
-        });
+          if (!assigningRes.ok) throw new Error(`Failed to assign book to Slot ${targetSlot}`);
+        } else {
+          // Insert the Bookshelf Item with status 1: "Want to Read"
+          const bookshelfRes = await fetch('/api/bookshelf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              book_id: localBookId,
+              status_id: 1,
+            })
+          });
 
-        if (!bookshelfRes.ok) throw new Error(`Failed to assign book to Slot ${targetSlot}`);
+          if (!bookshelfRes.ok) throw new Error(`Failed to insert local book with id ${localBookId} into User Bookshelf`);
+
+          const bookshelfItemData = await bookshelfRes.json();
+          const newBookshelfItemId = bookshelfItemData.data.id;
+
+          // Now finally, with the item in the user's Bookshelf, we actually assign it using our new absolute unit of a Route Handler
+          const assigningRes = await fetch('/api/tracks/assign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              track_id: targetSlot.trackId,
+              slot_id: targetSlot.slotId,
+              bookshelf_item_id: newBookshelfItemId
+            })
+          })
+          if (!assigningRes.ok) throw new Error(`Failed to assign book to Slot ${targetSlot}`);
+        }
       }
 
       onSuccess();
@@ -119,7 +167,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
       onClose();
 
     } catch (err) {
-      console.error("Failed to assign book to Horizon:", err);
+      console.error("Failed to assign book to Reading Track:", err);
     } finally {
       setIsAssigning(false);
     }
@@ -143,17 +191,17 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
           {/* Loading Overlay when assigning */}
           {isAssigning && (
             <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
-              <span className="font-sans text-sm text-[#424B2E] font-medium animate-pulse">Assigning masterpiece...</span>
+              <span className="font-sans text-sm text-[#424B2E] font-medium animate-pulse">Assigning book to Reading Track...</span>
             </div>
           )}
 
           <div className="flex justify-between items-start mb-6">
             <div>
               <h2 className="font-heading text-2xl text-[#2C302E] tracking-wide mb-1">
-                Assign a Horizon Book
+                Assigning to {targetSlot?.trackTitle}
               </h2>
               <p className="font-sans text-sm text-[#5C613E]">
-                Select from your Bookshelf or search the archives for Slot {targetSlot}.
+                Select a book for your {targetSlot?.slotId === 1 ? 'Currently Reading' : 'Up Next'} slot.
               </p>
             </div>
             <button onClick={handleClose} disabled={isAssigning} className="text-[#5C613E] hover:text-[#2C302E] p-2">

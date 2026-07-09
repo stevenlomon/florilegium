@@ -16,9 +16,9 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { trackId, slotId, bookshelf_item_id } = body;
+    const { track_id, slot_id, bookshelf_item_id } = body;
 
-    if (!trackId || !slotId || !bookshelf_item_id) {
+    if (!track_id || !slot_id || !bookshelf_item_id) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -35,9 +35,9 @@ export async function POST(req: Request) {
 
       // First, we get the actual db UUID of the track based on the string ID (e.g., 'fiction')
       let dbTrackName = '';
-      if (trackId === 'fiction') dbTrackName = 'Fiction';
-      if (trackId === 'non-fiction') dbTrackName = 'Non-fiction';
-      if (trackId === 'bedtime') dbTrackName = 'Before Bedtime';
+      if (track_id === 'fiction') dbTrackName = 'Fiction';
+      if (track_id === 'non-fiction') dbTrackName = 'Non-fiction';
+      if (track_id === 'bedtime') dbTrackName = 'Before Bedtime';
 
       const trackRes = await client.query('SELECT id FROM "Reading_Track" WHERE user_id = $1 AND name = $2', [user.id, dbTrackName]);
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       const realTrackId = trackRes.rows[0].id;
 
       // Determine if we are assigning "Currently Reading" (1) or "Up Next" (2)
-      const isCurrentlyReading = slotId === 1;
+      const isCurrentlyReading = slot_id === 1;
 
       // With the real Reading Track id and now knowing whether we are "Currently Reading" or now, we consider our two scenarios
       if (isCurrentlyReading) {
