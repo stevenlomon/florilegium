@@ -71,7 +71,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        {filteredBooks.map((book) => (
+        {filteredBooks.map((book, index) => ( // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
           <div
             key={book.bookshelf_item_id}
             className="flex flex-col gap-3 group cursor-pointer"
@@ -86,6 +86,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
                   fill
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
                   className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                  priority={index < 10} // Tell Next.js to prioritize loading the first 10 covers! To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/14566393-L.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold." warning
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#EFEBE1]/50">

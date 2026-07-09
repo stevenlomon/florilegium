@@ -51,7 +51,13 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
           {/* Miniature Cover */}
           <div className="relative w-24 h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden shrink-0 bg-[#EFEBE1]">
             {book.cover_image_url && (
-              <Image src={book.cover_image_url} alt={book.title} fill className="object-cover" />
+              <Image 
+              src={book.cover_image_url} 
+              alt={book.title} 
+              fill 
+              sizes='96px' // To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/10590366-L.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance." warning
+              className="object-cover" 
+              />
             )}
           </div>
 
