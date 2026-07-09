@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import BookDetailsModal from './BookDetailsModal';
 
 export interface BookshelfItem {
   bookshelf_item_id: string;
@@ -30,6 +31,7 @@ const TABS = [
 export default function BookshelfClient({ initialBooks }: BookshelfClientProps) {
   const [books, setBooks] = useState<BookshelfItem[]>(initialBooks); // The master client-side state
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
+  const [selectedBook, setSelectedBook] = useState<BookshelfItem | null>(null); // New state for the modal!
 
   // Filter books based on the active tab. What is ultimately rendered in the return render statement is not `books`, but this filtered
   // `filteredBooks` array!
@@ -37,7 +39,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
     // The array `.filter()` method takes a boolean condition to do the filtering. Everything that *satisfies* the condition is let 
     // through by the "gateway filter" condition. If activeTab is 'all', we let the gateway condition be `true`, a condition that *always*
     // evaluates to.. `true` haha! *All* elements of the array are let through meaning `filteredBooks` is a perfect copy of `books`
-    if (activeTab === 'all') return true; 
+    if (activeTab === 'all') return true;
 
     // But only if activeTab is 'all'! Otherwise, we use the more intuitive "gateway filter" condition
     return book.status_id.toString() === activeTab;
@@ -51,11 +53,10 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)} // The crucial and essential onClick!
-            className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${
-              activeTab === tab.id 
-                ? 'bg-[#424B2E] text-white shadow-sm' 
+            className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
+                ? 'bg-[#424B2E] text-white shadow-sm'
                 : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -65,7 +66,11 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         {filteredBooks.map((book) => (
-          <div key={book.bookshelf_item_id} className="flex flex-col gap-3 group cursor-pointer">
+          <div
+            key={book.bookshelf_item_id}
+            className="flex flex-col gap-3 group cursor-pointer"
+            onClick={() => setSelectedBook(book)}
+          >
             {/* Cover */}
             <div className="relative aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-lg transition-all shadow-sm bg-[#FCF9F2]">
               {book.cover_image_url ? (
@@ -110,6 +115,13 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           </div>
         )}
       </div>
+
+    {/* The new modal at the very end of the return render statement */}
+      <BookDetailsModal
+        isOpen={!!selectedBook} // Only open if there IS selectedBook. The double `!!`, called "Double Bang" is essentially a neat shorthand in this scenario of writing `isOpen={selectedBook !== null ? true : false}`
+        onClose={() => setSelectedBook(null)}
+        book={selectedBook}
+      />
     </div>
   );
 }
