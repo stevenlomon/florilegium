@@ -23,6 +23,7 @@ export async function GET(_req: Request) {
       // Using UNION ALL instead of UNION saves us speed and performance. "Just blind-stack these rows. I don't care if there are duplicates" 
       // Since we explicitly hardcoded 1 AS slot_id in the first query and 2 AS slot_id in the second query, it is mathematically impossible 
       // for the rows to be duplicates.
+      // Update: Now also include bookshelf_item_id which is needed from the Reading Tracks UI
       text: `
         -- SLOT 1: Currently Reading (Linked via Reading_Journey)
         SELECT 
@@ -32,7 +33,8 @@ export async function GET(_req: Request) {
           b.external_id,
           b.title,
           b.author,
-          b.cover_image_url
+          b.cover_image_url,
+          bi.id AS bookshelf_item_id
         FROM "Reading_Track" rt
         JOIN "Reading_Journey" rj ON rt.reading_journey_id = rj.id
         JOIN "Bookshelf_Item" bi ON rj.bookshelf_item_id = bi.id
@@ -49,7 +51,8 @@ export async function GET(_req: Request) {
           b.external_id,
           b.title,
           b.author,
-          b.cover_image_url
+          b.cover_image_url,
+          bi.id AS bookshelf_item_id
         FROM "Reading_Track" rt
         JOIN "Bookshelf_Item" bi ON rt.follow_up_book_id = bi.id
         JOIN "Book" b ON bi.book_id = b.id
