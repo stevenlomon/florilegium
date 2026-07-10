@@ -5,6 +5,7 @@ import { useState } from 'react';
 interface PromotionData {
   promotedBook: string | null;
   trackName: string;
+  finishedJourneyId: string
 }
 
 interface CelebrationModalProps {
@@ -18,9 +19,16 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    // We will wire this up to the Reading_Log_Post API
     setIsSaving(true);
-    console.log("Saving raw thoughts:", rawThoughts);
+
+    const res = await fetch('/api/log-posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reading_journey_id: promotion.finishedJourneyId,
+          notes: rawThoughts 
+        })
+      });
     
     setTimeout(() => {
       setIsSaving(false);
@@ -61,7 +69,7 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
           <textarea
             value={rawThoughts}
             onChange={(e) => setRawThoughts(e.target.value)}
-            placeholder="You just turned the last page. What's lingering in your mind right now? Don't overthink it—just write."
+            placeholder={`You just turned the last page. What's lingering in your mind right now?\n\nThis will be a log post completely separate from your polished review of the book\n\nDon't overthink it—just write`}
             className="w-full min-h-37.5 p-5 border border-[#E5E0D8] rounded-md bg-white text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] resize-none shadow-sm transition-all"
           />
 

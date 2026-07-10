@@ -85,7 +85,7 @@ export default function ReadingTracksSection() {
 
       if (data.promotion) {
         // Intercept the payload!! In order to show our new modal
-        setCelebrationPayload({ bookTitle, promotion: data.promotion });
+        setCelebrationPayload({ bookTitle, promotion: data.promotion }); // Now includes the finishedJourneyId we've added
       } else {
         // Fallback just in case
         router.refresh();

@@ -169,6 +169,8 @@ export async function PATCH(req: Request) {
           // *The important and exciting check: Is the book currently active ("Currently Reading") in a Reading Track?*
           let trackTitle = null;
           let promotedBookTitle = null;
+          let finishedJourneyId = null;
+
           const trackCheckRes = await client.query(`
             SELECT rt.id AS track_id, rt.name AS track_name, rt.follow_up_book_id, rj.id AS journey_id
             FROM "Reading_Track" rt
@@ -179,6 +181,7 @@ export async function PATCH(req: Request) {
           if ((trackCheckRes.rowCount ?? 0) > 0) {
             // If it is; first of all, close the connected Reading Journey with timestamp finished_at = NOW()
             const track = trackCheckRes.rows[0];
+            finishedJourneyId = track.journey_id;
             await client.query(
               'UPDATE "Reading_Journey" SET finished_at = NOW() WHERE id = $1',
               [track.journey_id]
@@ -241,7 +244,8 @@ export async function PATCH(req: Request) {
             data: updateRes.rows[0],
             promotion: trackTitle ? { // Only attach promotion data if a track was actually affected
               promotedBook: promotedBookTitle,
-              trackName: trackTitle
+              trackName: trackTitle,
+              finishedJourneyId // I don't think I've ever seen this before; if the key and value are the same, we can write it like this!
             } : null
           });
 
