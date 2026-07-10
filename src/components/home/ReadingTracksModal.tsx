@@ -6,18 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { useBookshelf } from '@/hooks/useBookshelf';
-import type { Book } from '@/lib/types';
-
-export interface UserBookshelfItem {
-  bookshelf_item_id: string;
-  status_id: number;
-  horizon_slot: number | null;
-  book_id: string;
-  title: string;
-  author: string;
-  cover_image_url: string | null;
-  page_count: number | null;
-}
+import type { Book, BookshelfItem } from '@/lib/types';
 
 interface ReadingTracksModalProps {
   isOpen: boolean;
@@ -34,14 +23,14 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
 
   const showExternalResults = searchTerm.trim().length >= 3;
 
-  const handleAssignBook = async (book: UserBookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary') => {
+  const handleAssignBook = async (book: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary') => {
     if (!targetSlot) return;
 
     setIsAssigning(true);
 
     try {
       if (source === 'UserBookshelf') {
-        const userBookshelfItem = book as UserBookshelfItem
+        const userBookshelfItem = book as BookshelfItem
         console.log(`[Database Action] Assigning user bookshelf item ${userBookshelfItem.bookshelf_item_id} to Reading Track Slot ${targetSlot}`);
 
         const res = await fetch('/api/tracks/assign', {
@@ -236,7 +225,7 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
               <div>
                 <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">Your Bookshelf</h3>
                 <ul className="flex flex-col gap-1">
-                  {bookshelfItems.map((book: UserBookshelfItem) => (
+                  {bookshelfItems.map((book: BookshelfItem) => (
                     <li key={book.bookshelf_item_id}>
                       <button onClick={() => handleAssignBook(book, 'UserBookshelf')} className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group">
                         <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>

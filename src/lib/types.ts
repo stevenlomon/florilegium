@@ -20,3 +20,16 @@ export interface OpenLibrarySearchResponse {
   previous: string | null;
   results: Book[];
 }
+
+export interface BookshelfItem {
+  bookshelf_item_id: string;
+  status_id: number;
+  user_rating: number | null;
+  book_id: number; // It's an integer in our Postgres db!
+  external_id: string | null;
+  title: string;
+  author: string;
+  cover_image_url: string | null;
+  horizon_slot: number | null; 
+  page_count: number | null;
+}

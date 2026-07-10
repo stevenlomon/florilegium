@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { BookshelfItem } from '@/components/bookshelf/BookshelfClient';
+import type { BookshelfItem } from '@/lib/types';
 
 // Modularizing the useEffect in HorizonModal and ReadingTracksModal (and perhaps even more modals to come!) to adhere to DRY principle
 export function useBookshelf(isOpen: boolean) {

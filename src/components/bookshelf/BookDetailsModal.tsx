@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import type { BookshelfItem } from './BookshelfClient';
+import { type BookshelfItem } from '@/lib/types';
 import StarRating from './StarRating';
 
 interface BookDetailsModalProps {

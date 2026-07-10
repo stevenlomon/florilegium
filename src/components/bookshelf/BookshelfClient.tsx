@@ -3,18 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { type BookshelfItem } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
-
-export interface BookshelfItem {
-  bookshelf_item_id: string;
-  status_id: number;
-  user_rating: number | null;
-  book_id: string;
-  external_id: string | null;
-  title: string;
-  author: string;
-  cover_image_url: string | null;
-}
 
 interface BookshelfClientProps {
   initialBooks: BookshelfItem[];

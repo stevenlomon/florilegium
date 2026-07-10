@@ -4,19 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { useBookshelf } from '@/hooks/useBookshelf';
-import type { Book } from '@/lib/types';
-
-// The exact data shape from GET route we just wrote at /app/api/bookshelf/route.ts
-export interface UserBookshelfItem {
-  bookshelf_item_id: string;
-  status_id: number;
-  horizon_slot: number | null;
-  book_id: string;
-  title: string;
-  author: string;
-  cover_image_url: string | null;
-  page_count: number | null;
-}
+import type { Book, BookshelfItem } from '@/lib/types';
 
 interface HorizonModalProps {
   isOpen: boolean;
@@ -32,18 +20,18 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
   const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Horizon Modal Search Error:");
 
   // And our new Bookshelf hook in action!
-  const { books: bookshelfItems, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
+  const { books: bookshelfBooks, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
   
   const showExternalResults = searchTerm.trim().length >= 3; // Derived state! Does *not* need to be a state variable using `useState`!
 
-  const handleAssignBook = async (book: UserBookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary') => {
+  const handleAssignBook = async (book: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary') => {
     if (!targetSlot) return;
 
     setIsAssigning(true);
 
     try {
       if (source === 'UserBookshelf') {
-        const userBookshelfItem = book as UserBookshelfItem // Type Assertion to calm TS down haha
+        const userBookshelfItem = book as BookshelfItem // Type Assertion to calm TS down haha
         console.log(`[Database Action] Assigning user bookshelf item ${userBookshelfItem.bookshelf_item_id} to Horizon Slot ${targetSlot}`);
 
         const res = await fetch('/api/bookshelf', {
@@ -186,11 +174,11 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
           ) : (
             isLoadingUserBookshelf ? (
               <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">Retrieving your bookshelf...</div>
-            ) : bookshelfItems.length > 0 ? (
+            ) : bookshelfBooks.length > 0 ? (
               <div>
                 <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">Your Bookshelf</h3>
                 <ul className="flex flex-col gap-1">
-                  {bookshelfItems.map((book: UserBookshelfItem) => (
+                  {bookshelfBooks.map((book: BookshelfItem) => (
                     <li key={book.bookshelf_item_id}>
                       <button onClick={() => handleAssignBook(book, 'UserBookshelf')} className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group">
                         <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
