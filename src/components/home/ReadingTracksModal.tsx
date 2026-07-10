@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
+import { useBookshelf } from '@/hooks/useBookshelf';
 import type { Book } from '@/lib/types';
 
 export interface UserBookshelfItem {
@@ -26,33 +27,12 @@ interface ReadingTracksModalProps {
 }
 
 export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSuccess }: ReadingTracksModalProps) {
-  const [bookshelfBooks, setBookshelfBooks] = useState<UserBookshelfItem[]>([]);
-  const [isLoadingUserBookshelf, setIsLoadingUserBookshelf] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
 
   const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Reading Tracks Modal Search Error:");
+  const { books: bookshelfItems, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
 
   const showExternalResults = searchTerm.trim().length >= 3;
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchBookshelfItems = async () => {
-      setIsLoadingUserBookshelf(true);
-      try {
-        const res = await fetch('/api/bookshelf');
-        if (res.ok) {
-          const data = await res.json();
-          setBookshelfBooks(data.data || []);
-        }
-      } catch (error) {
-        console.error("Error fetching user bookshelf:", error);
-      } finally {
-        setIsLoadingUserBookshelf(false);
-      }
-    };
-    fetchBookshelfItems();
-  }, [isOpen]);
 
   const handleAssignBook = async (book: UserBookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary') => {
     if (!targetSlot) return;
@@ -252,11 +232,11 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
           ) : (
             isLoadingUserBookshelf ? (
               <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">Retrieving your bookshelf...</div>
-            ) : bookshelfBooks.length > 0 ? (
+            ) : bookshelfItems.length > 0 ? (
               <div>
                 <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">Your Bookshelf</h3>
                 <ul className="flex flex-col gap-1">
-                  {bookshelfBooks.map((book: UserBookshelfItem) => (
+                  {bookshelfItems.map((book: UserBookshelfItem) => (
                     <li key={book.bookshelf_item_id}>
                       <button onClick={() => handleAssignBook(book, 'UserBookshelf')} className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group">
                         <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
