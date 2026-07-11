@@ -111,7 +111,7 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
         <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-10">
 
           {/* RECOMMENDATION CONTEXT */}
-          <RecommendationContextSection bookshelfItemId={book.bookshelf_item_id} />
+          <RecommendationContextSection bookshelfItemId={book.bookshelf_item_id} existingRecs={book.recommendation_contexts} />
 
           {/* REVIEW PLACEHOLDER */}
           <section>

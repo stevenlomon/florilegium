@@ -1,15 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
-// Defining the shape based on our ERD
-export interface Recommendation {
-  id: string;
-  bookshelf_item_id: string;
-  recommended_by: string;
-  link?: string | null;
-  notes?: string | null;
-}
+import { type Recommendation } from '@/lib/types';
 
 interface RecommendationContextSectionProps {
   bookshelfItemId: string;

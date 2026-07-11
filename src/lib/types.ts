@@ -32,4 +32,13 @@ export interface BookshelfItem {
   cover_image_url: string | null;
   horizon_slot: number | null; 
   page_count: number | null;
+  recommendation_contexts: Recommendation[];
+}
+
+export interface Recommendation {
+  id: string;
+  bookshelf_item_id: string;
+  recommended_by: string;
+  link?: string | null;
+  notes?: string | null;
 }
