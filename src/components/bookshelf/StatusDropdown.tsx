@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react';
 
 interface StatusDropdownProps {
@@ -27,7 +26,7 @@ export default function StatusDropdown({ currentStatusId, onStatusChange }: Stat
         className="appearance-none bg-[#EFEBE1]/30 border border-[#E5E0D8] rounded-md pl-4 pr-10 py-2 text-xs font-sans font-medium text-[#5C613E] cursor-pointer hover:bg-[#EFEBE1]/80 transition-colors outline-none focus:border-[#5C613E] focus:ring-1 focus:ring-[#5C613E]"
       >
         <option value={1}>Intend to Read</option>
-        <option value={2}>Currently Reading</option>
+        {/* <option value={2}>Currently Reading</option> We do not allow the user to set the status of a book to Currently Reading from their Bookshelf! Only from the Reading Tracks!  */}
         <option value={3}>Read</option>
         <option value={4}>Dropped</option>
       </select>

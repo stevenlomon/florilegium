@@ -94,9 +94,15 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
             <p className="font-sans text-sm text-[#5C613E] mb-6">{book.author}</p>
 
             <div className="flex items-center gap-4">
-              {/* STATUS PLACEHOLDER */}
-              <div className="pl-4 border-l border-[#E5E0D8]">
-                <StatusDropdown currentStatusId={book.status_id} onStatusChange={handleStatusUpdate} />
+              {/* READ STATUS (Now conditional! Only show it if Read Status is "Intend", "Read", or "Dropped". Not "Currently Reading") */}
+              <div className="pl-4 border-l border-[#E5E0D8] flex items-center">
+                {Number(book.status_id) === 2 ? (
+                  <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-[#424B2E] bg-[#EFEBE1]/50 px-3 py-1.5 rounded border border-[#E5E0D8]">
+                    Currently Reading
+                  </span>
+                ) : (
+                  <StatusDropdown currentStatusId={book.status_id} onStatusChange={handleStatusUpdate} />
+                )}
               </div>
 
               {/* USER RATINGS COMPONENT */}

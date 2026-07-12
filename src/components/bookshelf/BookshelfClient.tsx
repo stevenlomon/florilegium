@@ -13,7 +13,7 @@ interface BookshelfClientProps {
 const TABS = [
   { id: 'all', label: 'All Books' },
   { id: '1', label: 'Intend to Read' },
-  { id: '2', label: 'Currently Reading' },
+  // { id: '2', label: 'Currently Reading' }, Since we don't allow the user to assign Currently Reading from the Bookshelf, there's no reason to show the filter! It's all managed from the Reading Tracks UI!
   { id: '3', label: 'Read' },
   { id: '4', label: 'Dropped' }
 ];
