@@ -166,8 +166,8 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
         }
       }
 
-      onSuccess();
-      setSearchTerm('');
+      onSuccess(); // Tell the parent component to refresh the server state
+      handleClose(); // Delegate the entire local client state reset, cleanup and closure to our helper function
       onClose();
 
     } catch (err) {
@@ -179,6 +179,8 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
 
   const handleClose = () => {
     setSearchTerm('');
+    setStagedBook(null); // Wipe the memory so that our 2-step modal returns to Step 1 once a Currently Reading assignment flow is completed
+    setCustomPageCount(""); // Also clear the custom_page_count input field for next time while we're here
     onClose();
   };
 
