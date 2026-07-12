@@ -1,43 +1,32 @@
 'use client'
 import { useState, useEffect } from 'react'
-import HorizonModal, { UserBookshelfItem } from './HorizonModal'; // Reusing the modal interface!
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { type BookshelfItem } from '@/lib/types'
+import HorizonModal from './HorizonModal';
 
-// The only user interactive section (for now) on the Profile page
+interface HorizonSectionProps {
+  initialBooks: BookshelfItem[];
+}
+
+// The only user interactive section (for now) on the Profile page. Now receives initial data from its server component parent
 // Here we'll implement the modal that pops up when adding a Horizon book which will require useState
-
-export default function HorizonSection() {
+export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
   const [activeSlot, setActiveSlot] = useState<number | null>(null); // Instead of `const [isModalOpen, setIsModalOpen] = useState(false);`, we track the specific slot clicked (1-5). If it's null, the modal is closed
-  const [horizonBooks, setHorizonBooks] = useState<UserBookshelfItem[]>([]); // Needs to be state since for the re-render. It might start as an empty array but receive data from the database the next few milliseconds!
-  const [isLoading, setIsLoading] = useState(true);
+  const [horizonBooks, setHorizonBooks] = useState(initialBooks); // Simply grabs initialBooks now from the server
 
-  // Asynchronous function to fetch the user's active Horizon books. Defined out here rather than in the useEffect since it is also used in the refresh function
-  const fetchHorizonBooks = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/bookshelf/horizon'); // New Route Handler location!
-      if (res.ok) {
-        const data = await res.json();
-        // The API returns all active Horizon books. We just save them to our local state
-        setHorizonBooks(data.data || []);
-      }
-    } catch (error) {
-      console.error("Error fetching Horizon books:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const router = useRouter();
 
-  // Run the fetch once on mount -> empty dependency array
+  // When router.refresh() happens, the server sends down new fresh props with new fresh data. And once again; this effect catches them and patches the UI instantly
   useEffect(() => {
-    fetchHorizonBooks();
-  }, []);
+    setHorizonBooks(initialBooks);
+  }, [initialBooks]);
 
-  // Not a dummy refresh function anymore; simply calls our fetch function
+  // And the new clean refresh function. No more client-side fetch required
   const refreshHorizon = () => {
-    console.log("Refreshing Horizon UI...");
-    fetchHorizonBooks();
+    console.log("Asking server for fresh Horizon data...");
+    router.refresh(); 
   }
 
   return (
@@ -128,7 +117,4 @@ export default function HorizonSection() {
       />
     </section>
   )
-}
-
-
-
+};
