@@ -39,7 +39,7 @@ export default function Navbar() {
   // Vibe coded render block modeling the Pokémon project and styling for now
   return (
     <header className="sticky top-0 z-50 flex items-center justify-end px-8 py-4 bg-[#FCF9F2]">
-      
+
       <div className="relative flex items-center gap-6">
         {/* SEARCH FORM */}
         <form
@@ -62,7 +62,7 @@ export default function Navbar() {
         </form>
 
         {/* PROFILE BUTTON */}
-        <Link 
+        <Link
           href='/profile'
           className="h-9 w-9 rounded-full bg-[#424B2E] text-[#FCF9F2] flex items-center justify-center transition-transform hover:scale-105 shadow-sm"
           title="Profile"
@@ -76,39 +76,54 @@ export default function Navbar() {
             {isSearching ? (
               <p className="m-0 p-4 text-center font-sans text-sm text-[#5C613E]">Searching the archives...</p>
             ) : previews.length > 0 ? (
-              <ul className="m-0 flex flex-col p-0 list-none">
+              <div className="flex flex-col max-h-[70vh]">
 
-                {previews.map((book) => (
-                  <li key={book.id} className="border-b border-[#E5E0D8] last:border-b-0">
-                    <Link
-                      href={`/book/${book.id}`}
-                      onClick={() => setIsOpen(false)}
-                      className="flex flex-col p-3 transition-colors hover:bg-[#FCF9F2]"
-                    >
-                      {/* Book Title in EB Garamond */}
-                      <strong className="text-[#2C302E] font-heading font-normal text-lg leading-tight">
-                        {book.title}
-                      </strong>
-                      {/* Author in Inter */}
-                      <small className="text-[#5C613E] font-sans text-xs mt-1">
-                        {book.authors?.[0]?.name || 'Unknown Author'}
-                        {book.page_count && ` • ${book.page_count} pages`}
-                      </small>
-                    </Link>
-                  </li>
-                ))}
+                {/* 1. Scrollable Results List */}
+                <ul className="m-0 flex flex-col p-0 list-none overflow-y-auto bg-[#FCF9F2]">
+                  {previews.map((book) => (
+                    <li key={book.id} className="border-b border-[#E5E0D8] last:border-b-0">
+                      <Link
+                        href={`/book/${book.id}`}
+                        onClick={() => setIsOpen(false)}
+                        className="flex flex-col p-3 transition-colors hover:bg-[#EFEBE1]/60"
+                      >
+                        <strong className="text-[#2C302E] font-heading font-normal text-lg leading-tight group-hover:text-[#424B2E]">
+                          {book.title}
+                        </strong>
+                        <small className="text-[#5C613E] font-sans text-xs mt-1">
+                          {book.authors?.[0]?.name || 'Unknown Author'}
+                          {book.page_count && <span className="opacity-50"> • {book.page_count} pages</span>}
+                        </small>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
 
-                {/* The "See all results" footer */}
-                <li className="bg-[#EFEBE1]/50 text-center">
+                {/* 2. Unified Footer Area (White background to separate from the list) */}
+                <div className="bg-white border-t border-[#E5E0D8] p-3 flex flex-col gap-3">
                   <Link
-                    href={`/search?q=${encodeURIComponent(searchTerm)}`} // And here to! Upgraded to use encodeURIComponent, see comment in useBookSearch
+                    href={`/search?q=${encodeURIComponent(searchTerm)}`}
                     onClick={() => setIsOpen(false)}
-                    className="block p-3 font-sans text-sm font-medium text-[#424B2E] transition-colors hover:bg-[#E5E0D8]"
+                    className="block w-full text-center py-2 bg-[#EFEBE1]/50 rounded text-[#424B2E] font-sans text-[11px] font-bold uppercase tracking-widest hover:bg-[#E5E0D8] transition-colors"
                   >
                     See all results for "{searchTerm}"
                   </Link>
-                </li>
-              </ul>
+
+                  <p className="text-[10px] font-serif italic text-[#5C613E]/60 text-center">
+                    All book data provided by{' '}
+                    <a
+                      href='https://archive.org/donate/?platform=ol'
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#424B2E] not-italic font-sans text-[9px] font-bold tracking-widest underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-colors mx-0.5"
+                    >
+                      Open Library
+                    </a>
+                    .
+                  </p>
+                </div>
+
+              </div>
             ) : (
               <p className="m-0 p-4 text-center font-sans text-sm text-[#5C613E]">No works found in the catalog.</p>
             )}

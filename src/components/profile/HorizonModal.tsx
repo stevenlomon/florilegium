@@ -21,7 +21,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
 
   // And our new Bookshelf hook in action!
   const { books: bookshelfBooks, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
-  
+
   const showExternalResults = searchTerm.trim().length >= 3; // Derived state! Does *not* need to be a state variable using `useState`!
 
   const handleAssignBook = async (book: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary') => {
@@ -109,7 +109,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
 
         {/* HEADER */}
         <div className="px-8 pt-8 pb-4 border-b border-[#E5E0D8] bg-white relative">
-
+          
           {/* Loading Overlay when assigning */}
           {isAssigning && (
             <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
@@ -148,26 +148,40 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
           </div>
         </div>
 
-        {/* CONTENT (Scrollable List) */}
+        {/* CONTENT (Scrollable List) - Swamp Drained! */}
         <div className="flex-1 overflow-y-auto bg-[#FCF9F2] p-2 relative">
-
-          {/* Prevent clicks while assigning */}
           {isAssigning && <div className="absolute inset-0 z-10" />}
 
           {showExternalResults ? (
             isSearching ? (
               <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">Searching the archives...</div>
             ) : externalBooks.length > 0 ? (
-              <ul className="flex flex-col gap-1">
-                {externalBooks.map((book: Book) => (
-                  <li key={book.id}>
-                    <button onClick={() => handleAssignBook(book, 'OpenLibrary')} className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group">
-                      <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
-                      <span className="text-[#5C613E] font-sans text-xs mt-1">{book.authors?.[0]?.name || 'Unknown Author'} <span className="opacity-50">• Open Library</span></span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <div className="flex flex-col p-2">
+                <ul className="flex flex-col gap-1 mb-4">
+                  {externalBooks.map((book: Book) => (
+                    <li key={book.id}>
+                      <button onClick={() => handleAssignBook(book, 'OpenLibrary')} className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group">
+                        <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
+                        <span className="text-[#5C613E] font-sans text-xs mt-1">{book.authors?.[0]?.name || 'Unknown Author'} <span className="opacity-50">• Open Library</span></span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Cozy, muted footer placed cleanly outside the list */}
+                <p className="text-[11px] font-serif italic text-[#5C613E]/60 text-center pt-4 border-t border-[#E5E0D8]/60 mx-4">
+                  All book data provided by{' '}
+                  <a
+                    href='https://archive.org/donate/?platform=ol'
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#424B2E] not-italic font-sans text-[9px] font-bold tracking-widest underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-colors mx-0.5"
+                  >
+                    Open Library
+                  </a>
+                  . Consider donating to their cause.
+                </p>
+              </div>
             ) : (
               <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">No works found in the catalog.</div>
             )
@@ -199,5 +213,5 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
         </div>
       </div>
     </div>
-  )
+  );
 };
