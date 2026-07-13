@@ -1,4 +1,5 @@
 import { getBookById } from '@/lib/api';
+import { checkBookInBookshelf } from '@/lib/db/bookshelf';
 import Link from 'next/link';
 import Image from 'next/image';
 import AddToBookshelfButton from '@/components/detail-page/AddToBookshelfButton';
@@ -7,6 +8,10 @@ import ExpandableSummary from '@/components/detail-page/ExpandableSummary';
 export default async function DetailedViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const book = await getBookById(id);
+
+  // With the book fetched server side, we can now run this server side check to see if it's in the user's bookshelf or not
+  // using our new Data Access Layer function! Which will be passed as a new prop to the client component
+  const isAlreadyInBookshelf = await checkBookInBookshelf(id);
 
   // Fallback if the API returns nothing
   if (!book) {
@@ -91,7 +96,7 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
           </div>
 
           <div className="mt-auto pt-4 flex flex-wrap gap-4">
-            < AddToBookshelfButton book={book} />
+            < AddToBookshelfButton book={book} isAlreadyInBookshelf={isAlreadyInBookshelf} />
             <button className="bg-transparent border border-[#424B2E] text-[#424B2E] font-sans text-sm font-medium tracking-wide px-6 py-2.5 rounded hover:bg-[#EFEBE1] transition">
               Something else to be added here
             </button>

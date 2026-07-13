@@ -1,14 +1,18 @@
 'use client' // The button will need onClick. Is imported onto the Detailed View Page Server Component
 import { Book } from '@/lib/types';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface AddToBookshelfButtonProps {
   book: Book;
+  isAlreadyInBookshelf: boolean;
 }
 
-export default function AddToBookshelfButton({ book }: AddToBookshelfButtonProps) {
-  const [buttonText, setButtonText] = useState("Add to Bookshelf");
+export default function AddToBookshelfButton({ book, isAlreadyInBookshelf }: AddToBookshelfButtonProps) {
+  const [buttonText, setButtonText] = useState(isAlreadyInBookshelf ? "Already in Bookshelf" : "Add to Bookshelf"); // buttonText is now conditional from the very get-go thanks to server side seeding!
   const [isProcessing, setIsProcessing] = useState(false); // A boolean to lock the button while fetching or showing success
+
+  const router = useRouter(); // Needed for router.refresh() in the success state
 
   async function handleAddToBookshelf() {
     console.log(`Preparing to save "${book.title}" to the database...`);
@@ -53,11 +57,12 @@ export default function AddToBookshelfButton({ book }: AddToBookshelfButtonProps
       
       console.log("Successfully added to Bookshelf!");
       
-      // Success state: Change text, wait 1.5 seconds, then reset
+      // Success state updated to integrate with the server side seeding
       setButtonText("Added ✓");
       setTimeout(() => {
-        setButtonText("Add to Bookshelf");
-        setIsProcessing(false); // Unlock the button again
+        setButtonText("Add to Bookshelf"); // Lock it into the finished state
+        // setIsProcessing(false); // "Unlock the button again" -> Do not unlock the button!
+        router.refresh(); // Tell the parent server component to update in the background
       }, 1500);
     } catch (err) {
       console.error("Failed to add book to bookshelf:", err);
@@ -69,18 +74,21 @@ export default function AddToBookshelfButton({ book }: AddToBookshelfButtonProps
         setIsProcessing(false);
       }, 1500);
     }
-  }
+  };
+
+  // We disable the button if it's processing OR if the book is already in the bookshelf
+  const isDisabled = isProcessing || buttonText === "Already in Bookshelf";
 
   return (
     <button
-      // We conditionally apply Tailwind classes depending on the isProcessing state
+      // We conditionally apply Tailwind classes, now depending on the isDisabled state
       className={`font-sans text-sm font-medium tracking-wide px-6 py-2.5 rounded transition shadow-sm
-        ${isProcessing 
+        ${isDisabled 
           ? 'bg-[#E5E0D8] text-[#5C613E] cursor-not-allowed opacity-80' 
           : 'bg-[#424B2E] text-[#FCF9F2] hover:bg-[#343b24]'
         }`}
       onClick={handleAddToBookshelf}
-      disabled={isProcessing} // Native HTML attribute to completely prevent clicks
+      disabled={isDisabled} // Native HTML attribute to completely prevent clicks. Now checks isDisabled instead of isProcessing
     >
       {buttonText}
     </button>
