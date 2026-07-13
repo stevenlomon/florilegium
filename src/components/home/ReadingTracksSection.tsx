@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { type TrackBook } from '@/lib/types';
 import ReadingTracksModal from './ReadingTracksModal';
 import CelebrationModal from './CelebrationModal';
-import { type TrackBook } from '@/lib/types';
+import ReadingTrackCard from './ReadingTrackCard';
 
 interface ReadingTracksSectionProps {
   initialTracks: TrackBook[];
@@ -112,78 +111,24 @@ export default function ReadingTracksSection({ initialTracks }: ReadingTracksSec
 
               if (assignedBook) {
                 // SCENARIO A: THE SLOT IS FILLED
+                // Now has a fully dedicated client component for the Reading Track card with the new current_page input feature 
+                // being implemented. We make this into its own dedicated component but *not* the Assignment button in Scenario B.
+                // Yes, we *could* make that its own component and even try to make it so that it could live both here and in the
+                // Horizon section. But.. just because you *can* do something doesn't mean that you *should* and that it serves
+                // you to. 
+                // Here it doesn't serve us; the need isn't there and it would slow down MVP momentum. *Just in time, not just in case*
                 const isCurrentlyReading = slot === 1;
 
                 return (
                   <div key={`${track.id}-${slot}`} className="flex flex-col gap-3 relative">
-                    <div className={`group relative block aspect-2/3 rounded-md border border-[#E5E0D8] bg-[#FCF9F2] shadow-sm ${isCurrentlyReading
-                      ? 'cursor-default origin-bottom transition-all duration-300 hover:scale-112 hover:z-50 hover:shadow-2xl'
-                      : 'hover:border-[#5C613E] hover:shadow-md transition-all'
-                      }`}>
-
-                      {/* COVER IMAGE */}
-                      <Link href={`/book/${assignedBook.external_id || assignedBook.book_id}`} className="absolute inset-0 overflow-hidden rounded-md">
-                        {assignedBook.cover_image_url ? (
-                          <Image
-                            src={assignedBook.cover_image_url}
-                            alt={`Cover of ${assignedBook.title}`}
-                            fill
-                            sizes="(max-width: 768px) 50vw, 15vw"
-                            priority={true}
-                            className={`object-cover w-full h-full transition-transform duration-500 ${!isCurrentlyReading && 'group-hover:scale-105'}`}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-[#EFEBE1]/50 border-4 border-transparent group-hover:border-white/20 transition-all">
-                            <h3 className="font-heading text-base text-[#2C302E] leading-tight line-clamp-3 mb-2">{assignedBook.title}</h3>
-                            <p className="font-sans text-[10px] text-[#5C613E] line-clamp-2">{assignedBook.author}</p>
-                          </div>
-                        )}
-                      </Link>
-
-                      {/* THE NEW HOVER OVERLAY (ONLY FOR SLOT 1) */}
-                      {isCurrentlyReading && (
-                        <div className="absolute inset-0 bg-[#2C302E]/85 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 rounded-md pointer-events-none">
-
-                          {/* Progress Tracker, now with real data! */}
-                          <div className="mb-5 text-center transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 w-full">
-                            {(() => {
-                              // 1. Get current page (default to 0 if they haven't logged yet)
-                              const current = assignedBook.current_page || 0;
-                              // 2. Get total pages (prioritize their custom input, fallback to API estimate)
-                              const total = assignedBook.custom_page_count || assignedBook.page_count || 0;
-                              // 3. Calculate percentage for the bar width (capped at 100%)
-                              const percentage = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
-
-                              return (
-                                <>
-                                  <span className="text-[#FCF9F2] font-sans text-[10px] uppercase tracking-widest font-medium">
-                                    Page {current} / {total > 0 ? total : '?'}
-                                  </span>
-                                  <div className="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
-                                    <div
-                                      className="h-full bg-[#EFEBE1] rounded-full transition-all duration-1000 ease-out"
-                                      style={{ width: `${percentage}%` }}
-                                    ></div>
-                                  </div>
-                                </>
-                              );
-                            })()}
-                          </div>
-
-                          {/* Finish Button */}
-                          <button
-                            onClick={(e) => handleFinishBook(e, assignedBook.bookshelf_item_id, assignedBook.title)}
-                            disabled={isFinishingId === assignedBook.bookshelf_item_id}
-                            className={`pointer-events-auto bg-[#EFEBE1] text-[#2C302E] px-4 py-2.5 rounded text-xs w-full font-sans font-bold uppercase tracking-wider shadow-sm transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75 ${isFinishingId === assignedBook.bookshelf_item_id
-                              ? 'opacity-70 cursor-wait'
-                              : 'hover:bg-white hover:scale-105'
-                              }`}
-                          >
-                            {isFinishingId === assignedBook.bookshelf_item_id ? 'Finishing...' : 'Finish Book'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    
+                    {/* The new, self-contained component. `e` is type inferred as `MouseEvent<Element, MouseEvent>`! */}
+                    <ReadingTrackCard 
+                      book={assignedBook} 
+                      isCurrentlyReading={isCurrentlyReading} 
+                      onFinishBook={(e) => handleFinishBook(e, assignedBook.bookshelf_item_id, assignedBook.title)}
+                      isFinishing={isFinishingId === assignedBook.bookshelf_item_id}
+                    />
 
                     <p className="text-[9px] font-sans font-bold tracking-widest text-[#5C613E] uppercase text-center relative z-10">
                       {slotLabel}
