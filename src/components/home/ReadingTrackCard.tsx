@@ -27,10 +27,11 @@ interface ReadingTrackCardProps {
   book: TrackBook;
   isCurrentlyReading: boolean;
   onFinishBook: (e: React.MouseEvent) => void;
+  onShelveBook: (e: React.MouseEvent) => void;
   isFinishing: boolean;
 }
 
-export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBook, isFinishing }: ReadingTrackCardProps) {
+export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBook, onShelveBook, isFinishing }: ReadingTrackCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -190,11 +191,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
             <button
               type="button"
               className="text-[8px] font-sans font-semibold tracking-widest text-[#FCF9F2]/50 hover:text-[#FCF9F2] hover:bg-[#FCF9F2]/10 px-3 py-1 rounded-full transition-all duration-300 pointer-events-auto"
-              onClick={(e) => {
-                e.preventDefault();
-                // TODO: Wire up the unassign action
-                console.log("Setting aside book...");
-              }}
+              onClick={onShelveBook}
             >
               SHELVE FOR NOW
             </button>

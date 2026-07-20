@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { type TrackBook } from '@/lib/types';
+import ReadingTrackCard from './ReadingTrackCard';
 import ReadingTracksModal from './ReadingTracksModal';
 import CelebrationModal from './CelebrationModal';
-import ReadingTrackCard from './ReadingTrackCard';
+import CrossroadsModal from './CrossroadsModal';
 
 interface ReadingTracksSectionProps {
   initialTracks: TrackBook[];
@@ -36,6 +37,8 @@ export default function ReadingTracksSection({ initialTracks }: ReadingTracksSec
   // New Celebration state variables
   const [isFinishingId, setIsFinishingId] = useState<string | null>(null);
   const [celebrationPayload, setCelebrationPayload] = useState<{ bookTitle: string, promotion: any } | null>(null);
+  const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string } | null>(null);
+
   const router = useRouter(); // For router.refresh()
 
   // No more fetchReadingTracks!
@@ -51,7 +54,7 @@ export default function ReadingTracksSection({ initialTracks }: ReadingTracksSec
   // And this is our new refresh function! No more fetch('/api/tracks') needed!
   const refreshReadingTracks = () => {
     console.log("Asking server for fresh data...");
-    router.refresh(); 
+    router.refresh();
   };
   // The rest of the file stays exactly the same! Completely untouched.
   // It's... it's all so simple yet incredibly elegant. And it just makes intuitive sense! I can never go back from using Next.js now haha!
@@ -127,12 +130,17 @@ export default function ReadingTracksSection({ initialTracks }: ReadingTracksSec
 
                 return (
                   <div key={`${track.id}-${slot}`} className="flex flex-col gap-3 relative">
-                    
+
                     {/* The new, self-contained component. `e` is type inferred as `MouseEvent<Element, MouseEvent>`! */}
-                    <ReadingTrackCard 
-                      book={assignedBook} 
-                      isCurrentlyReading={isCurrentlyReading} 
+                    <ReadingTrackCard
+                      book={assignedBook}
+                      isCurrentlyReading={isCurrentlyReading}
                       onFinishBook={(e) => handleFinishBook(e, assignedBook.bookshelf_item_id, assignedBook.title)}
+                      onShelveBook={(e) => { //onFinishBook and onShelveBook differ in the sense that shelving doesn't immediately talk to the database. It simply delegates the database transaction to the modal rather than firing immediately. Until later when we introduce the default behavior in User Settings!
+                        e.preventDefault();
+                        e.stopPropagation(); // onFisnishBook also uses `e.stopPropagation();` but it lives in `handleFinishBook`!
+                        setCrossroadsPayload({ trackId: track.id, bookTitle: assignedBook.title });
+                      }}
                       isFinishing={isFinishingId === assignedBook.bookshelf_item_id}
                     />
 
@@ -173,12 +181,21 @@ export default function ReadingTracksSection({ initialTracks }: ReadingTracksSec
             onSuccess={refreshReadingTracks}
           />
 
-          { /* The new Celebration Modal! */}
+          { /* The new Celebration Modal */}
           {celebrationPayload && (
             <CelebrationModal
               bookTitle={celebrationPayload.bookTitle}
               promotion={celebrationPayload.promotion}
               onClose={handleCloseCelebration}
+            />
+          )}
+
+          { /* The new Crossroads Modal! */}
+          {crossroadsPayload && (
+            <CrossroadsModal
+              bookTitle={crossroadsPayload.bookTitle}
+              trackId={crossroadsPayload.trackId}
+              onClose={() => setCrossroadsPayload(null)}
             />
           )}
 
