@@ -15,19 +15,19 @@ export default function HelpPage() {
         </header>
 
         <article className="space-y-12 text-[#2C302E] font-serif leading-relaxed">
-          
+
           <section>
             <h2 className="font-sans text-xs font-bold tracking-widest uppercase text-[#5C613E] mb-4">
               The Horizon
             </h2>
             <p className="mb-4">
-              Found on your Profile, the Horizon is a curated queue of up to five masterpieces. These are not passing curiosities; they are the dense, meaningful books you are actively cultivating momentum towards. 
+              Found on your Profile, the Horizon is a curated queue of up to five masterpieces. These are not passing curiosities; they are the dense, meaningful books you are actively cultivating momentum towards.
             </p>
             <p>
               By capping this at five slots, we prioritize intention over accumulation. When a slot empties, it feels more substantial, like an event. It becomes an opportunity to thoughtfully select your next great undertaking.
             </p>
           </section>
-          
+
           <section>
             <h2 className="font-sans text-xs font-bold tracking-widest uppercase text-[#5C613E] mb-4">
               The Bookshelf
@@ -46,7 +46,7 @@ export default function HelpPage() {
             </h2>
             <p className="mb-4">
               Your Reading Tracks act as your active workbench. To prevent the overwhelm of reading too many things at once, you are limited to three specific tracks (e.g., Fiction, Non-fiction, Before Bedtime).
-              While these are your defaults, their names and descriptions can be edited to your hearts desire. 
+              While these are your defaults, their names and descriptions can be edited to your hearts desire.
             </p>
             <p className="mb-4">
               Each track holds exactly two slots:
@@ -62,7 +62,7 @@ export default function HelpPage() {
               Reading Journeys & Reviews
             </h2>
             <p className="mb-4">
-              Every time you read a book, a "Reading Journey" is logged. You can read a book multiple times, and each iteration will be saved to your timeline with its own start and end dates. 
+              Every time you read a book, a "Reading Journey" is logged. You can read a book multiple times, and each iteration will be saved to your timeline with its own start and end dates.
             </p>
             <p>
               When you finish a book, you'll be prompted to capture your "raw thoughts"; the immediate, unpolished feelings you have upon turning the last page. These are saved to your timeline alongside your polished, overarching review on the Bookshelf.
@@ -73,15 +73,36 @@ export default function HelpPage() {
             <h2 className="font-sans text-xs font-bold tracking-widest uppercase text-[#5C613E] mb-4">
               Spotted a bug or still have questions?
             </h2>
-            <p className="mb-4">
-              If something isn't working right, if anything is unclear, or if you simply want to chat about what you're currently reading, my inbox is always open. Enjoy 🌿
+            <p className="mb-6">
+              If something isn't working right, if anything is still unclear, if you have suggestions, or if you simply want to chat about what you're currently reading, my inbox is always open.
             </p>
-            <p className="font-sans text-sm font-bold text-[#424B2E]">
-              / Steven
+
+            <p className="font-serif italic text-[#5C613E] mb-8">
+              Enjoy 🌿
             </p>
-            <p className="font-sans text-sm font-bold text-[#424B2E]">
-              steven.lennartsson@gmail.com
-            </p>
+
+            <div className="flex flex-col gap-0.5">
+              <p className="font-sans text-sm font-bold text-[#424B2E]">
+                / Steven
+              </p>
+              <p className="font-sans text-sm font-bold text-[#424B2E]">
+                steven.lennartsson@gmail.com
+              </p>
+            </div>
+
+            <div className="mt-12 pt-6 border-t border-[#E5E0D8]/40">
+              <p className="font-serif text-sm italic text-[#5C613E]/80">
+                Curious about how this garden grows?{' '}
+                <a
+                  href='https://github.com/stevenlomon/florilegium'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="not-italic font-sans text-[10px] font-bold tracking-widest uppercase text-[#424B2E] hover:text-[#2C302E] underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-colors ml-1"
+                >
+                  View on GitHub
+                </a>
+              </p>
+            </div>
           </section>
 
         </article>
