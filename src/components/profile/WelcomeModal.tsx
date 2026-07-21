@@ -38,38 +38,31 @@ export default function WelcomeModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#FCF9F2]/95 backdrop-blur-sm p-4 animate-in fade-in duration-700">
-      <div className="w-full max-w-2xl bg-white rounded-lg shadow-2xl p-12 md:p-16 border border-[#E5E0D8] relative">
-        <div className="text-center mb-10">
-          <span className="text-4xl opacity-80 mb-4 block">🌿</span>
-          <h1 className="font-heading text-4xl text-[#2C302E] leading-tight mb-4">
-            Welcome to your garden
+      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl p-10 md:p-12 border border-[#E5E0D8] relative text-center">
+        
+        <div className="mb-6 flex flex-col items-center">
+          <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[#EFEBE1] border border-[#E5E0D8] mb-5 shadow-sm">
+            <span className="text-xl">🌿</span>
+          </div>
+          <h1 className="font-heading text-3xl text-[#2C302E]">
+            Welcome to your garden.
           </h1>
         </div>
 
-        <div className="space-y-6 font-serif text-[#2C302E] text-lg leading-relaxed max-w-lg mx-auto text-center">
-          <p>
-            Florilegium is a sanctuary designed to help you rekindle and cultivate your love for reading. There are no algorithms here, no endless scrolling feeds, and no arbitrary reading challenges.
-          </p>
-          <p>
-            To begin, we suggest adding a few books to your <strong>Horizon</strong>. These are the books you want to cultivate momentum towards. The books where it's not a question about <i>if</i> you're going to read them, but <i>when</i>. 
-          </p>
-          <p className="text-[#5C613E] italic text-base">
-            (If you ever feel unsure of how to use your Reading Tracks, find things in your Bookshelf, or anything else, please consult the Help page in the sidebar, or simply send me a message.)
-          </p>
-        </div>
+        <p className="font-serif text-[#5C613E] text-base leading-relaxed mb-10 px-4">
+          A quiet sanctuary to cultivate your reading life, free from algorithms, endless feeds, and arbitrary challenges.
+        </p>
 
-        <form onSubmit={handleSave} className="mt-12 flex flex-col items-center max-w-xs mx-auto gap-6">
-          <div className="w-full flex flex-col items-center gap-2">
-            <label htmlFor="firstName" className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">
-              What should we call you?
-            </label>
+        <form onSubmit={handleSave} className="flex flex-col items-center w-full max-w-xs mx-auto gap-6">
+          <div className="w-full">
+            <label htmlFor="firstName" className="sr-only">What should we call you?</label>
             <input
               id="firstName"
               type="text"
               autoFocus
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Your name"
+              placeholder="What should we call you?"
               className="w-full bg-transparent border-b-2 border-[#E5E0D8] focus:border-[#424B2E] outline-none py-2 text-center font-heading text-2xl text-[#2C302E] placeholder:text-[#5C613E]/40 transition-colors"
             />
           </div>
@@ -77,9 +70,9 @@ export default function WelcomeModal() {
           <button
             type="submit"
             disabled={isSaving || firstName.trim().length === 0}
-            className="mt-4 bg-[#424B2E] text-[#FCF9F2] font-sans text-sm font-medium tracking-wide px-10 py-3 rounded hover:bg-[#343b24] transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#424B2E] text-[#FCF9F2] font-sans text-sm font-medium tracking-wide py-3 rounded-md hover:bg-[#343b24] transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2"
           >
-            {isSaving ? "Entering..." : "Enter your garden"}
+            {isSaving ? "Opening the gates..." : "Enter"}
           </button>
         </form>
 
