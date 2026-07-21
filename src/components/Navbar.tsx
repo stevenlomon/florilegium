@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // This replaces useNavigate
+import { useRouter, usePathname } from 'next/navigation'; // This replaces useNavigate
 import { useBookSearch } from '@/hooks/useBookSearch';
 
 export default function Navbar() {
@@ -13,6 +13,10 @@ export default function Navbar() {
   const { searchTerm, setSearchTerm, isSearching, results: previews } = useBookSearch("Navbar Search Error:");
 
   const router = useRouter();
+
+  // Easy to miss but super important: Hide the navbar entirely on auth pages!!
+  const pathname = usePathname();
+  if (pathname === '/login' || pathname === '/register') return null;
 
   // We still need a form submission function; now typed
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) { //FormEvent, not SubmitEvent. React.FormEvent is *not* deprecated.

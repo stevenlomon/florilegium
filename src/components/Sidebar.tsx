@@ -6,6 +6,9 @@ import { usePathname } from 'next/navigation';
 export default function Sidebar() {
   const pathname = usePathname(); // To clearly see which sidebar item is active!
 
+  // Easy to miss but super important: Hide the sidebar entirely on auth pages!!
+  if (pathname === '/login' || pathname === '/register') return null;
+
   // Bookshelf and Settings only to begin with but more can easily be added here
   const navItems = [
     {
