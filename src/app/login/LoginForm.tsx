@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -47,53 +48,67 @@ export default function LoginForm() {
   };
 
   // Placeholder CSS, to be properly styled when I have a clear sense of the design of the app
+  // "when I have a clear sense of the design of the app" Once again; now I do haha!
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* Error Banner */}
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm border border-red-200">
-          {error}
+    <div className="flex flex-col w-full">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-[#8C3A3A]/10 text-[#8C3A3A] p-4 rounded-md text-sm font-serif italic border border-[#8C3A3A]/20 animate-in fade-in duration-300">
+            {error}
+          </div>
+        )}
+
+        {/* Username Input */}
+        <div className="flex flex-col gap-1">
+          <label className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] ml-1" htmlFor="username">
+            Username
+          </label>
+          <input
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className="w-full bg-white/50 border border-[#E5E0D8] rounded-md px-4 py-2.5 font-serif text-sm text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
+          />
         </div>
-      )}
 
-      {/* Username Input */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1" htmlFor="username">
-          Username
-        </label>
-        <input
-          id="username"
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-        />
+        {/* Password Input */}
+        <div className="flex flex-col gap-1">
+          <label className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] ml-1" htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full bg-white/50 border border-[#E5E0D8] rounded-md px-4 py-2.5 font-serif text-sm text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
+          />
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="mt-4 bg-[#424B2E] text-[#FCF9F2] font-sans text-sm font-medium tracking-wide px-8 py-3 rounded-md hover:bg-[#343b24] transition shadow-sm disabled:opacity-70 disabled:cursor-wait"
+        >
+          {isLoading ? "Consulting archives..." : "Log In"}
+        </button>
+      </form>
+
+      {/* Registration Link Stub */}
+      <div className="mt-8 text-center border-t border-[#E5E0D8] pt-6">
+        <p className="text-[#5C613E] font-serif text-sm">
+          Don't have an account?{' '}
+          <Link href="/register" className="text-[#424B2E] font-sans text-[10px] font-bold tracking-widest uppercase hover:underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-all ml-1">
+            Register
+          </Link>
+        </p>
       </div>
-
-      {/* Password Input */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1" htmlFor="password">
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-        />
-      </div>
-
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="mt-2 w-full bg-blue-600 text-white font-medium py-2 rounded-md hover:bg-blue-700 transition disabled:bg-blue-400"
-      >
-        {isLoading ? "Logging in..." : "Log In"}
-      </button>
-    </form>
+    </div>
   )
 };
