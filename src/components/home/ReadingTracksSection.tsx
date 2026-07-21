@@ -7,6 +7,7 @@ import ReadingTrackCard from './ReadingTrackCard';
 import ReadingTracksModal from './ReadingTracksModal';
 import CelebrationModal from './CelebrationModal';
 import CrossroadsModal from './CrossroadsModal';
+import DeleteTrackModal from './DeleteTrackModal';
 
 interface ReadingTracksSectionProps {
   initialTrackMetadata: { id: number, title: string, description: string }[];
@@ -48,6 +49,10 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [isSavingTrack, setIsSavingTrack] = useState(false);
+
+  // New Track deletion state variables
+  const [trackToDelete, setTrackToDelete] = useState<{ id: number, title: string } | null>(null);
+  const [isDeletingTrack, setIsDeletingTrack] = useState(false);
 
   const router = useRouter(); // For router.refresh()
 
@@ -155,6 +160,34 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
     }
   };
 
+  const handleDeleteTrack = async () => {
+    if (!trackToDelete) return;
+    setIsDeletingTrack(true);
+
+    try {
+      const res = await fetch('/api/tracks', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ track_id: trackToDelete.id })
+      });
+
+      if (!res.ok) throw new Error("Failed to delete track");
+
+      // Optimistically remove it from the UI
+      setLocalTracks(prev => prev.filter(t => t.id !== trackToDelete.id));
+      setEditingTrackId(null);
+      setTrackToDelete(null);
+
+      // Ensure the server state matches in case there were orphaned UI elements
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete track. Please try again.");
+    } finally {
+      setIsDeletingTrack(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-[#E5E0D8] -mx-4 xl:mx-0">
       {/* We map over localTracks now! */}
@@ -180,21 +213,47 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                   className="w-full text-[#5C613E] font-serif italic text-sm leading-snug bg-[#EFEBE1]/50 rounded px-2 py-1.5 outline-none resize-none focus:bg-white transition-colors"
                   rows={2}
                 />
-                <div className="flex items-center gap-3 mt-1 px-2">
-                  <button
-                    onClick={() => handleSaveTrack(track.id)}
-                    disabled={isSavingTrack || !editTitle.trim()}
-                    className="font-sans text-[10px] font-bold tracking-widest uppercase text-[#424B2E] hover:text-[#2C302E] transition-colors disabled:opacity-50"
-                  >
-                    {isSavingTrack ? 'Saving...' : 'Save'}
-                  </button>
-                  <button
-                    onClick={() => setEditingTrackId(null)}
-                    disabled={isSavingTrack}
-                    className="font-sans text-[10px] font-bold tracking-widest uppercase text-[#5C613E]/70 hover:text-[#5C613E] transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
+                <div className="flex items-start justify-between mt-1 px-2">
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={() => handleSaveTrack(track.id)}
+                      disabled={isSavingTrack || !editTitle.trim()}
+                      className="font-sans text-[10px] font-bold tracking-widest uppercase text-[#424B2E] hover:text-[#2C302E] transition-colors disabled:opacity-50"
+                    >
+                      {isSavingTrack ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => setEditingTrackId(null)}
+                      disabled={isSavingTrack}
+                      className="font-sans text-[10px] font-bold tracking-widest uppercase text-[#5C613E]/70 hover:text-[#5C613E] transition-colors disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                  {/* The Delete Button Area */}
+                  {localTracks.length > 1 && (() => {
+                    // Check if this specific track has any books assigned to it
+                    const hasBooks = trackBooks.some(b => b.track_id === track.id);
+
+                    return (
+                      <div className="flex flex-col items-end">
+                        <button
+                          onClick={() => setTrackToDelete({ id: track.id, title: track.title })}
+                          disabled={hasBooks}
+                          className="font-sans text-[10px] font-bold tracking-widest uppercase text-[#8C3A3A]/70 hover:text-[#8C3A3A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed pt-1"
+                          title={hasBooks ? "Clear this track before deleting" : "Dismantle Track"}
+                        >
+                          Dismantle Track
+                        </button>
+                        {hasBooks && (
+                          <span className="text-[9px] font-serif italic text-[#8C3A3A]/60 mt-0.5 pr-0.5">
+                            *Unassign books to delete
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             ) : (
@@ -278,7 +337,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
             })}
           </div>
 
-          { /* The new Reading Track Modal */}
+          { /* Our Reading Track Modal */}
           <ReadingTracksModal
             isOpen={activeModalContext !== null} // Only open if activeModalContext is a valid object
             onClose={() => setActiveModalContext(null)}
@@ -286,7 +345,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
             onSuccess={refreshReadingTracks}
           />
 
-          { /* The new Celebration Modal */}
+          { /* Our Celebration Modal */}
           {celebrationPayload && (
             <CelebrationModal
               bookTitle={celebrationPayload.bookTitle}
@@ -295,12 +354,22 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
             />
           )}
 
-          { /* The new Crossroads Modal! */}
+          { /* Our Crossroads Modal */}
           {crossroadsPayload && (
             <CrossroadsModal
               bookTitle={crossroadsPayload.bookTitle}
               trackId={crossroadsPayload.trackId}
               onClose={() => setCrossroadsPayload(null)}
+            />
+          )}
+
+          { /* And our new Delete Track Modal. Most likely the last haha! */}
+          {trackToDelete && trackToDelete.id === track.id && (
+            <DeleteTrackModal
+              trackTitle={trackToDelete.title}
+              isDeleting={isDeletingTrack}
+              onClose={() => setTrackToDelete(null)}
+              onConfirm={handleDeleteTrack}
             />
           )}
 
