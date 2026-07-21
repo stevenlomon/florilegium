@@ -39,6 +39,13 @@ export default function ReadingTracksSection({ initialTracks }: ReadingTracksSec
   const [celebrationPayload, setCelebrationPayload] = useState<{ bookTitle: string, promotion: any } | null>(null);
   const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string } | null>(null);
 
+  // New Inline Editing state variables
+  const [localTracks, setLocalTracks] = useState(TRACKS); // Elevating TRACKS to state so we can mutate it locally!
+  const [editingTrackId, setEditingTrackId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [isSavingTrack, setIsSavingTrack] = useState(false);
+
   const router = useRouter(); // For router.refresh()
 
   // No more fetchReadingTracks!
@@ -101,15 +108,110 @@ export default function ReadingTracksSection({ initialTracks }: ReadingTracksSec
     router.refresh();       // This refreshes the UI server-side (the entire Server Component(s))
   };
 
+  // Helper to snap into edit mode and pre-fill the inputs
+  const startEditing = (trackId: number, currentTitle: string, currentDescription: string) => {
+    setEditingTrackId(trackId);
+    setEditTitle(currentTitle);
+    setEditDescription(currentDescription);
+  };
+
+  const handleSaveTrack = async (trackId: number) => {
+    if (!editTitle.trim()) return; // Prevent saving empty names
+
+    setIsSavingTrack(true);
+    try {
+      const res = await fetch('/api/tracks', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          track_id: trackId,
+          name: editTitle.trim(),
+          description: editDescription.trim()
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to update track");
+
+      // Optimistically update the UI without a full reload. We trust the data is saved, so we immediately update our local React state 
+      // to make the app feel alive, fast and tactile!
+      setLocalTracks(prevTracks =>
+        prevTracks.map(t =>
+          t.id === trackId
+            ? { ...t, title: editTitle.trim(), description: editDescription.trim() }
+            : t
+        )
+      );
+
+      setEditingTrackId(null);
+      // router.refresh(); // Will be uncommented once we actually fetch the name and description from the database
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save track updates. Please try again.");
+    } finally {
+      setIsSavingTrack(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-[#E5E0D8] -mx-4 xl:mx-0">
-      {TRACKS.map((track) => (
+      {/* We map over localTracks now! */}
+      {localTracks.map((track) => (
         <section key={track.id} className="py-8 xl:py-0 px-4 xl:px-8 first:xl:pl-0 last:xl:pr-0 flex flex-col">
 
-          {/* Track Header */}
-          <div className="mb-8 min-h-20">
-            <h2 className="text-2xl font-heading text-[#2C302E]">{track.title}</h2>
-            <p className="text-[#5C613E] font-serif italic text-sm mt-1 leading-snug">{track.description}</p>
+          <div className="mb-8 min-h-24 group relative">
+            {editingTrackId === track.id ? (
+              // EDIT MODE
+              <div className="flex flex-col gap-2 animate-in fade-in duration-200 pr-8">
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  // Removed border-b, added a subtle rounded background for edit mode
+                  className="w-full text-2xl font-heading text-[#2C302E] bg-[#EFEBE1]/50 rounded px-2 py-1 outline-none focus:bg-white transition-colors"
+                  autoFocus
+                />
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  // Removed border-b, added matching rounded background
+                  className="w-full text-[#5C613E] font-serif italic text-sm leading-snug bg-[#EFEBE1]/50 rounded px-2 py-1.5 outline-none resize-none focus:bg-white transition-colors"
+                  rows={2}
+                />
+                <div className="flex items-center gap-3 mt-1 px-2">
+                  <button
+                    onClick={() => handleSaveTrack(track.id)}
+                    disabled={isSavingTrack || !editTitle.trim()}
+                    className="font-sans text-[10px] font-bold tracking-widest uppercase text-[#424B2E] hover:text-[#2C302E] transition-colors disabled:opacity-50"
+                  >
+                    {isSavingTrack ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={() => setEditingTrackId(null)}
+                    disabled={isSavingTrack}
+                    className="font-sans text-[10px] font-bold tracking-widest uppercase text-[#5C613E]/70 hover:text-[#5C613E] transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // VIEW MODE
+              <div className="pr-8 relative">
+                <h2 className="text-2xl font-heading text-[#2C302E]">{track.title}</h2>
+                <p className="text-[#5C613E] font-serif italic text-sm mt-1 leading-snug">{track.description}</p>
+
+                {/* The Hover Pen Icon */}
+                <button
+                  onClick={() => startEditing(track.id, track.title, track.description)}
+                  className="absolute top-1 -right-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-[#5C613E]/50 hover:text-[#424B2E]"
+                  title="Edit Track"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Track Grid: Exactly 2 slots (Currently Reading + Up Next) */}

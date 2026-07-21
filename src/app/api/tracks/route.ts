@@ -82,3 +82,60 @@ import { getCurrentUser } from '@/lib/auth';
 export async function POST(req: Request) {
   // To be coded in the future when we allow users to create their own Reading Tracks. As well as a PATCH and DELETE probably for full CRUD
 }
+
+// For editing the name or description of a Reading Track
+export async function PATCH(req: Request) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { track_id, name, description } = body;
+
+    // We absolutely need the track_id to know which row to update
+    if (!track_id) {
+      return NextResponse.json({ error: "Missing required track_id" }, { status: 400 });
+    }
+
+    // Gatekeeper: Ensure they are actually trying to update something
+    if (name === undefined && description === undefined) {
+      return NextResponse.json({ error: "No valid fields provided for update" }, { status: 400 });
+    }
+
+    const query = {
+      name: 'update-reading-track',
+      // COALESCE is our best friend here! I've gone from being absolutely terrified of it to now seeing it as a friend haha!
+      // If $1 (name) is null, it just overwrites the column with its own existing value.
+      text: `
+        UPDATE "Reading_Track"
+        SET 
+          name = COALESCE($1, name),
+          description = COALESCE($2, description)
+        WHERE id = $3 AND user_id = $4
+        RETURNING *
+      `,
+      // We pass undefined as null so COALESCE catches it properly
+      values: [name ?? null, description ?? null, track_id, user.id]
+    };
+
+    const res = await pool.query(query);
+
+    // If rowCount is 0, the track either doesn't exist or this user doesn't own it
+    if (res.rowCount === 0) {
+      return NextResponse.json({ error: "Reading track not found or unauthorized" }, { status: 404 });
+    }
+
+    console.log(`Successfully updated Reading Track ${track_id}`);
+    
+    return NextResponse.json({
+      success: "ok",
+      data: res.rows[0]
+    });
+
+  } catch (err) {
+    console.error("Unexpected error updating reading track:", err);
+    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  }
+};
