@@ -63,3 +63,64 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
   }
 };
+
+// The PATCH methods that enables edits via the UI!
+export async function PATCH(req: Request) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, recommended_by, link, notes } = body;
+
+    if (!id || !recommended_by) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const trimmedRecommendedBy = recommended_by.trim();
+    if (trimmedRecommendedBy.length < 3) {
+      return NextResponse.json({ error: "Recommended-by cannot be less than 3 characters" }, { status: 400 });
+    }
+
+    const query = {
+      name: 'update-recommendation-context-row',
+      // We use EXISTS to guarantee this recommendation belongs to a Bookshelf Item owned by the current user. Same trick used in 
+      // the Reading Journey PATCH and the check to see if a book already exists in a user's bookshelf!
+      text: `
+        UPDATE "Recommendation_Context_Row" 
+        SET recommended_by = $1, link = $2, notes = $3 
+        WHERE id = $4 
+        AND EXISTS (
+          SELECT 1 FROM "Bookshelf_Item" bi 
+          WHERE bi.id = "Recommendation_Context_Row".bookshelf_item_id 
+          AND bi.user_id = $5
+        )
+        RETURNING *
+      `,
+      values: [
+        trimmedRecommendedBy, 
+        link ? link.trim() : null, 
+        notes ? notes.trim() : null, 
+        id, 
+        user.id
+      ]
+    };
+
+    const res = await pool.query(query);
+
+    if (res.rowCount === 0) {
+      return NextResponse.json({ error: "Recommendation not found or unauthorized" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: "ok",
+      data: res.rows[0]
+    });
+
+  } catch (err) {
+    console.error("Unexpected error updating recommendation context row:", err);
+    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  }
+};
