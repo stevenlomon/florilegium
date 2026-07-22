@@ -227,7 +227,7 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
                 <input
                   className="w-full bg-transparent text-sm font-sans text-[#2C302E] outline-none placeholder:text-[#5C613E]"
                   type="text"
-                  placeholder="Search library..."
+                  placeholder="Search the archives..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   disabled={isAssigning}

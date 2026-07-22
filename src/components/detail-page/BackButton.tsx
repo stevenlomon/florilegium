@@ -12,7 +12,7 @@ export default function BackButton() {
       onClick={() => router.back()} // Will act identically to the browser's native back button!
       className="inline-block mb-8 text-[#5C613E] hover:text-[#2C302E] font-sans text-sm transition-colors cursor-pointer text-left"
     >
-      ← Go back
+      ← Step back
     </button>
   );
 }

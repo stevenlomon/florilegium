@@ -105,7 +105,7 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
 };
 
 // Will be used to ensure that the "Add to Bookshelf" button acts as intended: If it's not already in our bookshelf, show "Add to
-// Bookshelf", if it *is*; show "Already in Bookshelf"
+// Bookshelf", if it *is*; show "Resting in Bookshelf"
 export async function checkBookInBookshelf(externalId: string): Promise<boolean> {
   const user = await getCurrentUser();
   if (!user) return false;

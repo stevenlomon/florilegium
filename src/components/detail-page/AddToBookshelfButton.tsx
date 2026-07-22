@@ -9,7 +9,7 @@ interface AddToBookshelfButtonProps {
 }
 
 export default function AddToBookshelfButton({ book, isAlreadyInBookshelf }: AddToBookshelfButtonProps) {
-  const [buttonText, setButtonText] = useState(isAlreadyInBookshelf ? "Already in Bookshelf" : "Add to Bookshelf"); // buttonText is now conditional from the very get-go thanks to server side seeding!
+  const [buttonText, setButtonText] = useState(isAlreadyInBookshelf ? "Resting in Bookshelf" : "Add to Bookshelf"); // buttonText is now conditional from the very get-go thanks to server side seeding!
   const [isProcessing, setIsProcessing] = useState(false); // A boolean to lock the button while fetching or showing success
 
   const router = useRouter(); // Needed for router.refresh() in the success state
@@ -77,7 +77,7 @@ export default function AddToBookshelfButton({ book, isAlreadyInBookshelf }: Add
   };
 
   // We disable the button if it's processing OR if the book is already in the bookshelf
-  const isDisabled = isProcessing || buttonText === "Already in Bookshelf";
+  const isDisabled = isProcessing || buttonText === "Resting in Bookshelf";
 
   return (
     <button

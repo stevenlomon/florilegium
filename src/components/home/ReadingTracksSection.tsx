@@ -78,7 +78,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
     router.refresh();
   };
   // The rest of the file stays exactly the same! Completely untouched.
-  // It's... it's all so simple yet incredibly elegant. And it just makes intuitive sense! I can never go back from using Next.js now haha!
+  // It's... it's all so simple yet incredibly elegant. And it just makes intuitive sense! I can never Step back from using Next.js now haha!
 
   const handleFinishBook = async (e: React.MouseEvent, bookshelfItemId: string, bookTitle: string) => {
     e.preventDefault();

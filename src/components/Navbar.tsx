@@ -73,7 +73,7 @@ export default function Navbar() {
           <input
             className="w-72 bg-transparent text-sm font-sans text-[#2C302E] outline-none placeholder:text-[#5C613E]"
             type="text"
-            placeholder="Search library..."
+            placeholder="Search the archives..."
             value={searchTerm}
             onChange={handleInputChange} // Not `(e) => setSearchTerm(e.target.value)` anymore, but our new handler
           />
@@ -139,7 +139,7 @@ export default function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className="block w-full text-center py-2 bg-[#EFEBE1]/50 rounded text-[#424B2E] font-sans text-[11px] font-bold uppercase tracking-widest hover:bg-[#E5E0D8] transition-colors"
                   >
-                    See all results for &quot;{searchTerm}&quot;
+                    Explore all works for &quot;{searchTerm}&quot;
                   </Link>
 
                   <p className="text-[10px] font-serif italic text-[#5C613E]/60 text-center">
