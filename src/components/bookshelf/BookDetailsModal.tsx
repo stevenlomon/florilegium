@@ -18,7 +18,7 @@ interface BookDetailsModalProps {
 
 export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsModalProps) {
   const router = useRouter(); // For router.refresh()! Also needs to placed here; hooks must be called before any if statements! I didn't know this!
-  
+
   if (!isOpen || !book) return null;
 
   // The function to talk to our newly created user rating PATCH route
@@ -127,7 +127,7 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
           {/* JOURNEYS TIMELINE */}
           <section>
             <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Reading Journeys</h3>
-            <JourneyTimeline journeys={book.journeys} />
+            <JourneyTimeline bookshelfItemId={book.bookshelf_item_id} journeys={book.journeys} />
           </section>
 
         </div>
