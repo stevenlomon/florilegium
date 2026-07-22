@@ -44,18 +44,25 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
     <div className="flex flex-col gap-8">
       {/* FILTER TABS */}
       <div className="flex flex-wrap gap-2 border-b border-[#E5E0D8] pb-4">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)} // The crucial and essential onClick!
-            className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
-              ? 'bg-[#424B2E] text-white shadow-sm'
-              : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
-              }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {TABS.map((tab) => {
+          // Derive the counts dynamically from the data we've already extracted from the database!
+          const count = tab.id === 'all'
+            ? books.length
+            : books.filter(b => b.status_id.toString() === tab.id).length;
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
+                ? 'bg-[#424B2E] text-white shadow-sm'
+                : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
+                }`}
+            >
+              {tab.label} <span className="opacity-70 text-xs ml-1">({count})</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* GRID */}
