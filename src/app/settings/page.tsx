@@ -15,7 +15,7 @@ export default async function SettingsPage() {
     : 'Unknown';
 
   return (
-    <div className="max-w-3xl mx-auto pt-8 xl:pt-16 px-4 xl:px-0 mb-24">
+    <div className="min-h-screen max-w-7xl mx-auto px-8 py-12">
       {/* HEADER */}
       <header className="mb-12 border-b border-[#E5E0D8] pb-6">
         <h1 className="text-4xl font-heading text-[#2C302E] mb-2">Settings</h1>
@@ -24,7 +24,7 @@ export default async function SettingsPage() {
         </p>
       </header>
 
-      <div className="space-y-12">
+      <div className="max-w-3xl space-y-12">
         {/* SECTION 1: ACCOUNT DETAILS */}
         <section>
           <h2 className="font-sans text-xs font-bold tracking-widest uppercase text-[#5C613E] mb-4 pl-1">
@@ -113,7 +113,7 @@ export default async function SettingsPage() {
         </section>
 
         {/* SECTION 4: LOGOUT */}
-        <section className="pt-12 flex justify-center">
+        <section className="pt-12 flex justify-start">
           <LogoutButton />
         </section>
 

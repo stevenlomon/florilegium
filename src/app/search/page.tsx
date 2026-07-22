@@ -66,13 +66,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   // THE RESULTS GRID
   return (
-    <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="mb-10 border-b border-[#E5E0D8] pb-6">
-        <h1 className="text-3xl font-heading text-[#2C302E] mb-2">Search Results</h1>
+    <div className="min-h-screen max-w-7xl mx-auto px-8 py-12">
+      <header className="mb-12 border-b border-[#E5E0D8] pb-6">
+        <h1 className="text-4xl font-heading text-[#2C302E] mb-2">Search Results</h1>
         <p className="text-[#5C613E] font-sans text-sm font-medium tracking-wide uppercase">
-          Showing results for "{query}" — {totalResults.toLocaleString()} works found
+          Showing results for "{query}" • {totalResults.toLocaleString()} works found
         </p>
-      </div>
+      </header>
 
       <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 p-0 m-0 list-none">
         {searchResults.map((work: any) => {

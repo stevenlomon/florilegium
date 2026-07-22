@@ -48,7 +48,7 @@ export default function Sidebar() {
 
       {/* 1. TOP SECTION: Logo & Title */}
       <div className="pt-10 pb-8 flex flex-col items-center">
-        {/* Placeholder for the olive branch logo */}
+        {/* Placeholder for the olive branch logo: emoji for now until I find an AI that can do an SVG that feels just as true and alive */}
         <Link href={'/'}>
           <div className="w-16 h-16 rounded-lg bg-[#EFEBE1] border border-[#E5E0D8] flex items-center justify-center mb-4 shadow-sm">
             <span className="text-2xl opacity-80">🌿</span>

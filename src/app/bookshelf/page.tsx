@@ -31,13 +31,13 @@ export default async function BookshelfPage() {
   const initialBooks = await getDetailedBookshelf();
 
   return (
-    <div className="max-w-350 mx-auto pt-8 xl:pt-16 px-4 xl:px-0">
-      <div className="mb-10">
+    <div className="min-h-screen max-w-7xl mx-auto px-8 py-12">
+      <header className="mb-12 border-b border-[#E5E0D8] pb-6">
         <h1 className="text-4xl font-heading text-[#2C302E] mb-2">Your Bookshelf</h1>
         <p className="text-[#5C613E] font-serif italic text-lg">
           Your personal library and reading history.
         </p>
-      </div>
+      </header>
 
       {/* Pass the server-fetched data straight into our interactive client component */}
       <BookshelfClient initialBooks={initialBooks} />

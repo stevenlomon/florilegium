@@ -40,7 +40,6 @@ export default function Navbar() {
     }
   };
 
-  // Vibe coded render block modeling the Pokémon project and styling for now
   return (
     <header className="sticky top-0 z-50 flex items-center justify-end px-8 py-4 bg-[#FCF9F2]">
 
@@ -50,9 +49,26 @@ export default function Navbar() {
           onSubmit={handleSubmit}
           className="flex items-center rounded-md bg-[#EFEBE1] px-4 py-2 border border-transparent transition-all focus-within:border-[#424B2E] focus-within:ring-1 focus-within:ring-[#424B2E]"
         >
-          {/* Simple search icon to be replaced by a proper SVG later */}
-          <span className="text-[#5C613E] mr-3 opacity-70">
-            {isSearching ? '⏳' : '🔍'}
+          {/* SEARCH ICON & LOADING STATE */}
+          <span className="text-[#5C613E] mr-3 opacity-70 flex items-center justify-center">
+            {isSearching ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#E5E0D8] border-t-current"></div>
+            ) : (
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            )}
           </span>
           <input
             className="w-72 bg-transparent text-sm font-sans text-[#2C302E] outline-none placeholder:text-[#5C613E]"
@@ -68,10 +84,23 @@ export default function Navbar() {
         {/* PROFILE BUTTON */}
         <Link
           href='/profile'
-          className="h-9 w-9 rounded-full bg-[#424B2E] text-[#FCF9F2] flex items-center justify-center transition-transform hover:scale-105 shadow-sm"
+          className="group h-9 w-9 rounded-full bg-[#EFEBE1] border border-[#E5E0D8] text-[#5C613E] flex items-center justify-center transition-all duration-300 hover:bg-[#424B2E] hover:text-[#FCF9F2] hover:border-[#424B2E] shadow-sm"
           title="Profile"
         >
-          <span className="text-sm font-sans">👤</span>
+          <svg
+            className="w-4 h-4 transition-transform duration-300 group-hover:scale-110"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
         </Link>
 
         {/* THE DROPDOWN */}

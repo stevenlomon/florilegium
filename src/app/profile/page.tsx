@@ -27,8 +27,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
 
   // The rendering. All of this HTML will arrive in the browser fully baked with data!
   return (
-    // The Golden In-Between: max-w-7xl mx-auto
-    <div className="min-h-screen p-8 max-w-7xl mx-auto relative">
+    <div className="min-h-screen max-w-7xl mx-auto px-8 py-12 relative">
 
       {/* Conditionally render the onboarding overlay */}
       {needsOnboarding && <WelcomeModal />}

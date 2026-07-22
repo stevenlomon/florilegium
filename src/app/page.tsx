@@ -8,7 +8,7 @@ export default async function HomePage() {
   const { metadata, assignments } = await getReadingTracks();
 
   return (
-    <div className="min-h-screen bg-[#FCF9F2] px-8 py-12">
+    <div className="min-h-screen max-w-7xl mx-auto px-8 py-12">
       
       {/* The header is pure HTML, zero JavaScript shipped to the client */}
       <header className="mb-12 border-b border-[#E5E0D8] pb-6">
