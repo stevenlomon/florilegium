@@ -92,7 +92,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
     <div
       // The CSS hover scaling is conditional and based on whether or not we show the overlay
       // It shrinks back to regular size only on commit or cancel
-      className={`group relative block aspect-2/3 rounded-md border border-[#E5E0D8] bg-[#FCF9F2] origin-bottom transition-all duration-300 ${isCurrentlyReading
+      className={`group relative block w-full aspect-2/3 rounded-md border border-[#E5E0D8] bg-[#FCF9F2] origin-bottom transition-all duration-300 ${isCurrentlyReading
         ? (showOverlay ? 'scale-112 z-50 shadow-2xl cursor-default' : 'scale-100 z-10 shadow-sm cursor-default')
         : 'hover:scale-106 hover:border-[#5C613E] hover:shadow-md hover:z-20 transition-all z-10' // hover:scale-106 and hover:z-20 added here
         }`}

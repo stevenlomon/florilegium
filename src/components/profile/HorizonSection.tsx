@@ -81,7 +81,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
       {/* Grid layout for the 5 slots. 
           On mobile: 2 columns. On tablet: 3 columns. On large screens: 5 columns.
         */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 xl:max-w-7xl">
 
         {[1, 2, 3, 4, 5].map((slot) => {
           // Not 5 purely visual empty slots anymore; now we need actually some logic haha!
@@ -97,7 +97,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
                 className="group relative block aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-md transition-all shadow-sm w-full bg-[#FCF9F2]"
               >
 
-                {/* NEW: The Two-Tap Unassign Button */}
+                {/* The Two-Tap Unassign Button */}
                 <button
                   type="button"
                   disabled={unassigningSlot === slot}

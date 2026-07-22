@@ -228,8 +228,8 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
 
         {/* Render the Active Tracks: We map over localTracks now! */}
         {localTracks.map((track) => (
-          // `w-1/3` and `shrink-0` now explicitly lock the geometry to prevent flexbox auto-squishing
-          <section key={track.id} className="w-full xl:w-100 shrink-0 py-8 xl:py-0 px-4 xl:px-6 flex flex-col">
+          // `w-[25rem]` explicitly locks the geometry to prevent flexbox auto-squishing
+          <section key={track.id} className="w-full xl:w-[28rem] shrink-0 py-8 xl:py-0 px-4 xl:px-6 flex flex-col">
 
             {/* `min-h-25` guarantees the grids align perfectly regardless of description length */}
             <div className="mb-6 min-h-25 group relative">
@@ -315,7 +315,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
             </div>
 
             {/* Track Grid: Exactly 2 slots (Currently Reading + Up Next) */}
-            <div className="grid grid-cols-2 gap-4 flex-1">
+            <div className="grid grid-cols-2 gap-6 flex-1">
               {[1, 2].map((slot) => {
                 const assignedBook = trackBooks.find(b => b.track_id === track.id && b.slot_id === slot);
                 const slotLabel = slot === 1 ? "Currently Reading" : "Up Next";
@@ -381,7 +381,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
         {localTracks.length < 3 && (
           isAddingTrack ? (
             // FORM VIEW: Rendered IN FLOW so it physically takes up space and completes the grid
-            <section className="w-full xl:w-100 py-8 xl:py-0 px-4 xl:px-8 border-t xl:border-t-0 xl:border-l border-[#E5E0D8] flex flex-col">
+            <section className="w-full xl:w-[28rem] py-8 xl:py-0 px-4 xl:px-6 border-t xl:border-t-0 xl:border-l border-[#E5E0D8] flex flex-col">
               <div className="mb-8 min-h-24 group relative">
                 <div className="flex flex-col gap-2 animate-in fade-in duration-200 pr-8">
                   <input
@@ -429,7 +429,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
           ) : (
             <>
               {/* DESKTOP GHOST TRACK: Absolute positioned hover zone so it doesn't affect active track centering! */}
-              <div className="hidden xl:flex absolute left-full top-0 h-full w-100 flex-col opacity-20 hover:opacity-100 transition-opacity">
+              <div className="hidden xl:flex absolute left-full top-0 h-full w-[28rem] flex-col opacity-20 hover:opacity-100 transition-opacity">
                 {/* Matches padding of the active tracks and adds the visual border */}
                 <div className="w-full h-full border-l border-[#E5E0D8] pl-8 flex flex-col">
                   {/* The button spans the entire height; we don't lie about the shape of a Reading Track! */}

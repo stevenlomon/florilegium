@@ -8,7 +8,9 @@ export default async function HomePage() {
   const { metadata, assignments } = await getReadingTracks();
 
   return (
-    <div className="min-h-screen max-w-7xl mx-auto px-8 py-12">
+    // This is the only page.tsx in the codebase (for now) that uses `max-w-[90rem]` and not `max-w-7xl`. By design; it's the Home Page and
+    // the user's "Active Workbench"!
+    <div className="min-h-screen max-w-[90rem] mx-auto px-8 py-12">
       
       {/* The header is pure HTML, zero JavaScript shipped to the client */}
       <header className="mb-12 border-b border-[#E5E0D8] pb-6">

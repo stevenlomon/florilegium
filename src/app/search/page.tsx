@@ -74,7 +74,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </p>
       </header>
 
-      <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 p-0 m-0 list-none">
+      <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 p-0 m-0 list-none">
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {searchResults.map((work: any) => {
           // DEFENSIVE DATA PARSING: Open Library data unfortunately.. is extremely messy haha!
