@@ -93,7 +93,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
             return (
               <Link
                 key={slot}
-                href={`/book/${assignedBook.external_id || assignedBook.book_id}`}
+                href={`/book/${assignedBook.external_id}`} // No longer `href={`/book/${assignedBook.external_id || assignedBook.book_id}`}`, we can confidently remove the fallback that crashes the app anyway
                 className="group relative block aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-md transition-all shadow-sm w-full bg-[#FCF9F2]"
               >
 

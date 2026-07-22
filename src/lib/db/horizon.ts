@@ -23,12 +23,14 @@ export async function getHorizonBooks() {
       // UPDATE: Speaking of ultra-optimized C haha; now we have Postgres do C-level filtering to ensure horizon_slot is not null before it
       // hands us the payload! I noticed that we get a bunch of books in the User Bookshelf where horizon slot is null when doing this fetch
       // which is really unnecessary!
+      // UPDATE: The cause of the "clicking Horizon books crashes the app".. is that we're not grabbing the external Open Library ID from the db!
       text: `
         SELECT 
           bi.id AS bookshelf_item_id, 
           bi.status_id, 
           bi.horizon_slot,
           b.id AS book_id, 
+          b.external_id, -- Added!
           b.title, 
           b.author, 
           b.cover_image_url, 
