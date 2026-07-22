@@ -2,12 +2,20 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Sidebar() {
+  // New state to make the sidebar "slide-able"
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname(); // To clearly see which sidebar item is active!
 
   // Easy to miss but super important: Hide the sidebar entirely on auth pages!!
   if (pathname === '/login' || pathname === '/register') return null;
+
+  // Automatically close the mobile menu whenever the route changes! This is the neatest use of useEffect I've seen so far coding in React
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   // Bookshelf and Settings only to begin with but more can easily be added here
   const navItems = [
@@ -42,9 +50,42 @@ export default function Sidebar() {
     },
   ];
 
-  // Vibe coded, modeled after mock-ups by Stitch by Google
   return (
-    <aside className="w-72 h-screen sticky top-0 flex flex-col bg-[#FCF9F2] border-r border-[#E5E0D8] shrink-0 overflow-hidden">
+    <>
+      {/* MOBILE TOGGLE BUTTON */}
+      {/* Hidden on medium screens. Floating top-left, z-index above everything else. */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="md:hidden fixed top-3 left-4 z-[60] h-10 w-10 flex items-center justify-center rounded-full bg-[#EFEBE1] border border-[#E5E0D8] text-[#5C613E] shadow-sm hover:bg-[#424B2E] hover:text-[#FCF9F2] transition-colors"
+        aria-label="Toggle Menu"
+      >
+        {isOpen ? (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        )}
+      </button>
+
+      {/* MOBILE OVERLAY BACKDROP */}
+      {/* Blurs the background when the menu is open, closes menu when clicked */}
+      <div
+        className={`md:hidden fixed inset-0 z-[50] bg-[#2C302E]/40 backdrop-blur-sm transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* THE ACTUAL SIDEBAR (what we already had) */}
+      {/* Fixed on mobile (slides in/out), Sticky on desktop (always visible) */}
+    <aside
+        className={`fixed md:sticky top-0 left-0 z-[55] h-screen w-72 flex flex-col bg-[#FCF9F2] border-r border-[#E5E0D8] shrink-0 overflow-hidden transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+      >
 
       {/* 1. TOP SECTION: Logo & Title */}
       <div className="pt-10 pb-8 flex flex-col items-center">
@@ -138,5 +179,6 @@ export default function Sidebar() {
       </div>
 
     </aside>
-  );
-}
+    </>
+  )
+};
