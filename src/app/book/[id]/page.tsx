@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation'; // This is new and super super useful!
 import AddToBookshelfButton from '@/components/detail-page/AddToBookshelfButton';
 import ExpandableSummary from '@/components/detail-page/ExpandableSummary';
+import BackButton from '@/components/detail-page/BackButton';
 
 export default async function DetailedViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -35,9 +36,8 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
   return (
     // The main outer card is now a bit wider to be able to properly contain all the data, especially summaries that go bonkers bananas haha
     <main className="min-h-screen p-8 max-w-6xl mx-auto">
-      <Link href="/" className="inline-block mb-8 text-[#5C613E] hover:text-[#2C302E] font-sans text-sm transition-colors">
-        ← Return to Home Page
-      </Link>
+      {/* Now using our new Client Component! */}
+      <BackButton />
 
       <article className="flex flex-col md:flex-row gap-10 bg-white/50 border border-[#E5E0D8] p-8 rounded-lg shadow-sm">
 
