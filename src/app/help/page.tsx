@@ -32,7 +32,7 @@ export default function HelpPage() {
             The Bookshelf
           </h2>
           <p className="mb-4">
-            Your Bookshelf is your master archive. Every book you add from the search bar lands here first. From your Bookshelf, you can rate books, leave personal reviews, and record the names of people who recommended a specific work to you.
+            Your Bookshelf is your master archive. Every book you add from the search bar lands here first. From your Bookshelf, you can rate works, log past reading journeys, leave polished reviews, and record recommendation contexts.
           </p>
           <p className="text-[#5C613E] italic text-sm">
             Note: You cannot assign a book to &quot;Currently Reading&quot; directly from the Bookshelf. Active reading is handled exclusively in your Reading Tracks to maintain focus.

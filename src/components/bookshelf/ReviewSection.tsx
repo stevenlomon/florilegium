@@ -53,7 +53,7 @@ export default function ReviewSection({ bookshelfItemId, initialReview }: Review
         <div className="w-full p-4 border-2 border-[#E5E0D8] rounded-md bg-white shadow-sm flex flex-col gap-4 animate-in fade-in duration-200">
           <textarea
             autoFocus
-            placeholder="Write your personal review, summary, or takeaways here..."
+            placeholder="Write your polished review, summary, or takeaways here..."
             value={reviewText}
             onChange={(e) => setReviewText(e.target.value)}
             className="w-full min-h-30 bg-transparent outline-none font-serif text-sm text-[#2C302E] placeholder:text-[#5C613E]/50 resize-y"
@@ -92,7 +92,7 @@ export default function ReviewSection({ bookshelfItemId, initialReview }: Review
           onClick={() => setIsEditing(true)}
           className="w-full min-h-30 p-4 border-2 border-dashed border-[#E5E0D8] hover:border-[#5C613E]/50 hover:bg-white/50 rounded-md text-sm font-serif italic text-[#5C613E]/70 flex items-center justify-center transition-colors cursor-pointer"
         >
-          + Add a personal review or summary
+          + Add a polished review or summary
         </button>
       )}
     </section>

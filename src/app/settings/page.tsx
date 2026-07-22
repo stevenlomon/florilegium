@@ -91,7 +91,7 @@ export default async function SettingsPage() {
               <div className="max-w-md">
                 <p className="font-sans text-sm font-semibold text-[#2C302E]">Export Library</p>
                 <p className="font-serif text-sm text-[#5C613E] italic mt-1 leading-relaxed">
-                  Download your entire reading history, personal reviews, and raw thought logs as a portable CSV file.
+                  Download your entire reading history, polished reviews, and raw thought logs as a portable CSV file.
                 </p>
               </div>
               <button disabled className="text-[#5C613E]/50 font-sans text-[10px] font-bold uppercase tracking-widest cursor-not-allowed shrink-0">
