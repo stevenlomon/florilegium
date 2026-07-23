@@ -27,13 +27,16 @@ export default function HelpPage() {
             My own personal problem with modern book tracking sites is that somewhere along the way we started valuing noise over signal. Before we have even read the first page our mind is poisoned by aggregated scores from thousands of strangers and the top-voted &quot;hot takes&quot; that generate cynical discourse and confirmation bias. It&apos;s cognitive pollution. It&apos;s all noise.
           </p>
           <p className="text-base leading-relaxed text-[#5C613E]">
-            Florilegium is an invitation to get back to reading the way we did as children. An invitation to start prioritizing signal over noise. To start prioritizing resonance.
+            Florilegium is an invitation to get back to reading the way we did as children. An invitation to start prioritizing signal over noise.
           </p>
           <p className="text-base leading-relaxed text-[#5C613E]">
-            In the cases where we weren&apos;t told what to read, the most magical and formative reading experiences were those grounded in resonance. You finished a book a friend recommended and you can&apos;t stop thinking about it. You saw a book that simply spoke to you at Barnes & Noble and it kept you up at night.
+            In the cases where we weren&apos;t told what to read, the most magical and formative reading experiences were those grounded in resonance and curiosity. You finished a book a friend recommended and you can&apos;t stop thinking about it. You saw a book that simply spoke to you at Barnes & Noble and it kept you up at night.
           </p>
           <p className="text-base leading-relaxed">
-            How does this translate to us now as adults in the Attention Economy age? One or two strong recommendations from Booktubers we resonate with. A recommendation from a friend we hold close to our heart. And a page estimate. I argue that that&apos;s all we truly need to make a decision to read something.
+            How does this translate to us now as adults in the Attention Economy age?
+          </p>
+          <p className="text-base leading-relaxed">
+            One or two strong recommendations from Booktubers we resonate with. A recommendation from a friend we hold close to our heart. A book that genuinely draws you in and compels you at a second hand store or the local library. And a page estimate. I would argue that that&apos;s all we truly need to make a decision to read something.
           </p>
           <p className="text-base leading-relaxed text-[#5C613E]">
             And from there it&apos;s simply a question of discernment: <i>Do I commit to reading this now? After the book I&apos;m currently reading? Or sometime shortly thereafter?</i>
