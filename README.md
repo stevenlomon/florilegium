@@ -10,14 +10,16 @@ My own personal problem with modern book tracking sites is that somewhere along 
 
 Florilegium is an invitation to get back to reading the way we did as children. An invitation to start prioritizing signal over noise. To start 
 prioritizing resonance.  
+
 In the cases where we weren't told what to read, the most magical and formative reading experiences were those grounded in resonance. You finished a book a friend recommended and you can't stop thinking about it. You saw a book that simply spoke to you at Barnes & Noble and it kept you up at night.
 
 How does this translate to us now as adults in the Attention Economy age? One or two strong recommendations from Booktubers we resonate with. A recommendation from a friend we hold close to our heart. And a page estimate. I argue that that's all we truly need to make a decision to read something.
 
-And from there it's simply a question of discernment: Do I commit to reading this now? After the book I'm currently reading? Or sometime shortly thereafter?
+And from there it's simply a question of discernment: _Do I commit to reading this now? After the book I'm currently reading? Or sometime shortly thereafter?_
+
 All while also having a clear sense of where our reading journey is headed. The dense masterpieces we want to cultivate momentum towards. Our reading life's North Star.
 
-I have done my best to have the code reflect the core ethos of the app: Intentional, grounded, and human.
+I have done my best to have the code reflect the core ethos of the app: _Intentional, grounded, and human._
 
 Built with love and care.  
 /Steven 🌿
