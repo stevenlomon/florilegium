@@ -112,13 +112,10 @@ export default function HelpPage() {
             Spotted a bug or still have questions?
           </h2>
           <p className="mb-6">
-            If something isn&apos;t working right, if you have suggestions, or if you simply want to chat about what physical book you&apos;re currently holding, my inbox is always open.
+            If something isn&apos;t working right, if you have suggestions, or if you simply want to chat about what book you&apos;re currently reading, my inbox is always open.
           </p>
 
           <div className="flex flex-col gap-0.5">
-            <p className="font-sans text-sm font-bold text-[#424B2E]">
-              / Steven
-            </p>
             <p className="font-sans text-sm font-bold text-[#424B2E]">
               steven.lennartsson@gmail.com
             </p>
