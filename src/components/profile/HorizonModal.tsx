@@ -24,6 +24,12 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
 
   const showExternalResults = searchTerm.trim().length >= 3; // Derived state! Does *not* need to be a state variable using `useState`!
 
+  // New real-time local filter, just like in the Reading Tracks modal
+  const filteredBookshelf = bookshelfBooks.filter(book =>
+    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    book.author.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleAssignBook = async (book: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary') => {
     if (!targetSlot) return;
 
@@ -109,7 +115,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
 
         {/* HEADER */}
         <div className="px-8 pt-8 pb-4 border-b border-[#E5E0D8] bg-white relative">
-          
+
           {/* Loading Overlay when assigning */}
           {isAssigning && (
             <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
@@ -139,7 +145,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
             <input
               className="w-full bg-transparent text-sm font-sans text-[#2C302E] outline-none placeholder:text-[#5C613E]"
               type="text"
-              placeholder="Search the archives..."
+              placeholder="Search your bookshelf or the archives..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               disabled={isAssigning}
@@ -148,70 +154,83 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
           </div>
         </div>
 
-        {/* CONTENT (Scrollable List) - Swamp Drained! */}
+        {/* CONTENT (Scrollable List) v2: Unified Search */}
         <div className="flex-1 overflow-y-auto bg-[#FCF9F2] p-2 relative">
           {isAssigning && <div className="absolute inset-0 z-10" />}
 
-          {showExternalResults ? (
-            isSearching ? (
-              <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">Searching the archives...</div>
-            ) : externalBooks.length > 0 ? (
-              <div className="flex flex-col p-2">
-                <ul className="flex flex-col gap-1 mb-4">
-                  {externalBooks.map((book: Book) => (
-                    <li key={book.id}>
-                      <button onClick={() => handleAssignBook(book, 'OpenLibrary')} className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group">
-                        <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
-                        <span className="text-[#5C613E] font-sans text-xs mt-1">{book.authors?.[0]?.name || 'Unknown Author'} <span className="opacity-50">• Open Library</span></span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+          {/* 1. LOCAL BOOKSHELF (Instantly filtered) */}
+          {!isLoadingUserBookshelf && filteredBookshelf.length > 0 && (
+            <div className="mb-4">
+              <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">Your Bookshelf</h3>
+              <ul className="flex flex-col gap-1">
+                {filteredBookshelf.map((book: BookshelfItem) => (
+                  <li key={book.bookshelf_item_id}>
+                    <button
+                      onClick={() => handleAssignBook(book, 'UserBookshelf')}
+                      className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
+                    >
+                      <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
+                      <span className="text-[#5C613E] font-sans text-xs mt-1">{book.author} {book.status_id === 2 && <span className="text-[#424B2E] font-medium ml-2">• Currently Reading</span>}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-                {/* Cozy, muted footer placed cleanly outside the list */}
-                <p className="text-[11px] font-serif italic text-[#5C613E]/60 text-center pt-4 border-t border-[#E5E0D8]/60 mx-4">
-                  All book data provided by{' '}
-                  <a
-                    href='https://archive.org/donate/?platform=ol'
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#424B2E] not-italic font-sans text-[9px] font-bold tracking-widest underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-colors mx-0.5"
-                  >
-                    Open Library
-                  </a>
-                  . Consider donating to their cause.
-                </p>
-              </div>
-            ) : (
-              <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">No works found in the catalog.</div>
-            )
-          ) : (
-            isLoadingUserBookshelf ? (
-              <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">Retrieving your bookshelf...</div>
-            ) : bookshelfBooks.length > 0 ? (
-              <div>
-                <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">Your Bookshelf</h3>
-                <ul className="flex flex-col gap-1">
-                  {bookshelfBooks.map((book: BookshelfItem) => (
-                    <li key={book.bookshelf_item_id}>
-                      <button onClick={() => handleAssignBook(book, 'UserBookshelf')} className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group">
-                        <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
-                        <span className="text-[#5C613E] font-sans text-xs mt-1">{book.author} {book.status_id === 2 && <span className="text-[#424B2E] font-medium ml-2">• Currently Reading</span>}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm text-center flex-col items-center">
-                <span className="text-3xl opacity-30 mb-3">🌿</span>
-                <p>Your bookshelf is currently empty.</p>
-                <p className="mt-1 opacity-70">Type above to search the archives.</p>
-              </div>
-            )
+          {/* 2. OPEN LIBRARY ARCHIVES (Appears at 3+ chars) */}
+          {showExternalResults && (
+            <div className="border-t border-[#E5E0D8]/60 pt-2">
+              <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">The Archives</h3>
+              {isSearching ? (
+                <div className="p-8 flex justify-center text-[#5C613E] font-sans text-sm">Searching the archives...</div>
+              ) : externalBooks.length > 0 ? (
+                <div className="flex flex-col p-2">
+                  <ul className="flex flex-col gap-1 mb-4">
+                    {externalBooks.map((book: Book) => (
+                      <li key={book.id}>
+                        <button
+                          onClick={() => handleAssignBook(book, 'OpenLibrary')}
+                          className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
+                        >
+                          <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
+                          <span className="text-[#5C613E] font-sans text-xs mt-1">{book.authors?.[0]?.name || 'Unknown Author'} <span className="opacity-50">• Open Library</span></span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Cozy, muted footer placed cleanly outside the list */}
+                  <p className="text-[11px] font-serif italic text-[#5C613E]/60 text-center pt-4 border-t border-[#E5E0D8]/60 mx-4">
+                    All book data provided by{' '}
+                    <a
+                      href='https://archive.org/donate/?platform=ol'
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#424B2E] not-italic font-sans text-[9px] font-bold tracking-widest underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-colors mx-0.5"
+                    >
+                      Open Library
+                    </a>
+                    . Consider donating to their cause.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">No works found in the catalog.</div>
+              )}
+            </div>
+          )}
+
+          {/* ZERO STATE */}
+          {!showExternalResults && filteredBookshelf.length === 0 && (
+            <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm text-center flex-col items-center">
+              <span className="text-3xl opacity-30 mb-3">🌿</span>
+              <p>No matches in your bookshelf.</p>
+              <p className="mt-1 opacity-70">Keep typing to search the archives.</p>
+            </div>
           )}
         </div>
+
       </div>
     </div>
-  );
+  )
 };
