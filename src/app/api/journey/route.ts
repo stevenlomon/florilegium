@@ -3,14 +3,74 @@ import { getCurrentUser } from '@/lib/auth';
 import { pool } from '@/lib/db';
 
 // Used to update current_page of a current and active user Reading Joruney
+// UPDATE: Now also conditionally updates past Reading Journeys too!
 export async function PATCH(req: Request) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { bookshelf_item_id, current_page } = body;
+    const { bookshelf_item_id, current_page, journey_id, started_at, finished_at, notes } = body;
 
+    // SCENARIO A: EDITING AN EXISTING JOURNEY (Dates & Notes)
+    if (journey_id) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+
+        // Guardrail: Verify the user actually owns the connected bookshelf item
+        const ownershipCheck = await client.query(`
+          SELECT bi.id FROM "Bookshelf_Item" bi
+          JOIN "Reading_Journey" rj ON bi.id = rj.bookshelf_item_id
+          WHERE rj.id = $1 AND bi.user_id = $2
+        `, [journey_id, user.id]);
+
+        if (ownershipCheck.rowCount === 0) throw new Error("ItemNotOwned");
+
+        // Update the Journey dates
+        await client.query(`
+          UPDATE "Reading_Journey" 
+          SET started_at = $1, finished_at = $2
+          WHERE id = $3
+        `, [started_at || null, finished_at || null, journey_id]);
+
+        // Upsert or Delete the connected Log Post for the Raw Thoughts
+        if (notes !== undefined) {
+          const trimmedNotes = notes ? notes.trim() : '';
+
+          if (trimmedNotes === '') {
+            // If they cleared the input, delete the log post to keep DB clean
+            await client.query('DELETE FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
+          } else {
+            // Upsert logic: Update if it exists, insert if it doesn't
+            const logCheck = await client.query('SELECT id FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
+            
+            if ((logCheck.rowCount ?? 0) > 0) {
+              await client.query('UPDATE "Reading_Log_Post" SET notes = $1 WHERE reading_journey_id = $2', [trimmedNotes, journey_id]);
+            } else {
+              const newLogId = crypto.randomUUID();
+              await client.query(
+                `INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes) VALUES ($1, $2, $3, $4)`,
+                [newLogId, user.id, journey_id, trimmedNotes]
+              );
+            }
+          }
+        }
+
+        await client.query('COMMIT');
+        return NextResponse.json({ success: true, message: 'Journey updated.' });
+      } catch (dbError) {
+        await client.query('ROLLBACK');
+        if (dbError instanceof Error && dbError.message === "ItemNotOwned") {
+          return NextResponse.json({ error: "Item not found or unauthorized" }, { status: 404 });
+        }
+        throw dbError;
+      } finally {
+        client.release();
+      }
+    }
+
+    // SCENARIO B: ACTIVE JOURNEY PROGRESS UPDATE (The original logic)
     if (!bookshelf_item_id || current_page === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
