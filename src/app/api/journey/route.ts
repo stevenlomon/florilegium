@@ -27,6 +27,9 @@ export async function PATCH(req: Request) {
 
         if (ownershipCheck.rowCount === 0) throw new Error("ItemNotOwned");
 
+        // Grab the ID so we can re-number the timeline later
+        const bookshelfItemId = ownershipCheck.rows[0].id;
+
         // Update the Journey dates
         await client.query(`
           UPDATE "Reading_Journey" 
@@ -44,7 +47,7 @@ export async function PATCH(req: Request) {
           } else {
             // Upsert logic: Update if it exists, insert if it doesn't
             const logCheck = await client.query('SELECT id FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
-            
+
             if ((logCheck.rowCount ?? 0) > 0) {
               await client.query('UPDATE "Reading_Log_Post" SET notes = $1 WHERE reading_journey_id = $2', [trimmedNotes, journey_id]);
             } else {
@@ -56,6 +59,21 @@ export async function PATCH(req: Request) {
             }
           }
         }
+
+        // Re-number all journeys chronologically in case the edited dates shifted the timeline! 
+        // Yet another window function, yet another query I will need to return to. It'd gonna be a delight comparing and
+        // contrasting all of these haha
+        await client.query(`
+          WITH renumbered AS (
+            SELECT id, ROW_NUMBER() OVER (ORDER BY finished_at ASC NULLS LAST) AS new_iteration
+            FROM "Reading_Journey"
+            WHERE bookshelf_item_id = $1
+          )
+          UPDATE "Reading_Journey" rj
+          SET iteration = renumbered.new_iteration
+          FROM renumbered
+          WHERE rj.id = renumbered.id
+        `, [bookshelfItemId]);
 
         await client.query('COMMIT');
         return NextResponse.json({ success: true, message: 'Journey updated.' });
@@ -134,7 +152,7 @@ export async function POST(req: Request) {
     }
 
     // Allow started_at to be optional / null
-      const journeyStartedAt = started_at && started_at.trim() !== '' ? started_at : null;
+    const journeyStartedAt = started_at && started_at.trim() !== '' ? started_at : null;
 
     const client = await pool.connect();
 
@@ -202,6 +220,89 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('Error creating retroactive journey:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+};
+
+// New route to delete Reading Journeys. But only past ones! Active Reading Journeys are handled exclusively in the Reading Tracks UI
+export async function DELETE(req: Request) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json();
+    const { journey_id } = body;
+
+    if (!journey_id) {
+      return NextResponse.json({ error: 'Missing required journey_id' }, { status: 400 });
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Guardrail: Verify ownership AND ensure the journey is completed
+      // Updated to allow for the auto-adjust later down. Once again; I will return to this.
+      const ownershipCheck = await client.query(`
+        SELECT bi.id AS bookshelf_item_id, rj.finished_at FROM "Bookshelf_Item" bi
+        JOIN "Reading_Journey" rj ON bi.id = rj.bookshelf_item_id
+        WHERE rj.id = $1 AND bi.user_id = $2
+      `, [journey_id, user.id]);
+
+      if (ownershipCheck.rowCount === 0) throw new Error("ItemNotOwned");
+      if (ownershipCheck.rows[0].finished_at === null) throw new Error("ActiveJourney");
+
+      const bookshelfItemId = ownershipCheck.rows[0].bookshelf_item_id;
+
+      // Safely delete any attached Raw Thoughts (Log Posts) to prevent Foreign Key constraint errors
+      await client.query('DELETE FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
+
+      // Now delete the Journey itself
+      await client.query('DELETE FROM "Reading_Journey" WHERE id = $1', [journey_id]);
+
+      // Auto-adjust! Re-number remaining iterations sequentially (1, 2, 3...)
+      // `ROW_NUMBER() OVER (ORDER BY` is signature Window Function. And this is my first time using one. I will return here
+      // in a few days to properly crystallize and synthesize this so that I don't rack up a mountain of technical debt. For now,
+      // I will allow myself the luxury of "It just works"
+      await client.query(`
+        WITH renumbered AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY iteration ASC) AS new_iteration
+          FROM "Reading_Journey"
+          WHERE bookshelf_item_id = $1
+        )
+        UPDATE "Reading_Journey" rj
+        SET iteration = renumbered.new_iteration
+        FROM renumbered
+        WHERE rj.id = renumbered.id
+      `, [bookshelfItemId]);
+
+      // Auto-sort by date. Yet another window function, yet another query I will need to return to
+      await client.query(`
+        WITH renumbered AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY finished_at ASC NULLS LAST) AS new_iteration
+          FROM "Reading_Journey"
+          WHERE bookshelf_item_id = $1
+        )
+        UPDATE "Reading_Journey" rj
+        SET iteration = renumbered.new_iteration
+        FROM renumbered
+        WHERE rj.id = renumbered.id
+      `, [bookshelfItemId]);
+
+      await client.query('COMMIT');
+      return NextResponse.json({ success: true, message: 'Journey deleted and iterations re-ordered.' });
+    } catch (dbError) {
+      await client.query('ROLLBACK');
+      if (dbError instanceof Error) {
+        if (dbError.message === "ItemNotOwned") return NextResponse.json({ error: "Item not found or unauthorized" }, { status: 404 });
+        if (dbError.message === "ActiveJourney") return NextResponse.json({ error: "Active reading journeys must be managed from your Reading Tracks" }, { status: 400 });
+      }
+      throw dbError;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error deleting journey:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 };

@@ -24,6 +24,8 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
   const [editFinishedAt, setEditFinishedAt] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -91,6 +93,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
   const startEditing = (journey: ReadingJourney) => {
     setIsAdding(false); // Close add form to prevent visual clutter
     setEditingId(journey.id);
+    setConfirmDeleteId(null); // Deletion confirmation state is reset when we start editing
     setEditStartedAt(toDateInputValue(journey.started_at));
     setEditFinishedAt(toDateInputValue(journey.finished_at));
     setEditNotes(journey.notes || '');
@@ -122,6 +125,38 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
     }
   };
 
+  const handleDeleteJourney = async (journeyId: string) => {
+    // Tap 1: Ask for confirmation inline
+    if (confirmDeleteId !== journeyId) {
+      setConfirmDeleteId(journeyId);
+      return;
+    }
+
+    // Tap 2: Execute!
+    setIsDeleting(true);
+    try {
+      const res = await fetch('/api/journey', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ journey_id: journeyId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete journey');
+      }
+
+      setConfirmDeleteId(null);
+      setEditingId(null);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Failed to delete journey. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Sort journeys by iteration (1st read, 2nd read, etc.)
   const sortedJourneys = [...journeys].sort((a, b) => a.iteration - b.iteration);
 
@@ -141,8 +176,8 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
                 {/* Node */}
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 mt-1 shadow-sm transition-colors ${isFinished && !isEditing
-                      ? 'bg-[#EFEBE1] border-[#424B2E] text-[#424B2E]'
-                      : 'bg-white border-[#5C613E]/50 text-[#5C613E]'
+                    ? 'bg-[#EFEBE1] border-[#424B2E] text-[#424B2E]'
+                    : 'bg-white border-[#5C613E]/50 text-[#5C613E]'
                     }`}
                 >
                   <span className="font-sans text-[10px] font-bold">{journey.iteration}</span>
@@ -187,19 +222,59 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
                         className="bg-[#FCF9F2] border border-[#E5E0D8] rounded p-3 font-serif text-sm text-[#2C302E] placeholder:text-[#5C613E]/50 outline-none focus:border-[#424B2E] resize-none"
                       />
                     </div>
-                    <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-[#E5E0D8]">
+
+                    {/* Unified Action Bar */}
+                    <div className="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-[#E5E0D8]">
+                      {isFinished && (() => {
+                        const hasNotes = editNotes.trim().length > 0;
+                        const isConfirming = confirmDeleteId === journey.id;
+
+                        return (
+                          <div className="flex items-center mr-2">
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteJourney(journey.id)}
+                              onMouseLeave={() => setConfirmDeleteId(null)} // Reset if mouse leaves!
+                              disabled={isUpdating || isDeleting || hasNotes}
+                              title={hasNotes ? "Clear raw thoughts before deleting journey" : undefined}
+                              className={`px-3 py-2 text-xs font-sans uppercase tracking-widest rounded transition-all ${hasNotes
+                                  ? 'text-[#8C3A3A]/30 cursor-not-allowed'
+                                  : isConfirming
+                                    ? 'bg-[#8C3A3A] text-white font-semibold'
+                                    : 'text-[#8C3A3A]/70 hover:text-[#8C3A3A] hover:bg-[#8C3A3A]/10'
+                                } disabled:opacity-50`}
+                            >
+                              {isDeleting
+                                ? 'Deleting...'
+                                : isConfirming
+                                  ? 'Confirm Delete?'
+                                  : 'Delete'}
+                            </button>
+                            {hasNotes && (
+                              <span className="text-[10px] font-serif italic text-[#8C3A3A]/60 ml-1">
+                                *Clear thoughts to delete
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+
                       <button
                         type="button"
-                        onClick={() => setEditingId(null)}
-                        disabled={isUpdating}
-                        className="text-xs font-sans uppercase tracking-widest text-[#5C613E]/70 hover:text-[#5C613E] transition-colors"
+                        onClick={() => {
+                          setEditingId(null);
+                          setConfirmDeleteId(null);
+                        }}
+                        disabled={isUpdating || isDeleting}
+                        className="px-3 py-2 text-xs font-sans uppercase tracking-widest text-[#5C613E]/70 hover:text-[#5C613E] hover:bg-[#5C613E]/10 rounded transition-all disabled:opacity-50"
                       >
                         Cancel
                       </button>
+
                       <button
                         type="button"
                         onClick={() => handleUpdateJourney(journey.id)}
-                        disabled={isUpdating}
+                        disabled={isUpdating || isDeleting}
                         className="px-5 py-2 bg-[#424B2E] text-[#FCF9F2] text-xs font-sans uppercase tracking-widest rounded disabled:opacity-50 hover:bg-[#343b24] transition-colors shadow-sm"
                       >
                         {isUpdating ? 'Saving...' : 'Save Updates'}
@@ -213,7 +288,6 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
                         {isFinished ? 'Completed Read' : 'Active Read'}
                       </h4>
 
-                      {/* Wrapped the date and Edit button in an inline flex container */}
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => startEditing(journey)}
