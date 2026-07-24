@@ -1,5 +1,5 @@
-import { Book, Author } from './types';
-import { MAX_EDITIONS_TO_GRAB_PAGE_COUNT_ESTIMATE_FROM as MAX } from './constants';
+import { Book, Author, Edition } from './types';
+import { MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE, MAX_EDITIONS_FOR_EDITION_SWITCHER } from './constants';
 
 // For our communication with the Open Library (dropped Gutenberg) where we'll get all book data
 const BASE_URL = 'https://openlibrary.org';
@@ -77,6 +77,8 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
   }
 };
 
+// Rather than trying to do double duty grabbing Works *and* Editions, this API function now goes back to only focusing on Works. We outsource 
+// the responsibility of fetching Editions to our new getEditionsForWork function below this one
 export const getBookById = async (id: string): Promise<Book> => {
   try {
     // Fetch the exact Work using the ID we stripped out during the search
@@ -126,9 +128,10 @@ export const getBookById = async (id: string): Promise<Book> => {
     // We actively hunt across up to 50 editions (this "magic number" is now a constant in lib/constants.ts) for a realistic average page count
     let pageCount: number | null = null;
     let defaultEditionId: string | undefined = undefined;
+    let defaultIsbn: string | null = null; // Needed now that we want to show ISBN for the Defaul Edition
 
     try {
-      const editionsRes = await fetch(`${BASE_URL}/works/${id}/editions.json?limit=${MAX}`, {
+      const editionsRes = await fetch(`${BASE_URL}/works/${id}/editions.json?limit=${MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE}`, {
         headers: getHeaders(),
       });
 
@@ -154,11 +157,15 @@ export const getBookById = async (id: string): Promise<Book> => {
           // Round average to nearest 50 (this constant will never change. I would argue that knowing that a work is approx. 375 pages for example is too granular and only adds unnessecary cognitive strain. It's 350 or 400. We also floor it at 50)
           pageCount = Math.max(50, Math.round(avgPages / 50) * 50);
 
-          // Use the first valid edition as the primary default edition ID
-          defaultEditionId = editionsWithPages[0].key.split('/').pop();
+          // Extract the ID and the ISBN from the best edition
+          const bestEd = editionsWithPages[0];
+          defaultEditionId = bestEd.key.split('/').pop();
+          defaultIsbn = bestEd.isbn_13?.[0] || bestEd.isbn_10?.[0] || null;
+
         } else if (editions.length > 0) {
-          // Fallback: If no edition lists page counts, grab the ID of the first edition entry
-          defaultEditionId = editions[0].key.split('/').pop();
+          const fallbackEd = editions[0];
+          defaultEditionId = fallbackEd.key.split('/').pop();
+          defaultIsbn = fallbackEd.isbn_13?.[0] || fallbackEd.isbn_10?.[0] || null;
         }
       }
     } catch (err) {
@@ -175,6 +182,8 @@ export const getBookById = async (id: string): Promise<Book> => {
       cover_image: coverUrl,
       page_count: pageCount,
       default_edition_id: defaultEditionId,
+      // editions: mappedEditions, Outsourced now to getEditionsForWork below
+      isbn: defaultIsbn, // But we do include the ISBN now for the default edition
     };
   } catch (err) {
     console.error(`Server error fetching book details with id ${id} using getBookById:`, err);
@@ -184,5 +193,65 @@ export const getBookById = async (id: string): Promise<Book> => {
     } else {
       throw new Error("An unexpected network error occurred while contacting Open Library."); //
     }
+  }
+};
+
+// Dedicated API function purely for fetching Editions for a Work using our new constant
+// Now handles both Work IDs (ending in W) and Edition IDs (ending in M)
+export const getEditionsForWork = async (identifier: string): Promise<Edition[]> => {
+  try {
+    let workId = identifier;
+
+    // If the identifier is an Edition ID (typically ends with 'M'), resolve the parent Work ID first!
+    if (identifier.toUpperCase().endsWith('M')) {
+      const bookRes = await fetch(`${BASE_URL}/books/${identifier}.json`, {
+        headers: getHeaders(),
+      });
+      if (bookRes.ok) {
+        const bookData = await bookRes.json();
+        if (bookData.works && bookData.works.length > 0 && bookData.works[0].key) {
+          workId = bookData.works[0].key.split('/').pop();
+        }
+      }
+    }
+
+    // This fetch now remains completely untouched!
+    const res = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_EDITION_SWITCHER}`, {
+      headers: getHeaders(),
+    });
+
+    if (!res.ok) throw new Error(`Open Library API returned status: ${res.status}`);
+
+    const data = await res.json();
+    const editions = data.entries || [];
+
+    // Update to the filter: A complete edition now requires a cover scan for visual resonance and ISBN! Page count *not* required as
+    // the user will fill in custom_page_count when assigning a book as Currently Reading!
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const completeEditions: Edition[] = editions
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((ed: any) => ed && ed.key && ed.covers && ed.covers.length > 0)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((ed: any) => {
+        const editionId = ed.key ? ed.key.split('/').pop() : Math.random().toString();
+        const edCoverId = ed.covers[0];
+
+        // Extract primary ISBN (prefer ISBN-13, fallback to ISBN-10)
+        const primaryIsbn = ed.isbn_13?.[0] || ed.isbn_10?.[0] || null;
+
+        return {
+          id: editionId,
+          title: ed.title || 'Unknown Title',
+          cover_image_url: `${COVER_BASE_URL}/${edCoverId}-M.jpg`,
+          page_count: typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0 ? ed.number_of_pages : null,
+          publish_date: ed.publish_date || null,
+          isbn: primaryIsbn,
+        };
+      });
+
+    return completeEditions;
+  } catch (err) {
+    console.error(`Error fetching editions for identifier ${identifier}:`, err);
+    return []; // Return empty array on failure so the UI gracefully shows the zero-state
   }
 };
