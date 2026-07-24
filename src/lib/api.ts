@@ -1,4 +1,4 @@
-import { Book, Author } from './types';
+import { Book, Author, Edition } from './types';
 import { MAX_EDITIONS_TO_GRAB_PAGE_COUNT_ESTIMATE_FROM as MAX } from './constants';
 
 // For our communication with the Open Library (dropped Gutenberg) where we'll get all book data
@@ -126,6 +126,7 @@ export const getBookById = async (id: string): Promise<Book> => {
     // We actively hunt across up to 50 editions (this "magic number" is now a constant in lib/constants.ts) for a realistic average page count
     let pageCount: number | null = null;
     let defaultEditionId: string | undefined = undefined;
+    let mappedEditions: Edition[] = []; // Initialize our editions array!
 
     try {
       const editionsRes = await fetch(`${BASE_URL}/works/${id}/editions.json?limit=${MAX}`, {
@@ -156,6 +157,25 @@ export const getBookById = async (id: string): Promise<Book> => {
 
           // Use the first valid edition as the primary default edition ID
           defaultEditionId = editionsWithPages[0].key.split('/').pop();
+
+          // Now we can map the filtered editions into our new strict Edition type!
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          mappedEditions = editionsWithPages.map((ed: any) => {
+            const editionId = ed.key ? ed.key.split('/').pop() : Math.random().toString();
+            
+            // Construct the Medium (-M) cover image URL if a cover exists. Medium for Edition covers for bandwidth optimization!
+            const edCoverId = ed.covers && ed.covers.length > 0 ? ed.covers[0] : null;
+            const edCoverUrl = edCoverId ? `${COVER_BASE_URL}/${edCoverId}-M.jpg` : null;
+
+            return {
+              id: editionId,
+              title: ed.title || data.title || 'Unknown Title',
+              cover_image_url: edCoverUrl,
+              page_count: ed.number_of_pages,
+              publish_date: ed.publish_date || null
+            };
+          });
+
         } else if (editions.length > 0) {
           // Fallback: If no edition lists page counts, grab the ID of the first edition entry
           defaultEditionId = editions[0].key.split('/').pop();
@@ -175,6 +195,7 @@ export const getBookById = async (id: string): Promise<Book> => {
       cover_image: coverUrl,
       page_count: pageCount,
       default_edition_id: defaultEditionId,
+      editions: mappedEditions, // Editions array now attached to the payload! This data was always extracted, it's just that now we don't throw it away haha
     };
   } catch (err) {
     console.error(`Server error fetching book details with id ${id} using getBookById:`, err);

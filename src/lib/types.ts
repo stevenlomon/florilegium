@@ -3,22 +3,25 @@ export interface Author {
   name: string;
 }
 
+// NEW: The shape of a specific Edition
+export interface Edition {
+  id: string;
+  title: string;
+  cover_image_url: string | null;
+  page_count: number | null;
+  publish_date?: string | null;
+}
+
 export interface Book {
   id: string; // Gutenberg used number but in switching to Open Library, we're back to string haha!
   title: string;
   authors: Author[];
-  subjects: string[]; 
-  summary: string;    
+  subjects: string[];
+  summary: string;
   cover_image: string;
   page_count: number | null; // Data won't always be available but the key will. `number` or `null`
   default_edition_id?: string | null; // Won't always be available, not even the key. `string`, `null` or `undefined`
-}
-
-// A type for the exact response shape from our Route Handler so the Navbar knows exactly what data structure to expect
-export interface OpenLibrarySearchResponse {
-  next: string | null;
-  previous: string | null;
-  results: Book[];
+  editions?: Edition[]; // NEW: The array of specific editions we map out
 }
 
 export interface TrackBook {
@@ -44,7 +47,7 @@ export interface BookshelfItem {
   title: string;
   author: string;
   cover_image_url: string | null;
-  horizon_slot: number | null; 
+  horizon_slot: number | null;
   page_count: number | null;
   recommendation_context: Recommendation[];
   review: string | null;
