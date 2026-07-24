@@ -100,6 +100,7 @@ export async function POST(req: Request) {
 // Now also handles read status updates! Which re-wires the logic of the route handler slightly to be more flexible and dynamic
 // Now also upadtes custom page count, the new row in the table!
 // Now also handles Reviews
+// Now also dynamically handles both Works and Editions!
 export async function PATCH(req: Request) {
   try {
     const user = await getCurrentUser();
@@ -108,7 +109,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { bookshelf_item_id, user_rating, status_id, custom_page_count, review } = body; // Now also takes status, custom_page_count and review
+    const { bookshelf_item_id, user_rating, status_id, custom_page_count, review, book_id } = body; // Now also takes status, custom_page_count, review and book_id
 
     // This is now the only element in the payload that is truly required that we check before anythign else
     if (!bookshelf_item_id) {
@@ -357,6 +358,27 @@ export async function PATCH(req: Request) {
         success: "ok",
         data: updatedReview
       });
+    }
+
+    // Our book_id "Gatekeeper" handles Edition Swapping by updating the linked book_id!
+    if (book_id !== undefined) {
+      const query = {
+        name: 'update-bookshelf-item-book-id',
+        text: `
+      UPDATE "Bookshelf_Item"
+      SET book_id = $1
+      WHERE id = $2 AND user_id = $3
+      RETURNING *
+    `,
+        values: [book_id, bookshelf_item_id, user.id]
+      };
+
+      const res = await pool.query(query);
+      if (res.rowCount === 0) {
+        return NextResponse.json({ error: "Item not found or unauthorized" }, { status: 404 });
+      }
+
+      return NextResponse.json({ success: "ok", data: res.rows[0] });
     }
 
     // And for this "gatekeeper" logic to fully work, we need a fallback in case the payload doesn't acutally contain a valid

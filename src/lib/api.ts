@@ -197,8 +197,25 @@ export const getBookById = async (id: string): Promise<Book> => {
 };
 
 // Dedicated API function purely for fetching Editions for a Work using our new constant
-export const getEditionsForWork = async (workId: string): Promise<Edition[]> => {
+// Now handles both Work IDs (ending in W) and Edition IDs (ending in M)
+export const getEditionsForWork = async (identifier: string): Promise<Edition[]> => {
   try {
+    let workId = identifier;
+
+    // If the identifier is an Edition ID (typically ends with 'M'), resolve the parent Work ID first!
+    if (identifier.toUpperCase().endsWith('M')) {
+      const bookRes = await fetch(`${BASE_URL}/books/${identifier}.json`, {
+        headers: getHeaders(),
+      });
+      if (bookRes.ok) {
+        const bookData = await bookRes.json();
+        if (bookData.works && bookData.works.length > 0 && bookData.works[0].key) {
+          workId = bookData.works[0].key.split('/').pop();
+        }
+      }
+    }
+
+    // This fetch now remains completely untouched!
     const res = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_EDITION_SWITCHER}`, {
       headers: getHeaders(),
     });
@@ -232,7 +249,7 @@ export const getEditionsForWork = async (workId: string): Promise<Edition[]> => 
 
     return completeEditions;
   } catch (err) {
-    console.error(`Error fetching editions for work ${workId}:`, err);
+    console.error(`Error fetching editions for identifier ${identifier}:`, err);
     return []; // Return empty array on failure so the UI gracefully shows the zero-state
   }
 };
