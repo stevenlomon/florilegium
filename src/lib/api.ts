@@ -1,4 +1,5 @@
 import { Book, Author } from './types';
+import { MAX_EDITIONS_TO_GRAB_PAGE_COUNT_ESTIMATE_FROM as MAX } from './constants';
 
 // For our communication with the Open Library (dropped Gutenberg) where we'll get all book data
 const BASE_URL = 'https://openlibrary.org';
@@ -122,13 +123,12 @@ export const getBookById = async (id: string): Promise<Book> => {
       authors.push(...resolvedAuthors);
     }
 
-    // We will actively hunt for an edition with a page count!
+    // We actively hunt across up to 50 editions (this "magic number" is now a constant in lib/constants.ts) for a realistic average page count
     let pageCount: number | null = null;
     let defaultEditionId: string | undefined = undefined;
 
     try {
-      // Fetch the editions associated with this Work
-      const editionsRes = await fetch(`${BASE_URL}/works/${id}/editions.json?limit=50`, {
+      const editionsRes = await fetch(`${BASE_URL}/works/${id}/editions.json?limit=${MAX}`, {
         headers: getHeaders(),
       });
 
@@ -136,19 +136,28 @@ export const getBookById = async (id: string): Promise<Book> => {
         const editionsData = await editionsRes.json();
         const editions = editionsData.entries || [];
 
-        // Find the FIRST edition in the list that actually has a valid number_of_pages!
+        // Filter out all editions that have valid page counts
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const editionWithPages = editions.find((ed: any) =>
+        const editionsWithPages = editions.filter((ed: any) =>
           typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0
         );
 
-        if (editionWithPages) {
-          const rawPages = editionWithPages.number_of_pages;
-          // Rounds to the nearest 50, with a floor of 50 to prevent 0-page books
-          pageCount = Math.max(50, Math.round(rawPages / 50) * 50);
-          defaultEditionId = editionWithPages.key.split('/').pop();
+        if (editionsWithPages.length > 0) {
+          // Calculate the average page count across all valid editions
+          const totalPages = editionsWithPages.reduce(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (sum: number, ed: any) => sum + ed.number_of_pages,
+            0
+          );
+          const avgPages = totalPages / editionsWithPages.length;
+
+          // Round average to nearest 50 (this constant will never change. I would argue that knowing that a work is approx. 375 pages for example is too granular and only adds unnessecary cognitive strain. It's 350 or 400. We also floor it at 50)
+          pageCount = Math.max(50, Math.round(avgPages / 50) * 50);
+
+          // Use the first valid edition as the primary default edition ID
+          defaultEditionId = editionsWithPages[0].key.split('/').pop();
         } else if (editions.length > 0) {
-          // Fallback: If NONE of them have pages, just grab the ID of the first edition
+          // Fallback: If no edition lists page counts, grab the ID of the first edition entry
           defaultEditionId = editions[0].key.split('/').pop();
         }
       }
