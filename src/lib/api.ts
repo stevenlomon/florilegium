@@ -229,7 +229,9 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
     // the user will fill in custom_page_count when assigning a book as Currently Reading!
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const completeEditions: Edition[] = editions
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((ed: any) => ed && ed.key && ed.covers && ed.covers.length > 0)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((ed: any) => {
         const editionId = ed.key ? ed.key.split('/').pop() : Math.random().toString();
         const edCoverId = ed.covers[0];
