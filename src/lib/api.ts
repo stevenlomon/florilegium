@@ -199,24 +199,29 @@ export const getEditionsForWork = async (workId: string): Promise<Edition[]> => 
     const data = await res.json();
     const editions = data.entries || [];
 
-    // Filter and map premium editions (must have pages and a cover)
+    // Update to the filter: A complete edition now requires a cover scan for visual resonance and ISBN! Page count *not* required as
+    // the user will fill in custom_page_count when assigning a book as Currently Reading!
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const premiumEditions: Edition[] = editions
-      .filter((ed: any) => typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0 && ed.covers && ed.covers.length > 0)
+    const completeEditions: Edition[] = editions
+      .filter((ed: any) => ed && ed.key && ed.covers && ed.covers.length > 0)
       .map((ed: any) => {
         const editionId = ed.key ? ed.key.split('/').pop() : Math.random().toString();
         const edCoverId = ed.covers[0]; 
+
+        // Extract primary ISBN (prefer ISBN-13, fallback to ISBN-10)
+        const primaryIsbn = ed.isbn_13?.[0] || ed.isbn_10?.[0] || null;
 
         return {
           id: editionId,
           title: ed.title || 'Unknown Title',
           cover_image_url: `${COVER_BASE_URL}/${edCoverId}-M.jpg`,
-          page_count: ed.number_of_pages,
-          publish_date: ed.publish_date || null
+          page_count: typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0 ? ed.number_of_pages : null,
+          publish_date: ed.publish_date || null,
+          isbn: primaryIsbn,
         };
       });
 
-    return premiumEditions;
+    return completeEditions;
   } catch (err) {
     console.error(`Error fetching editions for work ${workId}:`, err);
     return []; // Return empty array on failure so the UI gracefully shows the zero-state

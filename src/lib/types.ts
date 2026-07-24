@@ -10,6 +10,7 @@ export interface Edition {
   cover_image_url: string | null;
   page_count: number | null;
   publish_date?: string | null;
+  isbn?: string | null; // NEW: ISBN-13 or ISBN-10 identifier
 }
 
 export interface Book {
