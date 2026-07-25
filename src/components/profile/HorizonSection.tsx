@@ -74,7 +74,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
           The Horizon
         </h2>
         <p className="text-[#5C613E] mt-1 font-serif">
-          The dense masterpieces that we&apos;re building momentum towards. Capped strictly at five to ensure intent over accumulation.
+          The dense masterpieces that we&apos;re cultivating momentum towards. Capped strictly at five to ensure intent over accumulation.
         </p>
       </div>
 
