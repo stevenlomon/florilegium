@@ -13,7 +13,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <div className="mt-32 text-center flex flex-col items-center px-4">
         <h2 className="mb-3 text-3xl font-heading text-[#2C302E]">The Library is open.</h2>
         <p className="text-[#5C613E] font-serif italic max-w-md">
-          Search for titles, authors, or subjects to begin building your reading journey.
+          Search for titles, authors, or subjects to begin nurturing your reading journey.
         </p>
         <p className="mt-12 text-[#5C613E]/60 font-sans text-xs uppercase tracking-widest font-semibold max-w-md">
           &quot;When in doubt, go to the library.&quot; <br className="hidden sm:block" />— Hermione Granger
