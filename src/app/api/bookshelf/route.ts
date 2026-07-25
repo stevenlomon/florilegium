@@ -392,3 +392,68 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
   }
 };
+
+// New Route Handler for deleting Bookshelf items. By-the-book transaction with some added security logic
+export async function DELETE(req: Request) {
+  try {
+    const user = await getCurrentUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { bookshelf_item_id } = body;
+
+    if (!bookshelf_item_id) {
+      return NextResponse.json({ error: "Missing required bookshelf_item_id" }, { status: 400 });
+    }
+
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+
+      // Verify ownership before doing anything destructive
+      const checkRes = await client.query(
+        'SELECT id FROM "Bookshelf_Item" WHERE id = $1 AND user_id = $2',
+        [bookshelf_item_id, user.id]
+      );
+
+      if (checkRes.rowCount === 0) {
+        throw new Error("ItemNotOwned");
+      }
+
+      // Clear out any "Follow-up" track assignments if the book is queued up, preventing Foreign Key constraint errors on the Reading_Track table
+      await client.query(
+        'UPDATE "Reading_Track" SET follow_up_book_id = NULL WHERE follow_up_book_id = $1 AND user_id = $2',
+        [bookshelf_item_id, user.id]
+      );
+
+      // Execute the deletion
+      await client.query(
+        'DELETE FROM "Bookshelf_Item" WHERE id = $1 AND user_id = $2',
+        [bookshelf_item_id, user.id]
+      );
+
+      await client.query('COMMIT');
+      return NextResponse.json({ success: "ok" });
+
+    } catch (dbError) {
+      await client.query('ROLLBACK');
+      
+      if (dbError instanceof Error && dbError.message === "ItemNotOwned") {
+        return NextResponse.json({ error: "Item not found or unauthorized" }, { status: 404 });
+      }
+      
+      console.error("Bookshelf Item Deletion Transaction Failed:", dbError);
+      throw dbError;
+    } finally {
+      client.release();
+    }
+
+  } catch (err) {
+    console.error("Unexpected error in Bookshelf Item deletion:", err);
+    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  }
+};

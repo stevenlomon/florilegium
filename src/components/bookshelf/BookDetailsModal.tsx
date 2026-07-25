@@ -23,6 +23,10 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
   const [isEditionModalOpen, setIsEditionModalOpen] = useState(false);
   const [isUpdatingEdition, setIsUpdatingEdition] = useState(false);
 
+  // New state for Bookshelf item deletion
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const router = useRouter(); // For router.refresh()! Also needs to placed here; hooks must be called before any if statements! I didn't know this!
 
   if (!isOpen || !book) return null;
@@ -115,6 +119,39 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
     }
   };
 
+  // Our Safety Net: Helper boolean to determine if there is connected data that will prevent the book from being able to be deleted
+  const hasConnectedData =
+    book.user_rating !== null ||
+    (book.review !== null && book.review.trim() !== '') ||
+    (book.journeys && book.journeys.length > 0) ||
+    (book.recommendation_context && book.recommendation_context.length > 0);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch('/api/bookshelf', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookshelf_item_id: book.bookshelf_item_id })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to remove book");
+      }
+
+      // Close the modal and let the server seed the updated UI
+      onClose();
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Failed to remove book. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C302E]/40 backdrop-blur-sm p-4">
@@ -193,6 +230,44 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
               <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Reading Journeys</h3>
               <JourneyTimeline bookshelfItemId={book.bookshelf_item_id} journeys={book.journeys} />
             </section>
+
+            {/* The Deletion Zone at the very bottom */}
+            <div className="mt-2 pt-8 border-t border-[#E5E0D8] flex flex-col items-end">
+              <div className="flex flex-col items-end">
+                <button
+                  type="button"
+                  disabled={isDeleting || hasConnectedData}
+                  onClick={() => {
+                    if (!confirmDelete) {
+                      setConfirmDelete(true);
+                    } else {
+                      handleDelete();
+                    }
+                  }}
+                  onMouseLeave={() => setConfirmDelete(false)} // Gracefully reset if the mouse slips away
+                  title={hasConnectedData ? "Clear all connected data to remove this book" : "Remove from Bookshelf"}
+                  className={`px-4 py-2 text-[10px] font-sans font-bold uppercase tracking-widest rounded transition-all ${hasConnectedData
+                      ? 'text-[#8C3A3A]/30 cursor-not-allowed'
+                      : confirmDelete
+                        ? 'bg-[#8C3A3A] text-white shadow-sm'
+                        : 'text-[#8C3A3A]/70 hover:text-[#8C3A3A] hover:bg-[#8C3A3A]/10'
+                    } disabled:opacity-50`}
+                >
+                  {isDeleting
+                    ? 'Removing...'
+                    : confirmDelete
+                      ? 'Confirm Removal?'
+                      : 'Remove from Bookshelf'}
+                </button>
+
+                {/* The Safety Net Label */}
+                {hasConnectedData && (
+                  <span className="text-[11px] font-serif italic text-[#8C3A3A]/60 mt-2 max-w-xs text-right pr-1">
+                    *Clear all connected data (reviews, ratings, journeys, recommendations) to remove this book from your Bookshelf.
+                  </span>
+                )}
+              </div>
+            </div>
 
           </div>
         </div>
