@@ -21,6 +21,9 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
   // State for the new Edition Switcher Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // New state of tracking image loading errors
+  const [imageFailed, setImageFailed] = useState(false);
+
   // Derived Display Values: If we have an active edition, use its data. Otherwise, fall back to the Work data.
   const displayTitle = activeEdition?.title || book.title;
   const displayCover = activeEdition?.cover_image_url || book.cover_image || 'https://via.placeholder.com/400x600?text=No+Cover';
@@ -43,15 +46,24 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
 
         {/* LEFT COLUMN: Cover */}
         <div className="w-full md:w-1/3 shrink-0">
-          <Image
-            key={displayCover} // Force Image to re-render if the URL changes
-            src={displayCover}
-            alt={`Cover of ${displayTitle}`}
-            width={400}
-            height={600}
-            priority={true}
-            className="w-full h-auto rounded shadow-sm object-cover border border-[#E5E0D8] transition-all duration-300"
-          />
+          {/* UPDATED: New improved Image Fallback Logic */}
+          {!imageFailed ? (
+            <Image
+              key={displayCover} // Force Image to re-render if the URL changes
+              src={displayCover}
+              alt={`Cover of ${displayTitle}`}
+              width={400}
+              height={600}
+              priority={true}
+              className="w-full h-auto rounded shadow-sm object-cover border border-[#E5E0D8] transition-all duration-300"
+              onError={() => setImageFailed(true)} // Catch the Open Library 503s!
+            />
+          ) : (
+            <div className="w-full aspect-2/3 rounded shadow-sm border border-[#E5E0D8] bg-[#EFEBE1]/50 flex flex-col items-center justify-center p-6 text-center">
+              <h3 className="font-heading text-2xl text-[#2C302E] leading-tight line-clamp-4 mb-2">{displayTitle}</h3>
+              <p className="font-sans text-sm text-[#5C613E] line-clamp-2">{book.authors?.[0]?.name || 'Unknown Author'}</p>
+            </div>
+          )}
         </div>
 
         {/* RIGHT COLUMN: Metadata & Summary */}
@@ -129,6 +141,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
         onSelectEdition={(edition) => {
           setActiveEdition(edition);
           setIsModalOpen(false);
+          setImageFailed(false); // Put here rather than in the useEffect for the same reason as in BookDetailsModal; to avoid the "anti-pattern" that leads to the "Cascading Render" error I wanna do a deep dive on
         }}
       />
     </>

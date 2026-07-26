@@ -227,7 +227,6 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
 
     // Update to the filter: A complete edition now requires a cover scan for visual resonance and ISBN! Page count *not* required as
     // the user will fill in custom_page_count when assigning a book as Currently Reading!
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const completeEditions: Edition[] = editions
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((ed: any) => ed && ed.key && ed.covers && ed.covers.length > 0)

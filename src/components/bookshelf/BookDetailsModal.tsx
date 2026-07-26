@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { type BookshelfItem, Edition } from '@/lib/types';
 import StarRating from './StarRating';
 import StatusDropdown from './StatusDropdown';
@@ -19,13 +19,16 @@ interface BookDetailsModalProps {
 }
 
 export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsModalProps) {
-  // New state for Edition Switching
+  // Edition Switching state
   const [isEditionModalOpen, setIsEditionModalOpen] = useState(false);
   const [isUpdatingEdition, setIsUpdatingEdition] = useState(false);
 
-  // New state for Bookshelf item deletion
+  // Bookshelf item deletion state
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // New state for tracking image loading errors
+  const [imageFailed, setImageFailed] = useState(false);
 
   const router = useRouter(); // For router.refresh()! Also needs to placed here; hooks must be called before any if statements! I didn't know this!
 
@@ -110,6 +113,8 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
 
       // And finally close modal and refresh server state with router.refresh()!
       setIsEditionModalOpen(false);
+      setImageFailed(false); // Put here rather than in a useEffect which is considered an "anti-pattern" in React. This touches upon a the "Cascading Render" error, which I wanna make a deep dive on. But not now. Dr. Oak Principle; "There's a time and place for everything"
+
       router.refresh();
     } catch (error) {
       console.error("Error switching edition on bookshelf:", error);
@@ -165,15 +170,21 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
 
             {/* Miniature Cover */}
             <Link href={`/book/${book.external_id}`}>
-              <div className="relative w-24 h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden shrink-0 bg-[#EFEBE1]">
-                {book.cover_image_url && (
+              <div className="relative w-24 h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden shrink-0 bg-[#EFEBE1]/50">
+                {/* UPDATED: The Image Fallback Logic */}
+                {book.cover_image_url && !imageFailed ? (
                   <Image
                     src={book.cover_image_url}
                     alt={book.title}
                     fill
                     sizes='96px' // To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/10590366-L.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance." warning
                     className="object-cover"
+                    onError={() => setImageFailed(true)}
                   />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center">
+                    <span className="font-heading text-[#2C302E] text-[10px] leading-tight line-clamp-3">{book.title}</span>
+                  </div>
                 )}
               </div>
             </Link>
@@ -247,10 +258,10 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
                   onMouseLeave={() => setConfirmDelete(false)} // Gracefully reset if the mouse slips away
                   title={hasConnectedData ? "Clear all connected data to remove this book" : "Remove from Bookshelf"}
                   className={`px-4 py-2 text-[10px] font-sans font-bold uppercase tracking-widest rounded transition-all ${hasConnectedData
-                      ? 'text-[#8C3A3A]/30 cursor-not-allowed'
-                      : confirmDelete
-                        ? 'bg-[#8C3A3A] text-white shadow-sm'
-                        : 'text-[#8C3A3A]/70 hover:text-[#8C3A3A] hover:bg-[#8C3A3A]/10'
+                    ? 'text-[#8C3A3A]/30 cursor-not-allowed'
+                    : confirmDelete
+                      ? 'bg-[#8C3A3A] text-white shadow-sm'
+                      : 'text-[#8C3A3A]/70 hover:text-[#8C3A3A] hover:bg-[#8C3A3A]/10'
                     } disabled:opacity-50`}
                 >
                   {isDeleting
