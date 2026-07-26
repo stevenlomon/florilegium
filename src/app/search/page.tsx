@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { OPEN_LIBRARY_PAGE_SEARCH_RESULT_LIMIT as LIMIT } from '@/lib/constants';
 import SearchResultsGrid from '@/components/search/SearchResultGrid';
 

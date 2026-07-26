@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -31,11 +31,6 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
   const [imageFailed, setImageFailed] = useState(false);
 
   const router = useRouter(); // For router.refresh()! Also needs to placed here; hooks must be called before any if statements! I didn't know this!
-
-  // Reset the error state if the user switches editions and the book prop updates
-  useEffect(() => {
-    setImageFailed(false);
-  }, [book?.cover_image_url]);
 
   if (!isOpen || !book) return null;
 
@@ -118,6 +113,8 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
 
       // And finally close modal and refresh server state with router.refresh()!
       setIsEditionModalOpen(false);
+      setImageFailed(false); // Put here rather than in a useEffect which is considered an "anti-pattern" in React. This touches upon a the "Cascading Render" error, which I wanna make a deep dive on. But not now. Dr. Oak Principle; "There's a time and place for everything"
+
       router.refresh();
     } catch (error) {
       console.error("Error switching edition on bookshelf:", error);

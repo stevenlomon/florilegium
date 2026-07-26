@@ -132,6 +132,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
       {/* The new modal at the very end of the return render statement */}
       <BookDetailsModal
+        key={selectedBookId || 'empty-modal'} // To handle the edge case "What happens if a user opens broken cover Book A (setting `imageFailed` to `true`, closes it, and then opens good cover Book B?" In this scenario, `imageFailed` would still be `true`! When a `key` changes, React completely destroys the old component instance and builds a fresh one, wiping *all* stale state clean. 'empty-modal' is a completely arbitrary string
         isOpen={!!selectedBook} // Only open if there IS selectedBook. The double `!!`, called "Double Bang" is essentially a neat shorthand in this scenario of writing `isOpen={selectedBook !== null ? true : false}`
         onClose={() => setSelectedBookId(null)}
         book={selectedBook}

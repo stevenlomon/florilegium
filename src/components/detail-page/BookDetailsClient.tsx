@@ -1,7 +1,7 @@
 'use client';
 // The interactive part of the Detailed View Page as a dedicated Client Component that will be imported into the Page Server Component!
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { type Book, type Edition } from '@/lib/types';
 import AddToBookshelfButton from './AddToBookshelfButton';
@@ -29,11 +29,6 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
   const displayCover = activeEdition?.cover_image_url || book.cover_image || 'https://via.placeholder.com/400x600?text=No+Cover';
   const displayPages = activeEdition?.page_count || book.page_count;
   const displayIsbn = activeEdition?.isbn || book.isbn;
-
-  // Reset the error state if the user switches to an edition with a new cover URL
-  useEffect(() => {
-    setImageFailed(false);
-  }, [displayCover]);
 
   // We construct a derived Book object to pass to the AddToBookshelfButton
   // so it saves the *exact* edition ID and data to Postgres instead of the Work ID.
@@ -146,6 +141,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
         onSelectEdition={(edition) => {
           setActiveEdition(edition);
           setIsModalOpen(false);
+          setImageFailed(false); // Put here rather than in the useEffect for the same reason as in BookDetailsModal; to avoid the "anti-pattern" that leads to the "Cascading Render" error I wanna do a deep dive on
         }}
       />
     </>
