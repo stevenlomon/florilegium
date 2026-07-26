@@ -19,6 +19,9 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
   const [editions, setEditions] = useState<Edition[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // New state for tracking Open Library image failures
+  const [failedImages, setFailedImages] = useState<string[]>([]);
+
   // useEffect for the fetching this Client Component now needs to do..
   useEffect(() => {
     if (!isOpen) return;
@@ -44,11 +47,16 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
 
   if (!isOpen) return null; // Early return guard clause
 
+  // Calculate CDN Health!
+  const totalWithCovers = editions.filter((ed) => ed.cover_image_url).length;
+  const currentFailures = editions.filter((ed) => failedImages.includes(ed.id)).length;
+  const isCdnDown = totalWithCovers > 0 && currentFailures === totalWithCovers;
+
   // Fully vibe coded return render statement
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C302E]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-5xl bg-[#FCF9F2] rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh] border border-[#E5E0D8]">
-        
+
         {/* HEADER */}
         <div className="px-8 pt-8 pb-4 border-b border-[#E5E0D8] bg-white relative flex justify-between items-start shrink-0">
           <div>
@@ -56,8 +64,8 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
               Select an Edition
             </h2>
             <p className="font-sans text-sm text-[#5C613E]">
-              {isLoading 
-                ? "Consulting the archives..." 
+              {isLoading
+                ? "Consulting the archives..."
                 : `Found ${editions.length} complete printings with verified cover scans and ISBN.`}
             </p>
           </div>
@@ -72,73 +80,94 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
         <div className="flex-1 overflow-y-auto p-8 relative">
           {isLoading ? (
             <div className="min-h-[40vh] flex flex-col items-center justify-center">
-               <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#E5E0D8] border-t-[#5C613E]"></div>
-               <p className="mt-4 font-serif italic text-sm text-[#5C613E] animate-pulse">
-                 Pulling physical printings from the catalog...
-               </p>
+              <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#E5E0D8] border-t-[#5C613E]"></div>
+              <p className="mt-4 font-serif italic text-sm text-[#5C613E] animate-pulse">
+                Pulling physical printings from the catalog...
+              </p>
             </div>
           ) : editions.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {editions.map((edition) => {
-                const isSelected = edition.id === currentEditionId;
+            <div className="flex flex-col gap-6">
 
-                return (
-                  <button
-                    key={edition.id}
-                    onClick={() => onSelectEdition(edition)}
-                    className="flex flex-col gap-3 group cursor-pointer text-left w-full"
-                  >
-                    {/* Cover Container */}
-                    <div className={`relative aspect-2/3 rounded-md overflow-hidden border transition-all shadow-sm bg-[#EFEBE1] w-full
-                      ${isSelected 
-                        ? 'border-[#424B2E] ring-2 ring-[#424B2E] ring-offset-2 ring-offset-[#FCF9F2]' 
-                        : 'border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-md'
-                      }`}
+              {/* NEW: The CDN Warning Banner */}
+              {isCdnDown && (
+                <div className="p-4 bg-[#8C3A3A]/5 border border-[#8C3A3A]/20 rounded-md flex items-center justify-center animate-in fade-in duration-500">
+                  <p className="text-sm font-serif italic text-[#8C3A3A]/80 text-center">
+                    It seems there is a temporary hiccup on Open Library&apos;s image servers. Edition switching relies heavily on visual covers, so consider trying again later.
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {editions.map((edition) => {
+                  const isSelected = edition.id === currentEditionId;
+                  const hasFailed = failedImages.includes(edition.id); // Check if this specific cover failed
+
+                  return (
+                    <button
+                      key={edition.id}
+                      onClick={() => onSelectEdition(edition)}
+                      className="flex flex-col gap-3 group cursor-pointer text-left w-full"
                     >
-                      <Image
-                        src={edition.cover_image_url as string}
-                        alt={`Cover of ${edition.title}`}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                      />
+                      {/* Cover Container */}
+                      <div className={`relative aspect-2/3 rounded-md overflow-hidden border transition-all shadow-sm bg-[#EFEBE1] w-full
+                        ${isSelected
+                          ? 'border-[#424B2E] ring-2 ring-[#424B2E] ring-offset-2 ring-offset-[#FCF9F2]'
+                          : 'border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-md'
+                        }`}
+                      >
+                        {/* UPDATED: Image Fallback Logic */}
+                        {edition.cover_image_url && !hasFailed ? (
+                          <Image
+                            src={edition.cover_image_url}
+                            alt={`Cover of ${edition.title}`}
+                            fill
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            onError={() => setFailedImages((prev) => [...prev, edition.id])} // Catch timeouts!
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                            <span className="font-heading text-[#2C302E] text-sm line-clamp-3">{edition.title}</span>
+                          </div>
+                        )}
 
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 bg-[#424B2E] text-[#FCF9F2] p-1 rounded-full shadow-sm z-10">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="flex flex-col gap-1">
-                      <h3 className="font-heading text-base text-[#2C302E] leading-tight line-clamp-2 group-hover:text-[#424B2E] transition-colors">
-                        {edition.title}
-                      </h3>
-                      
-                      <div className="flex items-center justify-between text-[11px] font-sans text-[#5C613E]">
-                        <span>
-                          {edition.page_count ? `${edition.page_count} pages` : 'Length unknown'}
-                        </span>
-                        {edition.publish_date && (
-                          <span className="font-serif italic text-[10px] text-[#5C613E]/70">
-                            {edition.publish_date}
-                          </span>
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 bg-[#424B2E] text-[#FCF9F2] p-1 rounded-full shadow-sm z-10">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
                         )}
                       </div>
 
-                      {/* ISBN Tag */}
-                      {edition.isbn && (
-                        <span className="font-mono text-[9px] text-[#5C613E]/60 tracking-tighter truncate mt-0.5">
-                          ISBN: {edition.isbn}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+                      {/* Metadata */}
+                      <div className="flex flex-col gap-1">
+                        <h3 className="font-heading text-base text-[#2C302E] leading-tight line-clamp-2 group-hover:text-[#424B2E] transition-colors">
+                          {edition.title}
+                        </h3>
+
+                        <div className="flex items-center justify-between text-[11px] font-sans text-[#5C613E]">
+                          <span>
+                            {edition.page_count ? `${edition.page_count} pages` : 'Length unknown'}
+                          </span>
+                          {edition.publish_date && (
+                            <span className="font-serif italic text-[10px] text-[#5C613E]/70">
+                              {edition.publish_date}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* ISBN Tag */}
+                        {edition.isbn && (
+                          <span className="font-mono text-[9px] text-[#5C613E]/60 tracking-tighter truncate mt-0.5">
+                            ISBN: {edition.isbn}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-center opacity-70 h-full py-12">
