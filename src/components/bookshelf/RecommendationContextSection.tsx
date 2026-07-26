@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { type Recommendation } from '@/lib/types';
 
 interface RecommendationContextSectionProps {
@@ -24,6 +25,8 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
   const [editLink, setEditLink] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const router = useRouter();
 
   const resetForm = () => {
     setRecommendedBy('');
@@ -56,6 +59,10 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
       // Append the newly created row to our list!
       setRecs(prev => [...prev, data]);
       resetForm();
+
+      // Tell Next.js to update the server payload in the background! I can't answer why this wasn't added here or in `handleUpdate` to being with
+      router.refresh();
+
     } catch (error) {
       console.error(error);
     } finally {
@@ -99,6 +106,10 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
       // Update the specific record in our list
       setRecs(prev => prev.map(r => r.id === id ? data : r));
       setEditingId(null);
+
+      // Sync with the server
+      router.refresh();
+      
     } catch (error) {
       console.error(error);
     } finally {
