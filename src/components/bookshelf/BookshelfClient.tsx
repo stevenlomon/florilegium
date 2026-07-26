@@ -21,6 +21,9 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null); // Updated to just store the Id and not the entire object. See why below
 
+  // New state for tracking Open Library image failures
+  const [failedImages, setFailedImages] = useState<string[]>([]);
+
   // In order to have router.refresh() work properly as intended in the modal, it serves us more to *not* have `books` be a state variable!
   const books = initialBooks;
 
@@ -67,49 +70,57 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        {filteredBooks.map((book, index) => ( // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
-          <div
-            key={book.bookshelf_item_id}
-            className="flex flex-col gap-3 group cursor-pointer"
-            onClick={() => setSelectedBookId(book.bookshelf_item_id)} // Now takes the Id, not the entire object
-          >
-            {/* Cover */}
-            <div className="relative aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-lg transition-all shadow-sm bg-[#FCF9F2]">
-              {book.cover_image_url ? (
-                <Image
-                  src={book.cover_image_url}
-                  alt={`Cover of ${book.title}`}
-                  fill
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-                  className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                  priority={index < 10} // Tell Next.js to prioritize loading the first 10 covers! To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/14566393-L.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold." warning
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#EFEBE1]/50">
-                  <h3 className="font-heading text-lg text-[#2C302E] leading-tight line-clamp-3 mb-2">{book.title}</h3>
-                  <p className="font-sans text-xs text-[#5C613E] line-clamp-2">{book.author}</p>
-                </div>
-              )}
+        {filteredBooks.map((book, index) => { // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
 
-              {/* Optional: Future home of the recommendation badge or rating stars */}
-              {book.status_id === 3 && book.user_rating && (
-                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                  <span className="text-[10px] font-bold text-[#424B2E]">★ {book.user_rating}</span>
-                </div>
-              )}
-            </div>
+          // We now check if this specific book cover has failed
+          const hasFailed = failedImages.includes(book.bookshelf_item_id);
 
-            {/* Metadata underneath */}
-            <div>
-              <h3 className="font-heading text-base text-[#2C302E] leading-tight line-clamp-1 group-hover:text-[#424B2E] transition-colors">
-                {book.title}
-              </h3>
-              <p className="font-sans text-[11px] text-[#5C613E] mt-1 line-clamp-1">
-                {book.author}
-              </p>
+          return (
+            <div
+              key={book.bookshelf_item_id}
+              className="flex flex-col gap-3 group cursor-pointer"
+              onClick={() => setSelectedBookId(book.bookshelf_item_id)} // Now takes the Id, not the entire object
+            >
+              {/* Cover */}
+              <div className="relative aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-lg transition-all shadow-sm bg-[#FCF9F2]">
+                {/* UPDATED: Swap to the fallback if the image throws an error */}
+                {book.cover_image_url && !hasFailed ? (
+                  <Image
+                    src={book.cover_image_url}
+                    alt={`Cover of ${book.title}`}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
+                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                    priority={index < 10} // Tell Next.js to prioritize loading the first 10 covers! To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/14566393-L.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold." warning
+                    onError={() => setFailedImages((prev) => [...prev, book.bookshelf_item_id])} // onError is a native property of `Image`!
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#EFEBE1]/50">
+                    <h3 className="font-heading text-lg text-[#2C302E] leading-tight line-clamp-3 mb-2">{book.title}</h3>
+                    <p className="font-sans text-xs text-[#5C613E] line-clamp-2">{book.author}</p>
+                  </div>
+                )}
+
+                {/* Optional: Future home of the recommendation badge or rating stars */}
+                {book.status_id === 3 && book.user_rating && (
+                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-[#424B2E]">★ {book.user_rating}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Metadata underneath */}
+              <div>
+                <h3 className="font-heading text-base text-[#2C302E] leading-tight line-clamp-1 group-hover:text-[#424B2E] transition-colors">
+                  {book.title}
+                </h3>
+                <p className="font-sans text-[11px] text-[#5C613E] mt-1 line-clamp-1">
+                  {book.author}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
 
         {filteredBooks.length === 0 && (
           <div className="col-span-full py-20 flex flex-col items-center justify-center text-center opacity-70">
