@@ -112,7 +112,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
                   return (
                     <div
                       className={`absolute top-2.5 left-2.5 w-[46px] h-[46px] z-20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 origin-center ${rotateClass}`}
-                      title={`Horizon Masterpiece (Slot ${book.horizon_slot})`}
+                      title="Horizon Masterpiece"
                     >
                       {/* 1. The Wax Base - Dynamic organic shape */}
                       <div
@@ -127,26 +127,44 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
                       {/* 3. The Stamped Impression - Fixed circular core */}
                       <div className="absolute inset-[5px] rounded-full bg-gradient-to-br from-[#621616] via-[#7d2020] to-[#8d2424] border border-[#4a1010]/90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.85),_inset_0_-1px_2px_rgba(255,255,255,0.25),_0_1px_2px_rgba(0,0,0,0.3)]" />
 
-                      {/* 4. Floral Engraving */}
+                      {/* 4. The Debossed Botanical Engraving (Mimicking the Olive Branch) */}
                       <svg
                         viewBox="0 0 24 24"
                         fill="currentColor"
-                        className="absolute inset-0 w-full h-full scale-[0.62] text-[#EFEBE1] opacity-90 drop-shadow-[-1px_-1px_0px_rgba(255,255,255,0.2)] drop-shadow-[1px_2px_1px_rgba(0,0,0,0.85)]"
+                        /* 
+                          Key Changes for Debossing:
+                          1. text-[#380b0b] sets the fill to a very deep, dark red (the shadowed depth of the wax).
+                          2. drop-shadow-[0.5px_1px_0px_rgba(255,255,255,0.25)] acts as the light catching the bottom edge of the groove.
+                          3. We removed the dark drop-shadow entirely, which prevents it from looking "raised".
+                        */
+                        className="absolute inset-0 w-full h-full scale-[0.68] text-[#380b0b] opacity-95 drop-shadow-[0.5px_1px_0px_rgba(255,255,255,0.25)]"
                       >
-                        <path d="M5.5 10c0 3 2 5.5 5 6.5-1.5-1-2.5-3-2.5-5 0-1.5.5-2.5 1-3.5-1.5.5-3.5 1-3.5 2z" />
-                        <path d="M4 14c0 2 1.5 4 4 4.5-1-.5-2-2-2-3.5 0-1 .5-2 1-2.5-1.5.5-3 1-3 1.5z" />
-                        <path d="M18.5 10c0 3-2 5.5-5 6.5 1.5-1 2.5-3 2.5-5 0-1.5-.5-2.5-1-3.5 1.5.5 3.5 1 3.5 2z" />
-                        <path d="M20 14c0 2-1.5 4-4 4.5 1-.5 2-2 2-3.5 0-1-.5-2-1-2.5 1.5.5 3 1 3 1.5z" />
-                        <path d="M12 18.5c-1 1-2 2-2 3.5h4c0-1.5-1-2.5-2-3.5z" />
-                      </svg>
+                        {/* Main converging stems */}
+                        <path d="M12 21c0-4-1-7-3-10-1-1.5-2-2.5-4-4 1.5 0 3 1 4 2.5 1 1.5 2 4 2.5 6.5.5-2.5 1.5-5 2.5-6.5 1-1.5 2.5-2.5 4-2.5-2 1.5-3 2.5-4 4-2 3-3 6-3 10h-1z" />
 
-                      {/* 5. The Embossed Roman Numeral */}
-                      <span
-                        className="relative font-serif font-bold text-[13px] text-[#EFEBE1] tracking-tighter select-none"
-                        style={{ textShadow: '-1px -1px 0px rgba(255,255,255,0.2), 1px 2px 2px rgba(0,0,0,0.9)' }}
-                      >
-                        {ROMAN_NUMERALS[book.horizon_slot - 1] || book.horizon_slot}
-                      </span>
+                        {/* Left Branch Leaves */}
+                        <path d="M8.5 15.5c-2-1-4-1-5 0 1 2 3 2 5 0z" />
+                        <path d="M6.5 11.5c-2-.5-3.5-1.5-4-3 1.5.5 3 1.5 4 3z" />
+                        <path d="M5.5 7.5c-1-1.5-1.5-3-1-4 1 1 1.5 2.5 1 4z" />
+
+                        {/* Center Branch Leaves */}
+                        <path d="M10.5 9.5c-1.5-1.5-2-3-1.5-4.5 1.5 1 2 2.5 1.5 4.5z" />
+                        <path d="M13.5 9.5c1.5-1.5 2-3 1.5-4.5-1.5 1-2 2.5-1.5 4.5z" />
+
+                        {/* Right Branch Leaves */}
+                        <path d="M15.5 15.5c2-1 4-1 5 0-1 2-3 2-5 0z" />
+                        <path d="M17.5 11.5c2-.5 3.5-1.5 4-3-1.5.5-3 1.5-4 3z" />
+                        <path d="M18.5 7.5c1-1.5 1.5-3 1-4-1 1-1.5 2.5-1 4z" />
+
+                        {/* Olive Berries */}
+                        <circle cx="7" cy="13" r="1" />
+                        <circle cx="10" cy="12" r="0.85" />
+                        <circle cx="14" cy="12" r="0.85" />
+                        <circle cx="17" cy="13" r="1" />
+                        <circle cx="9" cy="7" r="0.9" />
+                        <circle cx="15" cy="7" r="0.9" />
+                        <circle cx="12" cy="5" r="1" />
+                      </svg>
                     </div>
                   );
                 })()}
