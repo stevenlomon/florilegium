@@ -17,6 +17,24 @@ const TABS = [
   { id: '4', label: 'Dropped' }
 ];
 
+// A simple array to map our slots to Roman Numerals
+const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V'];
+
+// 3 distinct organic squish shapes
+const WAX_SHAPES = [
+  "rounded-[45%_55%_32%_68%_/_60%_35%_65%_40%]", // Heavy bottom-right squish
+  "rounded-[61%_39%_55%_45%_/_42%_58%_42%_58%]", // Top-left flared
+  "rounded-[38%_62%_63%_37%_/_41%_44%_56%_59%]", // Scalloped 5-lobe feel
+] as const;
+
+// 4 organic tilt angles
+const WAX_ROTATIONS = [
+  "-rotate-3",
+  "rotate-4",
+  "-rotate-6",
+  "rotate-2",
+] as const;
+
 export default function BookshelfClient({ initialBooks }: BookshelfClientProps) {
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null); // Updated to just store the Id and not the entire object. See why below
@@ -83,6 +101,56 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
             >
               {/* Cover */}
               <div className="relative aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-lg transition-all shadow-sm bg-[#FCF9F2]">
+
+                {/* NEW: The Florilegium Wax Seal */}
+                {book.horizon_slot && (() => {
+                  // Use modulo to cycle through shapes & rotations predictably based on slot number
+                  const slotIndex = book.horizon_slot - 1;
+                  const shapeClass = WAX_SHAPES[slotIndex % WAX_SHAPES.length];
+                  const rotateClass = WAX_ROTATIONS[slotIndex % WAX_ROTATIONS.length];
+
+                  return (
+                    <div
+                      className={`absolute top-2.5 left-2.5 w-[46px] h-[46px] z-20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 origin-center ${rotateClass}`}
+                      title={`Horizon Masterpiece (Slot ${book.horizon_slot})`}
+                    >
+                      {/* 1. The Wax Base - Dynamic organic shape */}
+                      <div
+                        className={`absolute inset-0 bg-gradient-to-br from-[#9b2a2a] via-[#822424] to-[#521111] ${shapeClass} shadow-[2px_4px_8px_rgba(0,0,0,0.5),_inset_1.5px_1.5px_2px_rgba(255,255,255,0.3),_inset_-3px_-3px_6px_rgba(0,0,0,0.75)]`}
+                      />
+
+                      {/* 2. The Specular Sheen - Uses matching shapeClass so highlights line up */}
+                      <div
+                        className={`absolute inset-0 ${shapeClass} bg-gradient-to-b from-white/15 via-white/5 to-transparent mix-blend-overlay pointer-events-none`}
+                      />
+
+                      {/* 3. The Stamped Impression - Fixed circular core */}
+                      <div className="absolute inset-[5px] rounded-full bg-gradient-to-br from-[#621616] via-[#7d2020] to-[#8d2424] border border-[#4a1010]/90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.85),_inset_0_-1px_2px_rgba(255,255,255,0.25),_0_1px_2px_rgba(0,0,0,0.3)]" />
+
+                      {/* 4. Floral Engraving */}
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="absolute inset-0 w-full h-full scale-[0.62] text-[#EFEBE1] opacity-90 drop-shadow-[-1px_-1px_0px_rgba(255,255,255,0.2)] drop-shadow-[1px_2px_1px_rgba(0,0,0,0.85)]"
+                      >
+                        <path d="M5.5 10c0 3 2 5.5 5 6.5-1.5-1-2.5-3-2.5-5 0-1.5.5-2.5 1-3.5-1.5.5-3.5 1-3.5 2z" />
+                        <path d="M4 14c0 2 1.5 4 4 4.5-1-.5-2-2-2-3.5 0-1 .5-2 1-2.5-1.5.5-3 1-3 1.5z" />
+                        <path d="M18.5 10c0 3-2 5.5-5 6.5 1.5-1 2.5-3 2.5-5 0-1.5-.5-2.5-1-3.5 1.5.5 3.5 1 3.5 2z" />
+                        <path d="M20 14c0 2-1.5 4-4 4.5 1-.5 2-2 2-3.5 0-1-.5-2-1-2.5 1.5.5 3 1 3 1.5z" />
+                        <path d="M12 18.5c-1 1-2 2-2 3.5h4c0-1.5-1-2.5-2-3.5z" />
+                      </svg>
+
+                      {/* 5. The Embossed Roman Numeral */}
+                      <span
+                        className="relative font-serif font-bold text-[13px] text-[#EFEBE1] tracking-tighter select-none"
+                        style={{ textShadow: '-1px -1px 0px rgba(255,255,255,0.2), 1px 2px 2px rgba(0,0,0,0.9)' }}
+                      >
+                        {ROMAN_NUMERALS[book.horizon_slot - 1] || book.horizon_slot}
+                      </span>
+                    </div>
+                  );
+                })()}
+
                 {/* UPDATED: Swap to the fallback if the image throws an error */}
                 {book.cover_image_url && !hasFailed ? (
                   <Image
@@ -138,5 +206,5 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
         book={selectedBook}
       />
     </div>
-  );
-}
+  )
+};
