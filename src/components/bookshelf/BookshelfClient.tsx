@@ -174,7 +174,9 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
                     className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                    priority={index < 10} // Tell Next.js to prioritize loading the first 10 covers! To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/14566393-L.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold." warning
+                    // priority={index < 10} // Tell Next.js to prioritize loading the first 10 covers! To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/14566393-L.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold." warning
+                    loading={index < 10 ? "eager" : "lazy"}
+                    fetchPriority={index < 10 ? "high" : "auto"} // These two lines replaces the one above them. `priority` has been deprecated!
                     onError={() => setFailedImages((prev) => [...prev, book.bookshelf_item_id])} // onError is a native property of `Image`!
                   />
                 ) : (

@@ -54,7 +54,9 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
               alt={`Cover of ${displayTitle}`}
               width={400}
               height={600}
-              priority={true}
+              // priority={true}
+              loading="eager"
+              fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
               className="w-full h-auto rounded shadow-sm object-cover border border-[#E5E0D8] transition-all duration-300"
               onError={() => setImageFailed(true)} // Catch the Open Library 503s!
             />
