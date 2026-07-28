@@ -11,11 +11,11 @@ const nextConfig: NextConfig = {
         hostname: 'covers.openlibrary.org',
         pathname: '/**', // Allow all image paths from this domain
       },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com', // For our fallback image
-        pathname: '/**',
-      }
+      // {
+      //   protocol: 'https',
+      //   hostname: 'via.placeholder.com', // For our fallback image
+      //   pathname: '/**',
+      // } We're relying only on our own custom image fallback now!
     ],
   },
 };
