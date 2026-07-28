@@ -17,9 +17,6 @@ const TABS = [
   { id: '4', label: 'Dropped' }
 ];
 
-// A simple array to map our slots to Roman Numerals
-const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V'];
-
 // 3 distinct organic squish shapes
 const WAX_SHAPES = [
   "rounded-[45%_55%_32%_68%_/_60%_35%_65%_40%]", // Heavy bottom-right squish
