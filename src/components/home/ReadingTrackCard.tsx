@@ -110,7 +110,9 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
             alt={`Cover of ${book.title}`}
             fill
             sizes="(max-width: 768px) 50vw, 15vw"
-            priority={true}
+            // priority={true}
+            loading="eager"
+            fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
             className="object-cover w-full h-full transition-transform duration-500" // group-hover:scale-105 removed from here to avoid double-scaling
           />
         ) : (

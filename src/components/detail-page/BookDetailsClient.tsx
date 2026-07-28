@@ -26,7 +26,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
 
   // Derived Display Values: If we have an active edition, use its data. Otherwise, fall back to the Work data.
   const displayTitle = activeEdition?.title || book.title;
-  const displayCover = activeEdition?.cover_image_url || book.cover_image || 'https://via.placeholder.com/400x600?text=No+Cover';
+  const displayCover = activeEdition?.cover_image_url || book.cover_image || null; // Now null instead of falling back to via.placeholder.com
   const displayPages = activeEdition?.page_count || book.page_count;
   const displayIsbn = activeEdition?.isbn || book.isbn;
 
@@ -36,7 +36,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
     ...book,
     id: activeEdition ? activeEdition.id : book.id,
     title: displayTitle,
-    cover_image: displayCover,
+    cover_image: displayCover || '',
     page_count: displayPages,
   };
 
@@ -47,14 +47,16 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
         {/* LEFT COLUMN: Cover */}
         <div className="w-full md:w-1/3 shrink-0">
           {/* UPDATED: New improved Image Fallback Logic */}
-          {!imageFailed ? (
+          {displayCover && !imageFailed ? (
             <Image
               key={displayCover} // Force Image to re-render if the URL changes
               src={displayCover}
               alt={`Cover of ${displayTitle}`}
               width={400}
               height={600}
-              priority={true}
+              // priority={true}
+              loading="eager"
+              fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
               className="w-full h-auto rounded shadow-sm object-cover border border-[#E5E0D8] transition-all duration-300"
               onError={() => setImageFailed(true)} // Catch the Open Library 503s!
             />
