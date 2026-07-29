@@ -36,8 +36,11 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null); // Updated to just store the Id and not the entire object. See why below
 
-  // New state for tracking Open Library image failures
+  // State for tracking Open Library image failures
   const [failedImages, setFailedImages] = useState<string[]>([]);
+
+  // New state for the Bookshelf search!
+  const [localSearchTerm, setLocalSearchTerm] = useState(''); // NEW
 
   // In order to have router.refresh() work properly as intended in the modal, it serves us more to *not* have `books` be a state variable!
   const books = initialBooks;
@@ -48,39 +51,101 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
   // Filter books based on the active tab. What is ultimately rendered in the return render statement is not `books`, but this filtered
   // `filteredBooks` array!
+  // UPDATE: Supercharged to work with the search bar now! The search is *completely client side*, we simply filter the data that we
+  // have already fetched server side
   const filteredBooks = books.filter(book => {
-    // The array `.filter()` method takes a boolean condition to do the filtering. Everything that *satisfies* the condition is let 
-    // through by the "gateway filter" condition. If activeTab is 'all', we let the gateway condition be `true`, a condition that *always*
-    // evaluates to.. `true` haha! *All* elements of the array are let through meaning `filteredBooks` is a perfect copy of `books`
-    if (activeTab === 'all') return true;
+    // // The array `.filter()` method takes a boolean condition to do the filtering. Everything that *satisfies* the condition is let 
+    // // through by the "gateway filter" condition. If activeTab is 'all', we let the gateway condition be `true`, a condition that *always*
+    // // evaluates to.. `true` haha! *All* elements of the array are let through meaning `filteredBooks` is a perfect copy of `books`
+    // if (activeTab === 'all') return true;
 
-    // But only if activeTab is 'all'! Otherwise, we use the more intuitive "gateway filter" condition
-    return book.status_id.toString() === activeTab;
+    // // But only if activeTab is 'all'! Otherwise, we use the more intuitive "gateway filter" condition
+    // return book.status_id.toString() === activeTab;
+
+    // -- The new filter logic for the Bookshelf Search --
+    // 1. Check the Tab Filter first; very much in line with what we already have in the code above
+    if (activeTab !== 'all' && book.status_id.toString() !== activeTab) {
+      return false;
+    }
+
+    // 2. Filter using the search term in the search bar
+    if (localSearchTerm.trim() !== '') {
+      const term = localSearchTerm.toLowerCase();
+
+      // Top-level matches
+      const matchTitle = book.title.toLowerCase().includes(term);
+      const matchAuthor = book.author.toLowerCase().includes(term);
+      const matchReview = book.review?.toLowerCase().includes(term);
+
+      // Deep dive into Recommendation Contexts
+      const matchRecs = book.recommendation_context.some(rec =>
+        rec.recommended_by.toLowerCase().includes(term) ||
+        rec.notes?.toLowerCase().includes(term)
+      );
+
+      // Deep dive into Reading Journeys (Raw Thoughts)
+      const matchJourneys = book.journeys.some(j =>
+        j.notes?.toLowerCase().includes(term)
+      );
+
+      // If it doesn't match ANY of our criteria, filter it out
+      if (!matchTitle && !matchAuthor && !matchReview && !matchRecs && !matchJourneys) {
+        return false;
+      }
+    }
+
+    // If it passed both the tab check and the search check, keep it!
+    return true;
   });
 
   return (
     <div className="flex flex-col gap-8">
-      {/* FILTER TABS */}
-      <div className="flex flex-wrap gap-2 border-b border-[#E5E0D8] pb-4">
-        {TABS.map((tab) => {
-          // Derive the counts dynamically from the data we've already extracted from the database!
-          const count = tab.id === 'all'
-            ? books.length
-            : books.filter(b => b.status_id.toString() === tab.id).length;
+      {/* FILTER TABS & LOCAL SEARCH */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-[#E5E0D8] pb-4">
 
-          return (
+        {/* The Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((tab) => {
+            const count = tab.id === 'all'
+              ? books.length
+              : books.filter(b => b.status_id.toString() === tab.id).length;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
+                  ? 'bg-[#424B2E] text-white shadow-sm'
+                  : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
+                  }`}
+              >
+                {tab.label} <span className="opacity-70 text-xs ml-1">({count})</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* The Deep Search Input */}
+        <div className="relative w-full lg:w-96 shrink-0 group">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
+            placeholder="Search authors, recommendation context, notes.."
+            className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
+          />
+          {localSearchTerm && (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
-                ? 'bg-[#424B2E] text-white shadow-sm'
-                : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
-                }`}
+              onClick={() => setLocalSearchTerm('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
             >
-              {tab.label} <span className="opacity-70 text-xs ml-1">({count})</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-          )
-        })}
+          )}
+        </div>
+
       </div>
 
       {/* GRID */}
@@ -207,10 +272,19 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           )
         })}
 
+        {/* UPDATED ZERO RESULTS STATE */}
         {filteredBooks.length === 0 && (
           <div className="col-span-full py-20 flex flex-col items-center justify-center text-center opacity-70">
-            <span className="text-4xl mb-4">🌿</span>
-            <p className="text-[#5C613E] font-serif italic">No books found in this section.</p>
+            <span className="text-4xl mb-4">🍂</span>
+            {localSearchTerm ? (
+              <p className="text-[#5C613E] font-serif italic text-lg">
+                No notes, authors, or titles found matching &quot;{localSearchTerm}&quot;.
+              </p>
+            ) : (
+              <p className="text-[#5C613E] font-serif italic text-lg">
+                No books found in this section.
+              </p>
+            )}
           </div>
         )}
       </div>
