@@ -80,7 +80,7 @@ export default function CrossroadsModal({ bookTitle, trackId, onClose }: Crossro
               {isShelving === 1 ? "Shelving..." : "Back on the Shelf"}
             </span>
             <span className="font-serif text-xs text-[#5C613E] italic">
-              return to &quot;Intend to Read&quot; for later.
+              Return to &quot;Intend to Read&quot; for later
             </span>
           </button>
 
@@ -98,7 +98,7 @@ export default function CrossroadsModal({ bookTitle, trackId, onClose }: Crossro
               {isShelving === 4 ? "Marking..." : "Mark as Dropped"}
             </span>
             <span className="font-serif text-xs text-[#5C613E] italic">
-              Close the journey entirely.
+              Close the journey entirely
             </span>
           </button>
         </div>
