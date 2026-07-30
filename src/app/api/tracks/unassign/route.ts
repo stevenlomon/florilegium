@@ -53,7 +53,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: "ok" });
     }
 
-    // The more complicated Crossroads Modal transaction for Slot 1
+    // The more complicated Crossroads Modal transaction for Slot 1: Now updated to align with Ma (間)! No more assembly line rushing. Issue #94
     if (slot_id === 1) {
       const { target_status_id } = body;
 
@@ -69,12 +69,24 @@ export async function PATCH(req: Request) {
       try {
         await client.query('BEGIN');
 
-        // 1. Find the active Reading Journey AND the Follow-up book attached to this track (for auto-promotion of Follow-up Book if it exists)
+        // // 1. Find the active Reading Journey AND the Follow-up book attached to this track (for auto-promotion of Follow-up Book if it exists)
+        // const trackCheck = await client.query(
+        //   'SELECT reading_journey_id, follow_up_book_id FROM "Reading_Track" WHERE id = $1 AND user_id = $2',
+        //   [realTrackId, user.id]
+        // );
+
+        // const track = trackCheck.rows[0];
+        // const journeyId = track?.reading_journey_id;
+
+        // if (!journeyId) {
+        //   throw new Error("No active reading journey found on this track.");
+        // }
+
+        // New 1. Find the active Reading Journey only. No follow_up_book_id. We're not doing doing auto-promotion anymore
         const trackCheck = await client.query(
-          'SELECT reading_journey_id, follow_up_book_id FROM "Reading_Track" WHERE id = $1 AND user_id = $2',
+          'SELECT reading_journey_id FROM "Reading_Track" WHERE id = $1 AND user_id = $2',
           [realTrackId, user.id]
         );
-
         const track = trackCheck.rows[0];
         const journeyId = track?.reading_journey_id;
 
@@ -90,11 +102,22 @@ export async function PATCH(req: Request) {
 
         const bookshelfItemId = journeyCheck.rows[0].bookshelf_item_id;
 
-        // 3. Close the Reading Journey (Freeze the progress in time)
-        await client.query(
-          'UPDATE "Reading_Journey" SET finished_at = NOW() WHERE id = $1',
-          [journeyId]
-        );
+        // // 3. Close the Reading Journey (Freeze the progress in time)
+        // await client.query(
+        //   'UPDATE "Reading_Journey" SET finished_at = NOW() WHERE id = $1',
+        //   [journeyId]
+        // );
+
+        // New 3. Close the Reading Journey ONLY if the user marked it as "Dropped" (4).
+        // If they shelved it (1), we leave finished_at AS NULL so that they can pick up where they left later!
+        // Just like I'm doing now, putting Goblet of Fire on halt at page 325 to read Piranesi and then come 
+        // back to Goblet of Fire with newfound awe and appreciation!
+        if (target_status_id === 4) {
+          await client.query(
+            'UPDATE "Reading_Journey" SET finished_at = NOW() WHERE id = $1',
+            [journeyId]
+          );
+        }
 
         // 4. Update the Bookshelf Item Status (1 = Intend to Read, 4 = Dropped)
         await client.query(
@@ -102,40 +125,46 @@ export async function PATCH(req: Request) {
           [target_status_id, bookshelfItemId, user.id]
         );
 
-        // 5. Check for Follow-up and Promote (or Empty)
-        if (track.follow_up_book_id) {
-          // Promote it!! 🌿 Mark it as 2:"Currently Reading"
-          await client.query(
-            'UPDATE "Bookshelf_Item" SET status_id = 2 WHERE id = $1 AND user_id = $2',
-            [track.follow_up_book_id, user.id]
-          );
+        // // 5. Check for Follow-up and Promote (or Empty)
+        // if (track.follow_up_book_id) {
+        //   // Promote it!! 🌿 Mark it as 2:"Currently Reading"
+        //   await client.query(
+        //     'UPDATE "Bookshelf_Item" SET status_id = 2 WHERE id = $1 AND user_id = $2',
+        //     [track.follow_up_book_id, user.id]
+        //   );
 
-          // Calculate the iteration for the book that is to be promoted
-          const iterRes = await client.query(
-            'SELECT COUNT(*) FROM "Reading_Journey" WHERE bookshelf_item_id = $1',
-            [track.follow_up_book_id]
-          );
-          const nextIteration = parseInt(iterRes.rows[0].count, 10) + 1;
+        //   // Calculate the iteration for the book that is to be promoted
+        //   const iterRes = await client.query(
+        //     'SELECT COUNT(*) FROM "Reading_Journey" WHERE bookshelf_item_id = $1',
+        //     [track.follow_up_book_id]
+        //   );
+        //   const nextIteration = parseInt(iterRes.rows[0].count, 10) + 1;
 
-          // Create a brand new Reading Journey
-          const newJourneyId = crypto.randomUUID();
-          await client.query(
-            'INSERT INTO "Reading_Journey" (id, current_page, bookshelf_item_id, iteration) VALUES ($1, 0, $2, $3)',
-            [newJourneyId, track.follow_up_book_id, nextIteration]
-          );
+        //   // Create a brand new Reading Journey
+        //   const newJourneyId = crypto.randomUUID();
+        //   await client.query(
+        //     'INSERT INTO "Reading_Journey" (id, current_page, bookshelf_item_id, iteration) VALUES ($1, 0, $2, $3)',
+        //     [newJourneyId, track.follow_up_book_id, nextIteration]
+        //   );
 
-          // Promote it and update the track! Slot the new journey in, and empty out the follow-up slot 🌿
-          await client.query(
-            'UPDATE "Reading_Track" SET reading_journey_id = $1, follow_up_book_id = NULL WHERE id = $2',
-            [newJourneyId, realTrackId]
-          );
-        } else {
-          // If there is no Follow-up book, just empty the Currently Reading slot normally
-          await client.query(
-            'UPDATE "Reading_Track" SET reading_journey_id = NULL WHERE id = $1',
-            [realTrackId]
-          );
-        }
+        //   // Promote it and update the track! Slot the new journey in, and empty out the follow-up slot 🌿
+        //   await client.query(
+        //     'UPDATE "Reading_Track" SET reading_journey_id = $1, follow_up_book_id = NULL WHERE id = $2',
+        //     [newJourneyId, realTrackId]
+        //   );
+        // } else {
+        //   // If there is no Follow-up book, just empty the Currently Reading slot normally
+        //   await client.query(
+        //     'UPDATE "Reading_Track" SET reading_journey_id = NULL WHERE id = $1',
+        //     [realTrackId]
+        //   );
+        // }
+
+        // New 5. Simply empty the Currently Reading slot. No auto-promotion. No assembly line. Just Ma (間)
+        await client.query(
+          'UPDATE "Reading_Track" SET reading_journey_id = NULL WHERE id = $1',
+          [realTrackId]
+        );
 
         await client.query('COMMIT');
         return NextResponse.json({ success: "ok" });
