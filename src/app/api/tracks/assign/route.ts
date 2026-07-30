@@ -60,6 +60,12 @@ export async function POST(req: Request) {
         // Update the reading status of the Bookshelf Item to Currently Reading (status_id = 2)
         await client.query('UPDATE "Bookshelf_Item" SET status_id = 2 WHERE id = $1 AND user_id = $2', [bookshelf_item_id, user.id]); // We can await a db query without assigning it to a variable! This is the first time this has properly clicked for me haha!
 
+        // Bugfix: we missed this haha. Clear this book from ANY "Up Next" slot so it doesn't duplicate in the UI!
+        await client.query(
+          'UPDATE "Reading_Track" SET follow_up_book_id = NULL WHERE follow_up_book_id = $1 AND user_id = $2',
+          [bookshelf_item_id, user.id]
+        );
+
         // Check if an active Reading Journey exists for the User Bookshelf Item. We define "active" as finished_at IS NULL
         const journeyCheckRes = await client.query(
           'SELECT id FROM "Reading_Journey" WHERE bookshelf_item_id = $1 AND finished_at IS NULL',
