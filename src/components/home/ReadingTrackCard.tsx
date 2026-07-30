@@ -29,9 +29,13 @@ interface ReadingTrackCardProps {
   onFinishBook: (e: React.MouseEvent) => void;
   onShelveBook: (e: React.MouseEvent) => void;
   isFinishing: boolean;
+
+  // New props for the [START READING] button only visible onHover when the Currently Reading slot is empty
+  canPromoteDirectly: boolean;
+  onPromoteToCurrentlyReading: () => void;
 }
 
-export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBook, onShelveBook, isFinishing }: ReadingTrackCardProps) {
+export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBook, onShelveBook, isFinishing, canPromoteDirectly, onPromoteToCurrentlyReading }: ReadingTrackCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -200,6 +204,23 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
 
           </div>
 
+        </div>
+      )}
+
+      {/* NEW: SLOT 2 HOVER OVERLAY (Promote to Currently Reading) */}
+      {!isCurrentlyReading && canPromoteDirectly && (
+        <div className={`absolute inset-0 bg-[#2C302E]/80 flex items-center justify-center rounded-md transition-all duration-300 z-10 ${showOverlay ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPromoteToCurrentlyReading();
+            }}
+            className="bg-[#FCF9F2] text-[#2C302E] font-sans text-[10px] font-bold tracking-widest uppercase px-5 py-2.5 rounded hover:bg-[#EFEBE1] hover:scale-105 active:scale-95 transition-all shadow-sm"
+          >
+            Start Reading
+          </button>
         </div>
       )}
 
