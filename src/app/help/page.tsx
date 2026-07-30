@@ -91,8 +91,8 @@ export default function HelpPage() {
             Each track holds exactly two slots:
           </p>
           <ul className="list-disc pl-5 space-y-2 text-[#5C613E]">
-            <li><strong className="font-semibold text-[#2C302E]">Currently Reading:</strong> The single work you are actively engaged with right now in this track.</li>
-            <li><strong className="font-semibold text-[#2C302E]">Up Next:</strong> The designated follow-up. When you finish your active read, this follow-up is automatically promoted into your active slot, keeping your momentum uninterrupted.</li>
+            <li><strong className="font-semibold text-[#2C302E]">Currently Reading:</strong> The single work you are actively engaged with right now lives in this track.</li>
+            <li><strong className="font-semibold text-[#2C302E]">Up Next:</strong> The book waiting thereafter lives here. When you finish your active read, this slot gently invites you to start your next journey whenever your heart feels is the time for it, honoring the pause in between.</li>
           </ul>
         </section>
 

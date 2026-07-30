@@ -8,9 +8,10 @@ import { type ReadingJourney } from '@/lib/types';
 interface JourneyTimelineProps {
   bookshelfItemId: string;
   journeys: ReadingJourney[];
+  statusId: number; // New prop in order to generate the new "JOURNEY ON HOLD" and "JOURNEY ENDED" statuses
 }
 
-export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: JourneyTimelineProps) {
+export default function JourneyTimeline({ bookshelfItemId, journeys = [], statusId }: JourneyTimelineProps) {
   // New state variables for the interactivity
   const [isAdding, setIsAdding] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -167,9 +168,25 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
       {sortedJourneys.length > 0 ? (
         <div className="flex flex-col gap-6 relative">
           <div className="absolute left-3.75 top-4 bottom-4 w-px bg-[#E5E0D8] z-0" />
-          {sortedJourneys.map((journey) => {
+          {sortedJourneys.map((journey, index) => { // We grab the index now too so that we can find the latest journey
             const isFinished = journey.finished_at !== null;
             const isEditing = editingId === journey.id;
+            const isLatest = index === sortedJourneys.length - 1;
+
+            // Normalize the statusId to guarantee it's an integer at runtime
+            const currentStatus = Number(statusId);
+
+            // Using the new `isLatest` variable; determine the exact, nuanced journey state!
+            let journeyStatusLabel = '';
+            if (isFinished) {
+              // If it's finished and status is 4 (Dropped), we display "JOURNEY ENDED"
+              // If it's finished and status is not 4, we display "COMPLETED READ"
+              journeyStatusLabel = (currentStatus === 4 && isLatest) ? 'Journey Ended' : 'Completed Read';
+            } else {
+              // If it's not finished and the status is 2 (Currently Reading), we display "ACTIVE READ"
+              // If ti's not finished and the status is not 2, we display "JOURNEY ON HOLD"
+              journeyStatusLabel = currentStatus === 2 ? 'Active Read' : 'Journey On Hold';
+            }
 
             return (
               <div key={journey.id} className="relative z-10 flex items-start gap-4 group">
@@ -285,7 +302,8 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
                   <div className="flex-1 bg-white/60 border border-[#E5E0D8] rounded-md p-4 transition-all">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-sans text-xs font-bold tracking-widest uppercase text-[#2C302E]">
-                        {isFinished ? 'Completed Read' : 'Active Read'}
+                        {/* Now uses the dynamic label rather than a hard coded ternary statement */}
+                        {journeyStatusLabel}
                       </h4>
 
                       <div className="flex items-center gap-3">
@@ -307,9 +325,12 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [] }: Jour
                       </p>
                     )}
 
-                    {!isFinished && (
+                    {/* New dynamic subtext based on the exact journey state */}
+                    {journeyStatusLabel !== 'Completed Read' && (
                       <p className="font-sans text-xs text-[#5C613E]/80 mt-3">
-                        Currently on page {journey.current_page}
+                        {journeyStatusLabel === 'Active Read' && `Currently on page ${journey.current_page}`}
+                        {journeyStatusLabel === 'Journey On Hold' && `Put on hold at page ${journey.current_page}`}
+                        {journeyStatusLabel === 'Journey Ended' && `Ended at page ${journey.current_page}`}
                       </p>
                     )}
                   </div>

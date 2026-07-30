@@ -239,7 +239,11 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
             {/* JOURNEYS TIMELINE */}
             <section>
               <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Reading Journeys</h3>
-              <JourneyTimeline bookshelfItemId={book.bookshelf_item_id} journeys={book.journeys} />
+              <JourneyTimeline 
+                bookshelfItemId={book.bookshelf_item_id} 
+                journeys={book.journeys} 
+                statusId={book.status_id} // New prop in order to generate the new "JOURNEY ON HOLD" and "JOURNEY ENDED" statuses
+              />
             </section>
 
             {/* The Deletion Zone at the very bottom */}
