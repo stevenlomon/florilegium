@@ -56,7 +56,7 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
                 <strong className="font-semibold text-[#424B2E]">{promotion.upNextBookTitle}</strong> is resting in Up Next for your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track.
               </p>
               <p className="font-serif text-lg text-[#5C613E]">
-                Whenever your heart feels is the right time, it's there to begin.
+                Whenever your heart feels is the right time, it&apos;s there to begin.
               </p>
               <p className="font-serif text-lg text-[#5C613E] mt-4">
                 For now, this is an invitation to take a few moments to simply exist in this intentional space in between. In Ma (間)

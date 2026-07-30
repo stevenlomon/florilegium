@@ -3,10 +3,10 @@
 // Will share a lot of DNA with the Horizon Modal. Will most likely refactor in the not-too-far future but for now I want
 // to keep the momentum going and prioritize speed
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { useBookshelf } from '@/hooks/useBookshelf';
-import type { Book, BookshelfItem } from '@/lib/types';
+import type { Book, BookshelfItem, TrackBook } from '@/lib/types';
 
 interface ReadingTracksModalProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ interface ReadingTracksModalProps {
     trackId: number,
     slotId: number,
     trackTitle: string,
-    preStagedBook?: { data: any, source: 'UserBookshelf' | 'OpenLibrary' } // ADD THIS
+    preStagedBook?: { data: BookshelfItem | Book | TrackBook, source: 'UserBookshelf' | 'OpenLibrary' }
   } | null; // Straight from the Section component, now updated with the title too; not just a simple number anymore haha!
   onSuccess: () => void;
 }
@@ -26,19 +26,16 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
   // We're gonna have a 2-step modal for assigning a book as Currently Reading in one of the Reading Tracks! stagedBook holds the book 
   // they selected in Step 1. If null, we show the list. It holds the book AND where it came from, so that the master function alter down
   // in the code knows how to save it
-  const [stagedBook, setStagedBook] = useState<{ data: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary' } | null>(null);
+  const [stagedBook, setStagedBook] = useState<{ 
+    data: BookshelfItem | Book | TrackBook, 
+    source: 'UserBookshelf' | 'OpenLibrary' 
+  } | null>(targetSlot?.preStagedBook || null); // stagedBook is now set directly, no need for a useEffect
+
   const [customPageCount, setCustomPageCount] = useState<string>("");
   const [initialCurrentPage, setInitialCurrentPage] = useState<string>(""); // New state for the new form input
 
   const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Reading Tracks Modal Search Error:");
   const { books: bookshelfItems, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
-
-  // New useEffect to catch the pre-staged book the moment the modal opens
-  useEffect(() => {
-    if (isOpen && targetSlot?.preStagedBook) {
-      setStagedBook(targetSlot.preStagedBook);
-    }
-  }, [isOpen, targetSlot]);
 
   const showExternalResults = searchTerm.trim().length >= 3;
 
@@ -50,7 +47,7 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
 
   // Updated: We now accept an optional finalPageCount
   // Update #2: We now accept an optional initialCurrentPage!
-  const handleAssignBook = async (book: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary', finalPageCount: number | null = null, startingPage: number = 0) => {
+  const handleAssignBook = async (book: BookshelfItem | Book | TrackBook, source: 'UserBookshelf' | 'OpenLibrary', finalPageCount: number | null = null, startingPage: number = 0) => {
     if (!targetSlot) return;
 
     setIsAssigning(true);
