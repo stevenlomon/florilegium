@@ -325,9 +325,12 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                       </p>
                     )}
 
-                    {!isFinished && (
+                    {/* New dynamic subtext based on the exact journey state */}
+                    {journeyStatusLabel !== 'Completed Read' && (
                       <p className="font-sans text-xs text-[#5C613E]/80 mt-3">
-                        Currently on page {journey.current_page}
+                        {journeyStatusLabel === 'Active Read' && `Currently on page ${journey.current_page}`}
+                        {journeyStatusLabel === 'Journey On Hold' && `Put on hold at page ${journey.current_page}`}
+                        {journeyStatusLabel === 'Journey Ended' && `Ended at page ${journey.current_page}`}
                       </p>
                     )}
                   </div>
