@@ -49,7 +49,7 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
             You finished {bookTitle}!
           </h2>
 
-          {/* Dynamic Promotion Message: updated to integrate Ma (間) */}
+          {/* Dynamic Promotion Message: updated to integrate Ma (間) whether the Up Next slot is filled or not, now without explicitly mentioning it */}
           {promotion.upNextBookTitle ? (
             <>
               <p className="font-serif text-lg text-[#5C613E]">
@@ -59,13 +59,18 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
                 Whenever your heart feels is the right time, it&apos;s there to begin.
               </p>
               <p className="font-serif text-lg text-[#5C613E] mt-4">
-                For now, this is an invitation to take a few moments to simply exist in this intentional space in between. In Ma (間)
+                For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
               </p>
             </>
           ) : (
-            <p className="font-serif text-lg text-[#5C613E]">
-              Your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track is now open for your next great undertaking.
-            </p>
+            <>
+              <p className="font-serif text-lg text-[#5C613E]">
+                Your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track is now open for your next great undertaking.
+              </p>
+              <p className="font-serif text-lg text-[#5C613E] mt-4">
+                For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
+              </p>
+            </>
           )}
         </div>
 
