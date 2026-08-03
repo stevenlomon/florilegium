@@ -45,9 +45,9 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
 
   // Celebration modal state variables
   const [isFinishingId, setIsFinishingId] = useState<string | null>(null);
-  const [celebrationPayload, setCelebrationPayload] = useState<{ 
-    bookTitle: string, 
-    promotion: { upNextBookTitle: string | null; trackName: string; finishedJourneyId: string } 
+  const [celebrationPayload, setCelebrationPayload] = useState<{
+    bookTitle: string,
+    promotion: { upNextBookTitle: string | null; trackName: string; finishedJourneyId: string }
   } | null>(null); // Updated to match the new payload
   const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string } | null>(null);
 
@@ -498,6 +498,10 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
 
       {/* ALL MODALS (Safely extracted outside the map loop) */}
       < ReadingTracksModal
+        // This key is crucial to make the pre-staging work! I have *no idea* why this didn't make it to the final commit haha
+        // By having a dynamic `key`, we ensure that any hidden stale modal is destroyed every time the key changes. And the key
+        // depends on activeModalContext. 'empty-tracks-modal' is not a reserved keyword at all, it can be any string
+        key={activeModalContext ? `${activeModalContext.trackId}-${activeModalContext.slotId}` : 'empty-tracks-modal'}
         isOpen={activeModalContext !== null} // Only open if activeModalContext is a valid object
         onClose={() => setActiveModalContext(null)}
         targetSlot={activeModalContext}
