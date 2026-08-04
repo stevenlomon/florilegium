@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { type Edition } from '@/lib/types';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface EditionSwitcherModalProps {
   isOpen: boolean;
@@ -21,6 +22,9 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
 
   // New state for tracking Open Library image failures
   const [failedImages, setFailedImages] = useState<string[]>([]);
+
+  // Our new useEscapeKey custom hook! Simply listens for changes in the isOpen state
+  useEscapeKey(onClose, isOpen);
 
   // useEffect for the fetching this Client Component now needs to do..
   useEffect(() => {

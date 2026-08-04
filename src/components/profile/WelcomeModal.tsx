@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// This is intentionally the ONLY Modal we don't use our custom useEscapeKey hook in. We don't want the user to be able to bypass
+// their onboarding haha!
 export default function WelcomeModal() {
   const [firstName, setFirstName] = useState('');
   const [isSaving, setIsSaving] = useState(false);

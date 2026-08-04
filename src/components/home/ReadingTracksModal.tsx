@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { useBookshelf } from '@/hooks/useBookshelf';
 import type { Book, BookshelfItem, TrackBook } from '@/lib/types';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface ReadingTracksModalProps {
   isOpen: boolean;
@@ -36,6 +37,9 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
 
   const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Reading Tracks Modal Search Error:");
   const { books: bookshelfItems, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
+
+  // Our new useEscapeKey custom hook! Simply listens for changes in the isOpen state
+  useEscapeKey(onClose, isOpen);
 
   const showExternalResults = searchTerm.trim().length >= 3;
 

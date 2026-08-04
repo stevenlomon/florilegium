@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { type BookshelfItem, Edition } from '@/lib/types';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import StarRating from './StarRating';
 import StatusDropdown from './StatusDropdown';
 import RecommendationContextSection from './RecommendationContextSection';
@@ -29,6 +30,9 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
 
   // New state for tracking image loading errors
   const [imageFailed, setImageFailed] = useState(false);
+
+  // Our new useEscapeKey custom hook! Simply listens for changes in the isOpen state
+  useEscapeKey(onClose, isOpen);
 
   const router = useRouter(); // For router.refresh()! Also needs to placed here; hooks must be called before any if statements! I didn't know this!
 
