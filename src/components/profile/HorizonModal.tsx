@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { useBookshelf } from '@/hooks/useBookshelf';
 import type { Book, BookshelfItem } from '@/lib/types';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface HorizonModalProps {
   isOpen: boolean;
@@ -21,6 +22,9 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
 
   // And our new Bookshelf hook in action!
   const { books: bookshelfBooks, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
+
+  // Our new useEscapeKey custom hook! Simply listens for changes in the isOpen state
+  useEscapeKey(onClose, isOpen);
 
   const showExternalResults = searchTerm.trim().length >= 3; // Derived state! Does *not* need to be a state variable using `useState`!
 

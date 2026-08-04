@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface PromotionData {
   upNextBookTitle: string | null;
@@ -17,6 +18,10 @@ interface CelebrationModalProps {
 export default function CelebrationModal({ bookTitle, promotion, onClose }: CelebrationModalProps) {
   const [rawThoughts, setRawThoughts] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Our new useEscapeKey custom hook! This is a conditionally rendered modal that doesn't use isOpen, we only render them
+  // when they're active. Our hook is smart enough to default to true when mounted!
+  useEscapeKey(onClose);
 
   const handleSave = async () => {
     setIsSaving(true);
