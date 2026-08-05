@@ -103,7 +103,8 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
             author: openLibraryBook.authors?.[0]?.name || 'Unknown Author',
             external_provider: 'open_library',
             external_id: openLibraryBook.id,
-            page_count: openLibraryBook.page_count || null,
+            // page_count: openLibraryBook.page_count || null,
+            page_count: openLibraryBook.page_count_exact || openLibraryBook.page_count_estimate || null,
             cover_image_url: openLibraryBook.cover_image || null,
           })
         });
@@ -378,13 +379,21 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
                     max="5000"
                     value={customPageCount}
                     onChange={(e) => setCustomPageCount(e.target.value)}
-                    placeholder={stagedBook.data.page_count ? `e.g., ${stagedBook.data.page_count}` : "e.g., 288"}
+                    placeholder={
+                      stagedBook.data.page_count_exact 
+                        ? `e.g., ${stagedBook.data.page_count_exact}` 
+                        : stagedBook.data.page_count_estimate 
+                          ? `e.g., ${stagedBook.data.page_count_estimate}` 
+                          : "e.g., 288"
+                    }
                     className="w-full bg-[#FCF9F2] border border-[#E5E0D8] rounded px-3 py-2 text-sm text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] transition-colors shadow-sm"
                   />
                   <span className="text-[10px] text-[#5C613E] italic font-serif">
-                    {stagedBook.data.page_count
-                      ? `*If skipped, we'll use ~${stagedBook.data.page_count}.`
-                      : "*If skipped, we'll estimate."}
+                    {stagedBook.data.page_count_exact
+                      ? `*If skipped, defaults to ${stagedBook.data.page_count_exact}.`
+                      : stagedBook.data.page_count_estimate
+                        ? `*If skipped, we'll use ~${stagedBook.data.page_count_estimate}.`
+                        : "*If skipped, progress tracking will be limited."}
                   </span>
                 </div>
 
