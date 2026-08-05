@@ -46,7 +46,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   // people insane over time haha
   const [pageInput, setPageInput] = useState<number | string>(book.current_page || 0);
 
-  const total = book.custom_page_count || book.page_count || 0;
+  // UPDATED: Cascade through the hierarchy of truth
+  const total = book.custom_page_count || book.page_count_exact || book.page_count_estimate || 0;
 
   // Instead of calculating the progress bar's width based on the live keystrokes (pageInput), we calculate it using the static truth passed down 
   // from the server (book.current_page). It will only visually snap into place after the router.refresh() brings down the new data
@@ -156,7 +157,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
                 min={0}
                 // "If we know the exact length of the book, stop them from typing a page number higher than that. But if we don't know the length, just set the ceiling to an 
                 // absurdly high number so the input doesn't break."
-                max={book.page_count || 9999}
+                // UPDATED: Use our calculated total, or fallback to 9999 if it's 0
+                  max={total > 0 ? total : 9999}
               />
               <span className="opacity-40 font-sans text-sm">/</span>
               <span className="text-sm font-sans text-[#FCF9F2]/80">{total > 0 ? total : '?'}</span>

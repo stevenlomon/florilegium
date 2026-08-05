@@ -13,19 +13,24 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    // We dynamically route the page count based on the Open Library ID type. Editions end with 'M', Works with 'W'
+    const isEdition = body.external_id.toUpperCase().endsWith('M');
+    const pageCountExact = isEdition ? body.page_count : null;
+    const pageCountEstimate = !isEdition ? body.page_count : null;
+
     // The server provides all data except id that Postgres can automatically generate. It's here that I realize that I can't possibly
     // include goodreads_url since the URL contains an id that I can't possibly know haha. The row is now deleted from the table
     const query = {
       name: 'upsert-open-library-book', // Upgrade: insert to upsert!
       // We now check if the book has already been added from Open Library with ON CONFLICT. DO UPDATE SET forces Postgres to return the row if it already existed
       text: `
-        INSERT INTO "Book"(title, author, external_provider, external_id, page_count, cover_image_url) 
-        VALUES($1, $2, $3, $4, $5, $6) 
+        INSERT INTO "Book"(title, author, external_provider, external_id, page_count_estimate, page_count_exact, cover_image_url) 
+        VALUES($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (external_id) 
         DO UPDATE SET external_id = EXCLUDED.external_id
         RETURNING *
       `,
-      values: [body.title, body.author, body.external_provider, body.external_id, body.page_count, body.cover_image_url]
+      values: [body.title, body.author, body.external_provider, body.external_id, pageCountEstimate, pageCountExact, body.cover_image_url]
     }
     const res = await pool.query(query);
     const book = res.rows[0];

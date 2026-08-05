@@ -30,7 +30,8 @@ export default function AddToBookshelfButton({ book, isAlreadyInBookshelf }: Add
           "author": book.authors.map(a => a.name).join(', ') || 'Unknown Author', // Open Library gives us an object. Extract the names into a clean, comma-separated string
           "external_provider": 'Open Library',
           "external_id": book.id,
-          "page_count": book.page_count,
+          // "page_count": book.page_count,
+          "page_count": book.page_count_exact || book.page_count_estimate, // Use whichever is available and route dynamically
           "cover_image_url": book.cover_image
         })
       });

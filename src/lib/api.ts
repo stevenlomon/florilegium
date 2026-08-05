@@ -55,7 +55,9 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
         // If they have a cover_i (Cover ID), we manually construct the CDN URL
         // -M means Medium size. We use -L (Large) for the detailed view later.
         cover_image: doc.cover_i ? `${COVER_BASE_URL}/${doc.cover_i}-M.jpg` : '',
-        page_count: bestEdition?.number_of_pages || null,
+        // UPDATED: Filter out placeholders < 25 pages from search results. Also now returns `page_count_estimate` and `page_count_exact` rather than just `page_count`
+        page_count_estimate: typeof bestEdition?.number_of_pages === 'number' && bestEdition.number_of_pages >= 25 ? bestEdition.number_of_pages : null,
+        page_count_exact: null,
         default_edition_id: editionId,
       };
     });
@@ -127,6 +129,7 @@ export const getBookById = async (id: string): Promise<Book> => {
 
     // We actively hunt across up to 50 editions (this "magic number" is now a constant in lib/constants.ts) for a realistic average page count
     let pageCount: number | null = null;
+    let pageCountExact: number | null = null; // We now also track the exact count of the Canon edition
     let defaultEditionId: string | undefined = undefined;
     let defaultIsbn: string | null = null; // Needed now that we want to show ISBN for the Defaul Edition
 
@@ -139,10 +142,10 @@ export const getBookById = async (id: string): Promise<Book> => {
         const editionsData = await editionsRes.json();
         const editions = editionsData.entries || [];
 
-        // Filter out all editions that have valid page counts
+        // Filter out all editions that have valid page counts. Updated to now also filter out editions that have fewer than 25 pages to protect the average
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const editionsWithPages = editions.filter((ed: any) =>
-          typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0
+          typeof ed.number_of_pages === 'number' && ed.number_of_pages >= 25
         );
 
         if (editionsWithPages.length > 0) {
@@ -161,11 +164,13 @@ export const getBookById = async (id: string): Promise<Book> => {
           const bestEd = editionsWithPages[0];
           defaultEditionId = bestEd.key.split('/').pop();
           defaultIsbn = bestEd.isbn_13?.[0] || bestEd.isbn_10?.[0] || null;
+          pageCountExact = bestEd.number_of_pages || null;
 
         } else if (editions.length > 0) {
           const fallbackEd = editions[0];
           defaultEditionId = fallbackEd.key.split('/').pop();
           defaultIsbn = fallbackEd.isbn_13?.[0] || fallbackEd.isbn_10?.[0] || null;
+          pageCountExact = fallbackEd.number_of_pages || null;
         }
       }
     } catch (err) {
@@ -180,7 +185,9 @@ export const getBookById = async (id: string): Promise<Book> => {
       subjects: data.subjects || [],
       summary: summary,
       cover_image: coverUrl,
-      page_count: pageCount,
+      // Now returns `page_count_estimate` and `page_count_exact` rather than just `page_count`
+      page_count_estimate: pageCount,
+      page_count_exact: pageCountExact, // Not null anymore
       default_edition_id: defaultEditionId,
       // editions: mappedEditions, Outsourced now to getEditionsForWork below
       isbn: defaultIsbn, // But we do include the ISBN now for the default edition
@@ -242,7 +249,8 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
           id: editionId,
           title: ed.title || 'Unknown Title',
           cover_image_url: `${COVER_BASE_URL}/${edCoverId}-M.jpg`,
-          page_count: typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0 ? ed.number_of_pages : null,
+          // UPDATED: Treat anything under 25 pages as "Length unknown"
+          page_count: typeof ed.number_of_pages === 'number' && ed.number_of_pages >= 25 ? ed.number_of_pages : null,
           publish_date: ed.publish_date || null,
           isbn: primaryIsbn,
         };
