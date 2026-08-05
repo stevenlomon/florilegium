@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import bcrypt from 'bcrypt';
+import { getCurrentUser } from '@/lib/auth'; // Needed for the PATCH route
 
 export async function POST(req: Request) {
   try {
@@ -66,5 +67,73 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("Unexpected error when trying to create new User", err);
     return NextResponse.json({ success: "not ok" }, { status: 500 });
+  }
+};
+
+// PATCH route for updating username and first_name (Display Name)
+export async function PATCH(req: Request) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { username, first_name } = body;
+
+    // Guardrail 1: Username & Display Name validation
+    if (!username || username.trim().length < 3) {
+      return NextResponse.json(
+        { error: "Username must be at least 3 characters long." }, 
+        { status: 400 }
+      );
+    }
+
+    if (!first_name || first_name.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Display name cannot be empty." }, 
+        { status: 400 }
+      );
+    }
+
+    const cleanUsername = username.trim();
+    const cleanFirstName = first_name.trim();
+
+    // Guardrail 2: Ensure the chosen username isn't already taken by SOMEONE ELSE
+    const checkRes = await pool.query(
+      'SELECT id FROM "User" WHERE LOWER(username) = LOWER($1) AND id != $2',
+      [cleanUsername, user.id]
+    );
+
+    if ((checkRes.rowCount ?? 0) > 0) {
+      return NextResponse.json(
+        { success: "not ok", error: "That username is already taken. Please choose another." },
+        { status: 409 }
+      );
+    }
+
+    // Execute the update
+    const query = {
+      name: 'update-user-profile',
+      text: `
+        UPDATE "User" 
+        SET username = $1, first_name = $2 
+        WHERE id = $3 
+        RETURNING id, username, first_name
+      `,
+      values: [cleanUsername, cleanFirstName, user.id]
+    };
+
+    const res = await pool.query(query);
+
+    return NextResponse.json({
+      success: "ok",
+      data: res.rows[0]
+    });
+
+  } catch (err) {
+    console.error("Unexpected error updating user profile:", err);
+    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
   }
 };
