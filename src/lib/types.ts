@@ -8,7 +8,7 @@ export interface Edition {
   id: string;
   title: string;
   cover_image_url: string | null;
-  page_count: number | null;
+  page_count: number | null; // This is okay for us to keep as just `page_count`! An Edition doesn't have an "estimate"
   publish_date?: string | null;
   isbn?: string | null; // For the Edition Switcher modal
 }
@@ -20,7 +20,8 @@ export interface Book {
   subjects: string[];
   summary: string;
   cover_image: string;
-  page_count: number | null; // Data won't always be available but the key will. `number` or `null`
+  page_count_estimate: number | null; // Our old page_count column..
+  page_count_exact?: number | null;   // .. now split into two distinct columns
   default_edition_id?: string | null; // Won't always be available, not even the key. `string`, `null` or `undefined`
   editions?: Edition[]; // The array of specific editions we map out
   isbn?: string | null; // ISBN is now brought to the Work level too for the default edition
@@ -36,7 +37,8 @@ export interface TrackBook {
   author: string;
   cover_image_url: string | null;
   custom_page_count?: number | null; // The new user entered custom page count!
-  page_count?: number | null; // The API ballpark fallback
+  page_count_estimate: number | null; // Our old page_count column..
+  page_count_exact?: number | null;   // .. now split into two distinct columns
   current_page?: number | null; // From the Reading_Journey table
 }
 
@@ -50,7 +52,8 @@ export interface BookshelfItem {
   author: string;
   cover_image_url: string | null;
   horizon_slot: number | null;
-  page_count: number | null;
+  page_count_estimate: number | null; // Our old page_count column..
+  page_count_exact?: number | null;   // .. now split into two distinct columns
   recommendation_context: Recommendation[];
   review: string | null;
   journeys: ReadingJourney[];

@@ -55,8 +55,9 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
         // If they have a cover_i (Cover ID), we manually construct the CDN URL
         // -M means Medium size. We use -L (Large) for the detailed view later.
         cover_image: doc.cover_i ? `${COVER_BASE_URL}/${doc.cover_i}-M.jpg` : '',
-        // UPDATED: Filter out placeholders < 25 pages from search results
-        page_count: typeof bestEdition?.number_of_pages === 'number' && bestEdition.number_of_pages >= 25 ? bestEdition.number_of_pages : null,
+        // UPDATED: Filter out placeholders < 25 pages from search results. Also now returns `page_count_estimate` and `page_count_exact` rather than just `page_count`
+        page_count_estimate: typeof bestEdition?.number_of_pages === 'number' && bestEdition.number_of_pages >= 25 ? bestEdition.number_of_pages : null,
+        page_count_exact: null,
         default_edition_id: editionId,
       };
     });
@@ -181,7 +182,9 @@ export const getBookById = async (id: string): Promise<Book> => {
       subjects: data.subjects || [],
       summary: summary,
       cover_image: coverUrl,
-      page_count: pageCount,
+      // Now returns `page_count_estimate` and `page_count_exact` rather than just `page_count`
+      page_count_estimate: pageCount,
+      page_count_exact: null,
       default_edition_id: defaultEditionId,
       // editions: mappedEditions, Outsourced now to getEditionsForWork below
       isbn: defaultIsbn, // But we do include the ISBN now for the default edition
