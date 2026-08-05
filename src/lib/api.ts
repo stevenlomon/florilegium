@@ -55,7 +55,8 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
         // If they have a cover_i (Cover ID), we manually construct the CDN URL
         // -M means Medium size. We use -L (Large) for the detailed view later.
         cover_image: doc.cover_i ? `${COVER_BASE_URL}/${doc.cover_i}-M.jpg` : '',
-        page_count: bestEdition?.number_of_pages || null,
+        // UPDATED: Filter out placeholders < 25 pages from search results
+        page_count: typeof bestEdition?.number_of_pages === 'number' && bestEdition.number_of_pages >= 25 ? bestEdition.number_of_pages : null,
         default_edition_id: editionId,
       };
     });
@@ -139,10 +140,10 @@ export const getBookById = async (id: string): Promise<Book> => {
         const editionsData = await editionsRes.json();
         const editions = editionsData.entries || [];
 
-        // Filter out all editions that have valid page counts
+        // Filter out all editions that have valid page counts. Updated to now also filter out editions that have fewer than 25 pages to protect the average
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const editionsWithPages = editions.filter((ed: any) =>
-          typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0
+          typeof ed.number_of_pages === 'number' && ed.number_of_pages >= 25
         );
 
         if (editionsWithPages.length > 0) {
@@ -242,7 +243,8 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
           id: editionId,
           title: ed.title || 'Unknown Title',
           cover_image_url: `${COVER_BASE_URL}/${edCoverId}-M.jpg`,
-          page_count: typeof ed.number_of_pages === 'number' && ed.number_of_pages > 0 ? ed.number_of_pages : null,
+          // UPDATED: Treat anything under 25 pages as "Length unknown"
+          page_count: typeof ed.number_of_pages === 'number' && ed.number_of_pages >= 25 ? ed.number_of_pages : null,
           publish_date: ed.publish_date || null,
           isbn: primaryIsbn,
         };
