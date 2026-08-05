@@ -125,7 +125,12 @@ export default function Navbar() {
                         </strong>
                         <small className="text-[#5C613E] font-sans text-xs mt-1">
                           {book.authors?.[0]?.name || 'Unknown Author'}
-                          {book.page_count && <span className="opacity-50"> • {book.page_count} pages</span>}
+                          {/* UPDATED: Check for either exact or estimate */}
+                          {(book.page_count_exact || book.page_count_estimate) && (
+                            <span className="opacity-50">
+                              {' '}• {book.page_count_exact || book.page_count_estimate} pages
+                            </span>
+                          )}
                         </small>
                       </Link>
                     </li>
