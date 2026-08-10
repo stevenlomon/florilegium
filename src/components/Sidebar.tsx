@@ -9,13 +9,31 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname(); // To clearly see which sidebar item is active!
 
-  // Easy to miss but super important: Hide the sidebar entirely on auth pages!!
-  if (pathname === '/login' || pathname === '/register') return null;
-
   // Automatically close the mobile menu whenever the route changes! This is the neatest use of useEffect I've seen so far coding in React
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  // Lock body scroll when sidebar drawer is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [isOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsOpen(false);
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  // Easy to miss but super important: Hide the sidebar entirely on auth pages!!
+  if (pathname === '/login' || pathname === '/register') return null;
 
   // Bookshelf and Settings only to begin with but more can easily be added here
   const navItems = [
@@ -81,7 +99,7 @@ export default function Sidebar() {
 
       {/* THE ACTUAL SIDEBAR (what we already had) */}
       {/* Fixed on mobile (slides in/out), Sticky on desktop (always visible) */}
-    <aside
+      <aside
         className={`fixed md:sticky top-0 left-0 z-[55] h-screen w-72 flex flex-col bg-[#FCF9F2] border-r border-[#E5E0D8] shrink-0 overflow-hidden transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
