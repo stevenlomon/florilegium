@@ -41,7 +41,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-end px-8 py-4 bg-[#FCF9F2]">
+    <header className="sticky top-0 z-50 flex items-center justify-end pl-16 pr-8 md:px-8 py-4 bg-[#FCF9F2]">
 
       <div className="relative flex items-center gap-6">
         {/* SEARCH FORM */}
