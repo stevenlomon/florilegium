@@ -34,8 +34,8 @@ export async function getHorizonBooks() {
           b.title, 
           b.author, 
           b.cover_image_url, 
-          b.page_count_estimate, 
-          b.page_count_exact,
+          b.page_count_estimate,
+          b.page_count_exact
         FROM "Bookshelf_Item" bi
         JOIN "Book" b ON bi.book_id = b.id
         WHERE bi.user_id = $1 
