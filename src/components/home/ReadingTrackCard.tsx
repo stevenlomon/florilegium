@@ -79,9 +79,9 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         throw new Error("Failed to update progress");
       }
 
-      // Success! Release the lock and tell the server to update the UI
+      // Success! Release the lock and tell the server to update the UI.
+      // The overlay stays open so the user sees the progress bar update — the dismiss button gives them agency to close it.
       setIsLocked(false);
-      setIsHovered(false);
       router.refresh();
     } catch (err) {
       console.error("Error saving progress:", err);
