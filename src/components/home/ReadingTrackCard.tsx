@@ -79,7 +79,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         throw new Error("Failed to update progress");
       }
 
-      // Success! Release the lock and tell the server to update the UI
+      // Success! Release the lock and tell the server to update the UI.
+      // The overlay stays open so the user sees the progress bar update — the dismiss button gives them agency to close it.
       setIsLocked(false);
       router.refresh();
     } catch (err) {
@@ -108,6 +109,12 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
       <Link
         href={`/book/${book.external_id || book.book_id}`}
         className={`absolute inset-0 ${showOverlay ? 'pointer-events-none' : ''}`} // Disable link clicks when overlay is active
+        onClick={isCurrentlyReading && !showOverlay ? (e: React.MouseEvent) => {
+          // Mobile: first tap shows the overlay instead of navigating away.
+          // On desktop this never fires because hovering already shows the overlay before you can click.
+          e.preventDefault();
+          setIsHovered(true);
+        } : undefined}
       >
         {book.cover_image_url ? (
           <Image
@@ -132,6 +139,22 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
       {isCurrentlyReading && (
         <div className={`absolute inset-0 bg-[#2C302E]/90 flex flex-col p-4 transition-all duration-300 ${showOverlay ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
           }`}>
+
+          {/* Mobile dismiss button — on desktop, moving the mouse away handles this */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsHovered(false);
+              setIsLocked(false);
+              setPageInput(book.current_page || 0);
+            }}
+            className="md:hidden absolute top-2 right-2 h-7 w-7 rounded-full bg-[#FCF9F2]/10 flex items-center justify-center text-[#FCF9F2]/60 active:text-[#FCF9F2] active:bg-[#FCF9F2]/20 transition-colors pointer-events-auto"
+            aria-label="Dismiss"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
 
           <form onSubmit={handleUpdateProgress} className="flex flex-col items-center justify-center my-auto w-full">
             <span className="text-[10px] font-sans tracking-widest text-[#FCF9F2]/60 uppercase mb-2">
