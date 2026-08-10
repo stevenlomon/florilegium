@@ -9,10 +9,13 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname(); // To clearly see which sidebar item is active!
 
-  // Automatically close the mobile menu whenever the route changes! This is the neatest use of useEffect I've seen so far coding in React
-  useEffect(() => {
+  // Close the mobile menu whenever the route changes
+  // Done during render (not in an effect) to avoid a cascading re-render
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setIsOpen(false);
-  }, [pathname]);
+  }
 
   // Lock body scroll when sidebar drawer is open on mobile
   // overflow:hidden alone doesn't work on mobile browsers — position:fixed fully locks it
