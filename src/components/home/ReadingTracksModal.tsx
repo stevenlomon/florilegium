@@ -6,12 +6,18 @@
 import { useState } from 'react';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { useBookshelf } from '@/hooks/useBookshelf';
-import type { Book, BookshelfItem } from '@/lib/types';
+import type { Book, BookshelfItem, TrackBook } from '@/lib/types';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface ReadingTracksModalProps {
   isOpen: boolean;
   onClose: () => void;
-  targetSlot: { trackId: number, slotId: number, trackTitle: string } | null // Straight from the Section component, now updated with the title too; not just a simple number anymore haha!
+  targetSlot: {
+    trackId: number,
+    slotId: number,
+    trackTitle: string,
+    preStagedBook?: { data: BookshelfItem | Book | TrackBook, source: 'UserBookshelf' | 'OpenLibrary' }
+  } | null; // Straight from the Section component, now updated with the title too; not just a simple number anymore haha!
   onSuccess: () => void;
 }
 
@@ -21,16 +27,31 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
   // We're gonna have a 2-step modal for assigning a book as Currently Reading in one of the Reading Tracks! stagedBook holds the book 
   // they selected in Step 1. If null, we show the list. It holds the book AND where it came from, so that the master function alter down
   // in the code knows how to save it
-  const [stagedBook, setStagedBook] = useState<{ data: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary' } | null>(null);
+  const [stagedBook, setStagedBook] = useState<{ 
+    data: BookshelfItem | Book | TrackBook, 
+    source: 'UserBookshelf' | 'OpenLibrary' 
+  } | null>(targetSlot?.preStagedBook || null); // stagedBook is now set directly, no need for a useEffect
+
   const [customPageCount, setCustomPageCount] = useState<string>("");
+  const [initialCurrentPage, setInitialCurrentPage] = useState<string>(""); // New state for the new form input
 
   const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Reading Tracks Modal Search Error:");
   const { books: bookshelfItems, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
 
+  // Our new useEscapeKey custom hook! Simply listens for changes in the isOpen state
+  useEscapeKey(onClose, isOpen);
+
   const showExternalResults = searchTerm.trim().length >= 3;
 
+  // The new real-time local filter
+  const filteredBookshelf = bookshelfItems.filter(book =>
+    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    book.author.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   // Updated: We now accept an optional finalPageCount
-  const handleAssignBook = async (book: BookshelfItem | Book, source: 'UserBookshelf' | 'OpenLibrary', finalPageCount: number | null = null) => {
+  // Update #2: We now accept an optional initialCurrentPage!
+  const handleAssignBook = async (book: BookshelfItem | Book | TrackBook, source: 'UserBookshelf' | 'OpenLibrary', finalPageCount: number | null = null, startingPage: number = 0) => {
     if (!targetSlot) return;
 
     setIsAssigning(true);
@@ -48,7 +69,8 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
           body: JSON.stringify({
             track_id: targetSlot.trackId,
             slot_id: targetSlot.slotId,
-            bookshelf_item_id: userBookshelfItem.bookshelf_item_id
+            bookshelf_item_id: userBookshelfItem.bookshelf_item_id,
+            initial_current_page: startingPage
           })
         });
 
@@ -81,7 +103,8 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
             author: openLibraryBook.authors?.[0]?.name || 'Unknown Author',
             external_provider: 'open_library',
             external_id: openLibraryBook.id,
-            page_count: openLibraryBook.page_count || null,
+            // page_count: openLibraryBook.page_count || null,
+            page_count: openLibraryBook.page_count_exact || openLibraryBook.page_count_estimate || null,
             cover_image_url: openLibraryBook.cover_image || null,
           })
         });
@@ -117,7 +140,8 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
             body: JSON.stringify({
               track_id: targetSlot.trackId,
               slot_id: targetSlot.slotId,
-              bookshelf_item_id: newBookshelfItemId
+              bookshelf_item_id: newBookshelfItemId,
+              initial_current_page: startingPage
             })
           })
           if (!assigningRes.ok) throw new Error(`Failed to assign book to Slot ${targetSlot}`);
@@ -178,6 +202,7 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
     setSearchTerm('');
     setStagedBook(null); // Wipe the memory so that our 2-step modal returns to Step 1 once a Currently Reading assignment flow is completed
     setCustomPageCount(""); // Also clear the custom_page_count input field for next time while we're here
+    setInitialCurrentPage(""); // Needs to be wiped clean too
     onClose();
   };
 
@@ -185,7 +210,10 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
   const handleFinalAssign = async () => {
     if (!stagedBook) return;
     const parsedPageCount = customPageCount.trim() !== "" ? parseInt(customPageCount, 10) : null;
-    await handleAssignBook(stagedBook.data, stagedBook.source, parsedPageCount);
+    const parsedCurrentPage = initialCurrentPage.trim() !== "" ? parseInt(initialCurrentPage, 10) : 0;
+
+    // Pass both variables cleanly
+    await handleAssignBook(stagedBook.data, stagedBook.source, parsedPageCount, parsedCurrentPage);
   };
 
   if (!isOpen) return null;
@@ -227,7 +255,7 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
                 <input
                   className="w-full bg-transparent text-sm font-sans text-[#2C302E] outline-none placeholder:text-[#5C613E]"
                   type="text"
-                  placeholder="Search the archives..."
+                  placeholder="Search your bookshelf or the archives..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   disabled={isAssigning}
@@ -236,74 +264,79 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
               </div>
             </div>
 
-            {/* CONTENT (Scrollable List) */}
+            {/* CONTENT (Scrollable List) v2: Now for both Bookshelf *AND* Open Library! */}
             <div className="flex-1 overflow-y-auto bg-[#FCF9F2] p-2 relative">
               {isAssigning && <div className="absolute inset-0 z-10" />}
 
-              {showExternalResults ? (
-                isSearching ? (
-                  <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">Searching the archives...</div>
-                ) : externalBooks.length > 0 ? (
-                  <div className="flex flex-col p-2">
-                    <ul className="flex flex-col gap-1 mb-4">
-                      {externalBooks.map((book: Book) => (
-                        <li key={book.id}>
-                          <button
-                            onClick={() => targetSlot?.slotId === 1 ? setStagedBook({ data: book, source: 'OpenLibrary' }) : handleAssignBook(book, 'OpenLibrary')}
-                            className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
-                          >
-                            <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
-                            <span className="text-[#5C613E] font-sans text-xs mt-1">{book.authors?.[0]?.name || 'Unknown Author'} <span className="opacity-50">• Open Library</span></span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
+              {/* 1. LOCAL BOOKSHELF (Instantly filtered) */}
+              {!isLoadingUserBookshelf && filteredBookshelf.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">Your Bookshelf</h3>
+                  <ul className="flex flex-col gap-1">
+                    {filteredBookshelf.map((book: BookshelfItem) => (
+                      <li key={book.bookshelf_item_id}>
+                        <button
+                          onClick={() => targetSlot?.slotId === 1 ? setStagedBook({ data: book, source: 'UserBookshelf' }) : handleAssignBook(book, 'UserBookshelf')}
+                          className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
+                        >
+                          <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
+                          <span className="text-[#5C613E] font-sans text-xs mt-1">{book.author} {book.status_id === 2 && <span className="text-[#424B2E] font-medium ml-2">• Currently Reading</span>}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-                    {/* Cozy, muted footer placed cleanly outside the list */}
-                    <p className="text-[11px] font-serif italic text-[#5C613E]/60 text-center pt-4 border-t border-[#E5E0D8]/60 mx-4">
-                      All book data provided by{' '}
-                      <a 
-                        href='https://archive.org/donate/?platform=ol'
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#424B2E] not-italic font-sans text-[9px] font-bold tracking-widest underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-colors mx-0.5"
-                      >
-                        Open Library
-                      </a>
-                      . Consider donating to their cause.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">No works found in the catalog.</div>
-                )
-              ) : (
-                isLoadingUserBookshelf ? (
-                  <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">Retrieving your bookshelf...</div>
-                ) : bookshelfItems.length > 0 ? (
-                  <div>
-                    <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">Your Bookshelf</h3>
-                    <ul className="flex flex-col gap-1">
-                      {bookshelfItems.map((book: BookshelfItem) => (
-                        <li key={book.bookshelf_item_id}>
-                          {/* CHANGED: The click logic here too! */}
-                          <button
-                            onClick={() => targetSlot?.slotId === 1 ? setStagedBook({ data: book, source: 'UserBookshelf' }) : handleAssignBook(book, 'UserBookshelf')}
-                            className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
-                          >
-                            <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
-                            <span className="text-[#5C613E] font-sans text-xs mt-1">{book.author} {book.status_id === 2 && <span className="text-[#424B2E] font-medium ml-2">• Currently Reading</span>}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm text-center flex-col items-center">
-                    <span className="text-3xl opacity-30 mb-3">🌿</span>
-                    <p>Your bookshelf is currently empty.</p>
-                    <p className="mt-1 opacity-70">Type above to search the archives.</p>
-                  </div>
-                )
+              {/* 2. OPEN LIBRARY ARCHIVES (Appears at 3+ chars) */}
+              {showExternalResults && (
+                <div className="border-t border-[#E5E0D8]/60 pt-2">
+                  <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">The Archives</h3>
+                  {isSearching ? (
+                    <div className="p-8 flex justify-center text-[#5C613E] font-sans text-sm">Searching the archives...</div>
+                  ) : externalBooks.length > 0 ? (
+                    <div className="flex flex-col p-2">
+                      <ul className="flex flex-col gap-1 mb-4">
+                        {externalBooks.map((book: Book) => (
+                          <li key={book.id}>
+                            <button
+                              onClick={() => targetSlot?.slotId === 1 ? setStagedBook({ data: book, source: 'OpenLibrary' }) : handleAssignBook(book, 'OpenLibrary')}
+                              className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
+                            >
+                              <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
+                              <span className="text-[#5C613E] font-sans text-xs mt-1">{book.authors?.[0]?.name || 'Unknown Author'} <span className="opacity-50">• Open Library</span></span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Cozy, muted footer placed cleanly outside the list */}
+                      <p className="text-[11px] font-serif italic text-[#5C613E]/60 text-center pt-4 border-t border-[#E5E0D8]/60 mx-4">
+                        All book data provided by{' '}
+                        <a
+                          href='https://archive.org/donate/?platform=ol'
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#424B2E] not-italic font-sans text-[9px] font-bold tracking-widest underline underline-offset-4 decoration-[#424B2E]/30 hover:decoration-[#424B2E] transition-colors mx-0.5"
+                        >
+                          Open Library
+                        </a>
+                        . Consider donating to their cause.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm">No works found in the catalog.</div>
+                  )}
+                </div>
+              )}
+
+              {/* ZERO STATE */}
+              {!showExternalResults && filteredBookshelf.length === 0 && (
+                <div className="p-12 flex justify-center text-[#5C613E] font-sans text-sm text-center flex-col items-center">
+                  <span className="text-3xl opacity-30 mb-3">🌿</span>
+                  <p>No matches in your bookshelf.</p>
+                  <p className="mt-1 opacity-70">Keep typing to search the archives.</p>
+                </div>
               )}
             </div>
           </>
@@ -326,26 +359,72 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
 
             {/* The Prompt */}
             <div className="bg-[#EFEBE1]/50 p-5 rounded border border-[#E5E0D8] mb-8 mt-2">
-              <p className="text-[#2C302E] text-sm mb-4 leading-relaxed">
-                You are about to start reading this book. For the most accurate progress tracking, we highly encourage entering the exact amount of pages in your specific physical edition.
+
+              {/* ZONE 1: Gentle Context Nudge */}
+              <p className="text-[#2C302E] text-sm mb-5 leading-relaxed">
+                Set up progress tracking for your edition.
               </p>
 
-              <div className="flex flex-col gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  max="5000"
-                  value={customPageCount}
-                  onChange={(e) => setCustomPageCount(e.target.value)}
-                  placeholder={stagedBook.data.page_count ? `e.g., ${stagedBook.data.page_count}` : "e.g., 350"}
-                  className="w-32 bg-[#FCF9F2] border border-[#424B2E]/30 rounded px-3 py-2 text-sm text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] transition-colors"
-                />
-                <span className="text-xs text-[#5C613E] italic font-serif">
-                  {stagedBook.data.page_count
-                    ? `*Optional. We guessed ~${stagedBook.data.page_count} pages based on this edition.`
-                    : "*Optional. If skipped, we will use our best estimate."}
-                </span>
+              {/* ZONE 2: Two-Column Input Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-2">
+
+                {/* Total Pages Column */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E]">
+                    Total Pages in Edition
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="5000"
+                    value={customPageCount}
+                    onChange={(e) => setCustomPageCount(e.target.value)}
+                    placeholder={
+                      stagedBook.data.page_count_exact 
+                        ? `e.g., ${stagedBook.data.page_count_exact}` 
+                        : stagedBook.data.page_count_estimate 
+                          ? `e.g., ${stagedBook.data.page_count_estimate}` 
+                          : "e.g., 288"
+                    }
+                    className="w-full bg-[#FCF9F2] border border-[#E5E0D8] rounded px-3 py-2 text-sm text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] transition-colors shadow-sm"
+                  />
+                  <span className="text-[10px] text-[#5C613E] italic font-serif">
+                    {stagedBook.data.page_count_exact
+                      ? `*If skipped, defaults to ${stagedBook.data.page_count_exact}.`
+                      : stagedBook.data.page_count_estimate
+                        ? `*If skipped, we'll use ~${stagedBook.data.page_count_estimate}.`
+                        : "*If skipped, progress tracking will be limited."}
+                  </span>
+                </div>
+
+                {/* Current Page Column */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E]">
+                    Current Page
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="5000"
+                    value={initialCurrentPage}
+                    onChange={(e) => setInitialCurrentPage(e.target.value)}
+                    placeholder="e.g., 43"
+                    className="w-full bg-[#FCF9F2] border border-[#E5E0D8] rounded px-3 py-2 text-sm text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] transition-colors shadow-sm"
+                  />
+                  <span className="text-[10px] text-[#5C613E] italic font-serif">
+                    *If skipped, starts at page 0.
+                  </span>
+                </div>
+
               </div>
+
+              {/* ZONE 3: Subtle Re-read Footnote */}
+              <div className="mt-6 pt-4 border-t border-[#E5E0D8]">
+                <p className="text-[11px] text-[#5C613E] font-serif italic">
+                  🌿 Re-reading? You can log past journeys anytime from your Bookshelf.
+                </p>
+              </div>
+
             </div>
 
             {/* Action Buttons */}
@@ -370,5 +449,5 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
         )}
       </div>
     </div>
-  );
+  )
 };

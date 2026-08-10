@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { type Recommendation } from '@/lib/types';
 
 interface RecommendationContextSectionProps {
@@ -24,6 +25,12 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
   const [editLink, setEditLink] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // State for deleting an existing entry
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const router = useRouter();
 
   const resetForm = () => {
     setRecommendedBy('');
@@ -56,6 +63,10 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
       // Append the newly created row to our list!
       setRecs(prev => [...prev, data]);
       resetForm();
+
+      // Tell Next.js to update the server payload in the background! I can't answer why this wasn't added here or in `handleUpdate` to being with
+      router.refresh();
+
     } catch (error) {
       console.error(error);
     } finally {
@@ -99,10 +110,44 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
       // Update the specific record in our list
       setRecs(prev => prev.map(r => r.id === id ? data : r));
       setEditingId(null);
+
+      // Sync with the server
+      router.refresh();
+
     } catch (error) {
       console.error(error);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    // Tap 1: Ask for confirmation inline
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      return;
+    }
+
+    // Tap 2: Execute!
+    setIsDeleting(true);
+    try {
+      const response = await fetch('/api/recs', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) throw new Error('Failed to delete recommendation context');
+
+      setRecs(prev => prev.filter(r => r.id !== id));
+      setEditingId(null);
+      setConfirmDeleteId(null);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert('Failed to delete recommendation. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -140,17 +185,53 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
               className="w-full bg-transparent border-b border-[#E5E0D8] focus:border-[#424B2E] outline-none py-1 font-serif italic text-sm text-[#424B2E] placeholder:text-[#5C613E]/50 resize-none"
             />
 
-            <div className="flex justify-end gap-3 mt-2">
+            {/* Unified Action Bar (Right-aligned) */}
+            <div className="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-[#E5E0D8]">
+              {(() => {
+                const hasData = editRecommendedBy.trim().length > 0 || editLink.trim().length > 0 || editNotes.trim().length > 0;
+
+                return (
+                  <div className="flex items-center mr-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(rec.id)}
+                      onMouseLeave={() => setConfirmDeleteId(null)} // Reset if mouse leaves!
+                      disabled={isUpdating || isDeleting || hasData}
+                      title={hasData ? "Clear all inputs before deleting" : undefined}
+                      className={`px-3 py-2 text-xs font-sans uppercase tracking-widest rounded transition-all ${hasData
+                          ? 'text-[#8C3A3A]/30 cursor-not-allowed'
+                          : confirmDeleteId === rec.id
+                            ? 'bg-[#8C3A3A] text-white font-semibold'
+                            : 'text-[#8C3A3A]/70 hover:text-[#8C3A3A] hover:bg-[#8C3A3A]/10'
+                        } disabled:opacity-50`}
+                    >
+                      {isDeleting
+                        ? 'Deleting...'
+                        : confirmDeleteId === rec.id
+                          ? 'Confirm Delete?'
+                          : 'Delete'}
+                    </button>
+                    {hasData && (
+                      <span className="text-[10px] font-serif italic text-[#8C3A3A]/60 ml-1">
+                        *Clear inputs to delete
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+
               <button
                 onClick={cancelEditing}
-                className="text-xs font-sans uppercase tracking-widest text-[#5C613E]/70 hover:text-[#5C613E]"
+                disabled={isUpdating || isDeleting}
+                className="px-3 py-2 text-xs font-sans uppercase tracking-widest text-[#5C613E]/70 hover:text-[#5C613E] transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
+
               <button
                 onClick={() => handleUpdate(rec.id)}
-                disabled={editRecommendedBy.trim().length < 3 || isUpdating}
-                className="px-4 py-2 bg-[#424B2E] text-[#FCF9F2] text-xs font-sans uppercase tracking-widest rounded disabled:opacity-50 hover:bg-[#5C613E] transition-colors"
+                disabled={editRecommendedBy.trim().length < 3 || isUpdating || isDeleting}
+                className="px-4 py-2 bg-[#424B2E] text-[#FCF9F2] text-xs font-sans uppercase tracking-widest rounded disabled:opacity-50 hover:bg-[#343b24] transition-colors shadow-sm"
               >
                 {isUpdating ? 'Saving...' : 'Save Context'}
               </button>

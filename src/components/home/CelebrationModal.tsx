@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface PromotionData {
-  promotedBook: string | null;
+  upNextBookTitle: string | null;
   trackName: string;
   finishedJourneyId: string
 }
@@ -17,6 +18,10 @@ interface CelebrationModalProps {
 export default function CelebrationModal({ bookTitle, promotion, onClose }: CelebrationModalProps) {
   const [rawThoughts, setRawThoughts] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Our new useEscapeKey custom hook! This is a conditionally rendered modal that doesn't use isOpen, we only render them
+  // when they're active. Our hook is smart enough to default to true when mounted!
+  useEscapeKey(onClose);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -49,15 +54,28 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
             You finished {bookTitle}!
           </h2>
 
-          {/* Dynamic Promotion Message */}
-          {promotion.promotedBook ? (
-            <p className="font-serif text-lg text-[#5C613E]">
-              <strong className="font-semibold text-[#424B2E]">{promotion.promotedBook}</strong> has automatically been moved to Currently Reading in your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track.
-            </p>
+          {/* Dynamic Promotion Message: updated to integrate Ma (間) whether the Up Next slot is filled or not, now without explicitly mentioning it */}
+          {promotion.upNextBookTitle ? (
+            <>
+              <p className="font-serif text-lg text-[#5C613E]">
+                <strong className="font-semibold text-[#424B2E]">{promotion.upNextBookTitle}</strong> is resting in Up Next for your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track.
+              </p>
+              <p className="font-serif text-lg text-[#5C613E]">
+                Whenever your heart feels is the right time, it&apos;s there to begin.
+              </p>
+              <p className="font-serif text-lg text-[#5C613E] mt-4">
+                For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
+              </p>
+            </>
           ) : (
-            <p className="font-serif text-lg text-[#5C613E]">
-              Your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track is now empty.
-            </p>
+            <>
+              <p className="font-serif text-lg text-[#5C613E]">
+                Your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track is now open for your next great undertaking.
+              </p>
+              <p className="font-serif text-lg text-[#5C613E] mt-4">
+                For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
+              </p>
+            </>
           )}
         </div>
 

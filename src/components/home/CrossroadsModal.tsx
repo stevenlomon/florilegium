@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface CrossroadsModalProps {
   bookTitle: string;
@@ -11,6 +12,11 @@ interface CrossroadsModalProps {
 
 export default function CrossroadsModal({ bookTitle, trackId, onClose }: CrossroadsModalProps) {
   const [isShelving, setIsShelving] = useState<number | null>(null); // Tracks which button is loading
+
+  // Our new useEscapeKey custom hook! This is a conditionally rendered modal that doesn't use isOpen, we only render them
+  // when they're active. Our hook is smart enough to default to true when mounted!
+  useEscapeKey(onClose);
+
   const router = useRouter();
 
   const handleUnassign = async (targetStatusId: number) => {
@@ -80,7 +86,7 @@ export default function CrossroadsModal({ bookTitle, trackId, onClose }: Crossro
               {isShelving === 1 ? "Shelving..." : "Back on the Shelf"}
             </span>
             <span className="font-serif text-xs text-[#5C613E] italic">
-              return to &quot;Intend to Read&quot; for later.
+              Return to &quot;Intend to Read&quot; for later
             </span>
           </button>
 
@@ -98,12 +104,12 @@ export default function CrossroadsModal({ bookTitle, trackId, onClose }: Crossro
               {isShelving === 4 ? "Marking..." : "Mark as Dropped"}
             </span>
             <span className="font-serif text-xs text-[#5C613E] italic">
-              Close the journey entirely.
+              Close the journey entirely
             </span>
           </button>
         </div>
 
       </div>
     </div>
-  );
-}
+  )
+};

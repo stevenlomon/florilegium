@@ -124,3 +124,51 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
   }
 };
+
+// The DELETE method that enables removing recommendation rows
+export async function DELETE(req: Request) {
+  try {
+    const user = await getCurrentUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing required field: id" }, { status: 400 });
+    }
+
+    const query = {
+      name: 'delete-recommendation-context-row',
+      // Using EXISTS as an inline security check to ensure this recommendation 
+      // is attached to a Bookshelf_Item owned by the currently authenticated user.
+      text: `
+        DELETE FROM "Recommendation_Context_Row"
+        WHERE id = $1
+        AND EXISTS (
+          SELECT 1 FROM "Bookshelf_Item" bi
+          WHERE bi.id = "Recommendation_Context_Row".bookshelf_item_id
+          AND bi.user_id = $2
+        )
+        RETURNING *
+      `,
+      values: [id, user.id]
+    };
+
+    const res = await pool.query(query);
+
+    if (res.rowCount === 0) {
+      return NextResponse.json({ error: "Recommendation not found or unauthorized" }, { status: 404 });
+    }
+
+    console.log(`Successfully deleted recommendation context row ${id}`);
+    
+    return NextResponse.json({ success: "ok" });
+  } catch (err) {
+    console.error("Unexpected error deleting recommendation context row:", err);
+    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  }
+};

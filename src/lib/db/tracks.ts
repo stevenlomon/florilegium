@@ -56,7 +56,8 @@ export async function getReadingTracks() {
         b.title,
         b.author,
         b.cover_image_url,
-        b.page_count,
+        b.page_count_estimate, 
+        b.page_count_exact,
         bi.id AS bookshelf_item_id,
         bi.custom_page_count,
         rj.current_page -- Bug fixed: current_page added here so that we don't see a permanent 0 haha
@@ -77,7 +78,8 @@ export async function getReadingTracks() {
         b.title,
         b.author,
         b.cover_image_url,
-        b.page_count,
+        b.page_count_estimate, 
+        b.page_count_exact,
         bi.id AS bookshelf_item_id,
         bi.custom_page_count,
         NULL AS current_page -- Required! Both sides of a UNION ALL needs to have the exact same mathching numbers of columns

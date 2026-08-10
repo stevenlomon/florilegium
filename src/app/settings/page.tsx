@@ -1,6 +1,7 @@
-import LogoutButton from '@/components/settings/LogoutButton';
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import LogoutButton from '@/components/settings/LogoutButton';
+import AccountDetailsSection from '@/components/settings/AccountSettingsSection';
 
 export const dynamic = 'force-dynamic'; // Signals to Next.js that this page is server-rendered per request!
 
@@ -32,32 +33,12 @@ export default async function SettingsPage() {
           <h2 className="font-sans text-xs font-bold tracking-widest uppercase text-[#5C613E] mb-4 pl-1">
             Account Details
           </h2>
-          <div className="bg-white/50 border border-[#E5E0D8] rounded-md p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
-            {/* Added flex-wrap and gap-y-6 so it stays responsive on mobile! */}
-            <div className="flex flex-wrap gap-x-12 gap-y-6">
-              <div>
-                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-1">
-                  Username
-                </p>
-                <p className="font-heading text-2xl text-[#2C302E]">{user.username}</p>
-              </div>
-              <div>
-                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-1">
-                  Display Name
-                </p>
-                <p className="font-heading text-2xl text-[#2C302E]">{user.first_name || 'Not set'}</p>
-              </div>
-              <div>
-                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-1">
-                  Member Since
-                </p>
-                <p className="font-heading text-2xl text-[#2C302E]">{memberSince}</p>
-              </div>
-            </div>
-            <button disabled className="text-[#5C613E]/50 font-sans text-[10px] font-bold uppercase tracking-widest cursor-not-allowed transition-colors shrink-0">
-              Edit (Soon)
-            </button>
-          </div>
+          {/* We now pass the user data into the Client Component */}
+          <AccountDetailsSection 
+            initialUsername={user.username}
+            initialFirstName={user.first_name || ''}
+            memberSince={memberSince}
+          />
         </section>
 
         {/* SECTION 2: READING PREFERENCES */}
@@ -91,7 +72,7 @@ export default async function SettingsPage() {
               <div className="max-w-md">
                 <p className="font-sans text-sm font-semibold text-[#2C302E]">Export Library</p>
                 <p className="font-serif text-sm text-[#5C613E] italic mt-1 leading-relaxed">
-                  Download your entire reading history, personal reviews, and raw thought logs as a portable CSV file.
+                  Download your entire reading history, polished reviews, and raw thought logs as a portable CSV file.
                 </p>
               </div>
               <button disabled className="text-[#5C613E]/50 font-sans text-[10px] font-bold uppercase tracking-widest cursor-not-allowed shrink-0">

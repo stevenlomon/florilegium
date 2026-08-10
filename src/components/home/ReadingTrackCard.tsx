@@ -29,9 +29,13 @@ interface ReadingTrackCardProps {
   onFinishBook: (e: React.MouseEvent) => void;
   onShelveBook: (e: React.MouseEvent) => void;
   isFinishing: boolean;
+
+  // New props for the [START READING] button only visible onHover when the Currently Reading slot is empty
+  canPromoteDirectly: boolean;
+  onPromoteToCurrentlyReading: () => void;
 }
 
-export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBook, onShelveBook, isFinishing }: ReadingTrackCardProps) {
+export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBook, onShelveBook, isFinishing, canPromoteDirectly, onPromoteToCurrentlyReading }: ReadingTrackCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -42,7 +46,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   // people insane over time haha
   const [pageInput, setPageInput] = useState<number | string>(book.current_page || 0);
 
-  const total = book.custom_page_count || book.page_count || 0;
+  // UPDATED: Cascade through the hierarchy of truth
+  const total = book.custom_page_count || book.page_count_exact || book.page_count_estimate || 0;
 
   // Instead of calculating the progress bar's width based on the live keystrokes (pageInput), we calculate it using the static truth passed down 
   // from the server (book.current_page). It will only visually snap into place after the router.refresh() brings down the new data
@@ -110,7 +115,9 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
             alt={`Cover of ${book.title}`}
             fill
             sizes="(max-width: 768px) 50vw, 15vw"
-            priority={true}
+            // priority={true}
+            loading="eager"
+            fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
             className="object-cover w-full h-full transition-transform duration-500" // group-hover:scale-105 removed from here to avoid double-scaling
           />
         ) : (
@@ -150,7 +157,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
                 min={0}
                 // "If we know the exact length of the book, stop them from typing a page number higher than that. But if we don't know the length, just set the ceiling to an 
                 // absurdly high number so the input doesn't break."
-                max={book.page_count || 9999}
+                // UPDATED: Use our calculated total, or fallback to 9999 if it's 0
+                  max={total > 0 ? total : 9999}
               />
               <span className="opacity-40 font-sans text-sm">/</span>
               <span className="text-sm font-sans text-[#FCF9F2]/80">{total > 0 ? total : '?'}</span>
@@ -198,6 +206,23 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
 
           </div>
 
+        </div>
+      )}
+
+      {/* NEW: SLOT 2 HOVER OVERLAY (Promote to Currently Reading) */}
+      {!isCurrentlyReading && canPromoteDirectly && (
+        <div className={`absolute inset-0 bg-[#2C302E]/80 flex items-center justify-center rounded-md transition-all duration-300 z-10 ${showOverlay ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPromoteToCurrentlyReading();
+            }}
+            className="bg-[#FCF9F2] text-[#2C302E] font-sans text-[10px] font-bold tracking-widest uppercase px-5 py-2.5 rounded hover:bg-[#EFEBE1] hover:scale-105 active:scale-95 transition-all shadow-sm"
+          >
+            Start Reading
+          </button>
         </div>
       )}
 

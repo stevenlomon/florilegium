@@ -74,7 +74,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
           The Horizon
         </h2>
         <p className="text-[#5C613E] mt-1 font-serif">
-          The dense masterpieces that we&apos;re building momentum towards. Capped strictly at five to ensure intent over accumulation.
+          The dense masterpieces that we&apos;re cultivating momentum towards. Capped strictly at five to ensure intent over accumulation.
         </p>
       </div>
 
@@ -131,7 +131,9 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
                     alt={`Cover of ${assignedBook.title}`}
                     fill // This replaces width/height and forces the image to perfectly fill the aspect-2/3 container
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-                    priority={true}
+                    // priority={true}
+                    loading="eager"
+                    fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
                     className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" // A very subtle, premium zoom effect on hover
                   />
                 ) : (

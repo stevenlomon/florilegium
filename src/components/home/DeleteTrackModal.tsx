@@ -1,5 +1,7 @@
 'use client'
 
+import { useEscapeKey } from '@/hooks/useEscapeKey';
+
 interface DeleteTrackModalProps {
   trackTitle: string;
   isDeleting: boolean;
@@ -8,6 +10,10 @@ interface DeleteTrackModalProps {
 }
 
 export default function DeleteTrackModal({ trackTitle, isDeleting, onClose, onConfirm }: DeleteTrackModalProps) {
+  // Our new useEscapeKey custom hook! This is a conditionally rendered modal that doesn't use isOpen, we only render them
+  // when they're active. Our hook is smart enough to default to true when mounted!
+  useEscapeKey(onClose);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C302E]/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div className="w-full max-w-md bg-[#FCF9F2] rounded-lg shadow-2xl flex flex-col p-8 relative animate-in zoom-in-95 duration-300 border border-[#E5E0D8]">

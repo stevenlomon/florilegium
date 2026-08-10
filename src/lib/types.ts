@@ -3,22 +3,28 @@ export interface Author {
   name: string;
 }
 
+// NEW: The shape of a specific Edition
+export interface Edition {
+  id: string;
+  title: string;
+  cover_image_url: string | null;
+  page_count: number | null; // This is okay for us to keep as just `page_count`! An Edition doesn't have an "estimate"
+  publish_date?: string | null;
+  isbn?: string | null; // For the Edition Switcher modal
+}
+
 export interface Book {
   id: string; // Gutenberg used number but in switching to Open Library, we're back to string haha!
   title: string;
   authors: Author[];
-  subjects: string[]; 
-  summary: string;    
+  subjects: string[];
+  summary: string;
   cover_image: string;
-  page_count: number | null; // Data won't always be available but the key will. `number` or `null`
+  page_count_estimate: number | null; // Our old page_count column..
+  page_count_exact?: number | null;   // .. now split into two distinct columns
   default_edition_id?: string | null; // Won't always be available, not even the key. `string`, `null` or `undefined`
-}
-
-// A type for the exact response shape from our Route Handler so the Navbar knows exactly what data structure to expect
-export interface OpenLibrarySearchResponse {
-  next: string | null;
-  previous: string | null;
-  results: Book[];
+  editions?: Edition[]; // The array of specific editions we map out
+  isbn?: string | null; // ISBN is now brought to the Work level too for the default edition
 }
 
 export interface TrackBook {
@@ -31,7 +37,8 @@ export interface TrackBook {
   author: string;
   cover_image_url: string | null;
   custom_page_count?: number | null; // The new user entered custom page count!
-  page_count?: number | null; // The API ballpark fallback
+  page_count_estimate: number | null; // Our old page_count column..
+  page_count_exact?: number | null;   // .. now split into two distinct columns
   current_page?: number | null; // From the Reading_Journey table
 }
 
@@ -44,8 +51,9 @@ export interface BookshelfItem {
   title: string;
   author: string;
   cover_image_url: string | null;
-  horizon_slot: number | null; 
-  page_count: number | null;
+  horizon_slot: number | null;
+  page_count_estimate: number | null; // Our old page_count column..
+  page_count_exact?: number | null;   // .. now split into two distinct columns
   recommendation_context: Recommendation[];
   review: string | null;
   journeys: ReadingJourney[];

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { type TrackBook } from '@/lib/types';
+import { type BookshelfItem, Book, TrackBook } from '@/lib/types';
 import ReadingTrackCard from './ReadingTrackCard';
 import ReadingTracksModal from './ReadingTracksModal';
 import CelebrationModal from './CelebrationModal';
@@ -36,11 +36,19 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
   // alternative would be three or six separate states which sounds like an absolute nightmare to maintain. A single active modal context allows
   // us to render exactly one ReadingTrackModal at the bottom of the page! activeModalContext it is haha!
   const trackBooks = initialTracks; // No longer starts as an empty array; it starts as what the server has fetched and provided! Also; doesn't need to be a state variable thanks to server seeding + router.refresh()!
-  const [activeModalContext, setActiveModalContext] = useState<{ trackId: number, slotId: number, trackTitle: string } | null>(null); // Updated to include the title cased track title to make it easier in the modal
+  const [activeModalContext, setActiveModalContext] = useState<{
+    trackId: number,
+    slotId: number,
+    trackTitle: string,
+    preStagedBook?: { data: BookshelfItem | Book | TrackBook, source: 'UserBookshelf' | 'OpenLibrary' } // For the scenario where Currently Reading is empty and there's a book in Up Next
+  } | null>(null); // Updated to include the title cased track title to make it easier in the modal
 
   // Celebration modal state variables
   const [isFinishingId, setIsFinishingId] = useState<string | null>(null);
-  const [celebrationPayload, setCelebrationPayload] = useState<{ bookTitle: string, promotion: { promotedBook: string | null; trackName: string; finishedJourneyId: string } } | null>(null);
+  const [celebrationPayload, setCelebrationPayload] = useState<{
+    bookTitle: string,
+    promotion: { upNextBookTitle: string | null; trackName: string; finishedJourneyId: string }
+  } | null>(null); // Updated to match the new payload
   const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string } | null>(null);
 
   // Inline editing state variables
@@ -330,13 +338,33 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                   // Here it doesn't serve us; the need isn't there and it would slow down MVP momentum. *Just in time, not just in case*
                   const isCurrentlyReading = slot === 1;
 
+                  // The logic here is now updated: 
+                  // If the Currently Reading slot is empty AND the Up Next slot has a book (let's use Piranesi as an example),
+                  // then a clean button [START READING] appears that is ONLY visible in this very uniqu scenario.
+                  // Clicking this button triggers the Reading Tracks Modal for Currently Reading, pre-staged with Piranesi in 
+                  // this example scenario. 
+                  // The user confirms/adjusts their starting page and total pages according to the standard setup ritual, and upon
+                  // clicking "Start Reading" in the modal:
+                  // * Piranesi is assigned to the Currently Reading slot
+                  // * Piranesi is cleared from the Up Next slot
+                  const slot1IsBooked = trackBooks.some(b => b.track_id === track.id && b.slot_id === 1);
+
                   return (
                     <div key={`${track.id}-${slot}`} className="flex flex-col gap-3 relative">
-
                       {/* The new, self-contained component. `e` is type inferred as `MouseEvent<Element, MouseEvent>`! */}
                       <ReadingTrackCard
                         book={assignedBook}
                         isCurrentlyReading={isCurrentlyReading}
+                        canPromoteDirectly={!slot1IsBooked} // Can promote if Slot 1 is empty!
+                        onPromoteToCurrentlyReading={() => {
+                          // Opens the 2-step setup modal for Slot 1, pre-filled with this book!
+                          setActiveModalContext({
+                            trackId: track.id,
+                            slotId: 1,
+                            trackTitle: track.title,
+                            preStagedBook: { data: assignedBook, source: 'UserBookshelf' } // Pre-stage the book in the modal state
+                          });
+                        }}
                         onFinishBook={(e) => handleFinishBook(e, assignedBook.bookshelf_item_id, assignedBook.title)}
                         onShelveBook={(e) => { //onFinishBook and onShelveBook differ in the sense that shelving doesn't immediately talk to the database. It simply delegates the database transaction to the modal rather than firing immediately. Until later when we introduce the default behavior in User Settings!
                           e.preventDefault();
@@ -470,6 +498,10 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
 
       {/* ALL MODALS (Safely extracted outside the map loop) */}
       < ReadingTracksModal
+        // This key is crucial to make the pre-staging work! I have *no idea* why this didn't make it to the final commit haha
+        // By having a dynamic `key`, we ensure that any hidden stale modal is destroyed every time the key changes. And the key
+        // depends on activeModalContext. 'empty-tracks-modal' is not a reserved keyword at all, it can be any string
+        key={activeModalContext ? `${activeModalContext.trackId}-${activeModalContext.slotId}` : 'empty-tracks-modal'}
         isOpen={activeModalContext !== null} // Only open if activeModalContext is a valid object
         onClose={() => setActiveModalContext(null)}
         targetSlot={activeModalContext}

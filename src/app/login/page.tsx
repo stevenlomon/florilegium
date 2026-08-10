@@ -34,7 +34,7 @@ export default async function LoginPage() {
             Welcome back.
           </h1>
           <p className="text-[#5C613E] font-serif italic text-sm">
-            Enter your credentials to access your library.
+            Enter your credentials to access your garden.
           </p>
         </div>
 
