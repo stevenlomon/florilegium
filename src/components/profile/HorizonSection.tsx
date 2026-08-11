@@ -108,7 +108,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
                       ? "w-7 opacity-100 scale-90 bg-[#8C3A3A]/80 cursor-wait text-[#FCF9F2]"
                       : confirmingSlot === slot
                         ? "w-auto px-3 opacity-100 bg-[#8C3A3A] hover:bg-[#6b2b2b] text-[#FCF9F2]"
-                        : "w-7 opacity-0 bg-[#2C302E]/60 text-[#FCF9F2] hover:bg-[#8C3A3A] group-hover:opacity-100"
+                        : "w-7 md:opacity-0 bg-[#2C302E]/60 text-[#FCF9F2] hover:bg-[#8C3A3A] md:group-hover:opacity-100"
                     }
                   `}
                   title="Remove from Horizon"

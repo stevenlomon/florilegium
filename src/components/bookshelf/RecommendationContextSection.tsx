@@ -266,7 +266,7 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
             {/* Hover Edit button which I LOVE! */}
             <button
               onClick={() => startEditing(rec)}
-              className="absolute top-4 right-4 text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-4 right-4 text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] md:opacity-0 md:group-hover:opacity-100 transition-opacity"
             >
               Edit
             </button>
