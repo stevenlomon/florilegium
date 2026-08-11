@@ -167,14 +167,14 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
         <div className="w-full max-w-4xl bg-[#FCF9F2] rounded-lg shadow-xl flex flex-col max-h-[90vh] overflow-hidden border border-[#E5E0D8]">
 
           {/* HEADER: Cover, Title, Status, & Rating */}
-          <div className="flex gap-6 p-8 border-b border-[#E5E0D8] bg-white relative shrink-0">
-            <button onClick={onClose} className="absolute top-6 right-6 text-[#5C613E] hover:text-[#2C302E] transition-colors">
+          <div className="flex gap-4 md:gap-6 p-5 md:p-8 border-b border-[#E5E0D8] bg-white relative shrink-0">
+            <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-[#5C613E] hover:text-[#2C302E] transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
 
             {/* Miniature Cover */}
-            <Link href={`/book/${book.external_id}`}>
-              <div className="relative w-24 h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden shrink-0 bg-[#EFEBE1]/50">
+            <Link href={`/book/${book.external_id}`} className="shrink-0 self-stretch md:self-auto">
+              <div className="relative w-28 h-full md:w-24 md:h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden bg-[#EFEBE1]/50">
                 {/* UPDATED: The Image Fallback Logic */}
                 {book.cover_image_url && !imageFailed ? (
                   <Image
@@ -195,9 +195,9 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
 
 
             {/* Core Metadata */}
-            <div className="flex flex-col justify-center flex-1">
-              <h2 className="font-heading text-3xl text-[#2C302E] leading-tight mb-1">{book.title}</h2>
-              <p className="font-sans text-sm text-[#5C613E] mb-6">{book.author}</p>
+            <div className="flex flex-col justify-center flex-1 min-w-0">
+              <h2 className="font-heading text-2xl md:text-3xl text-[#2C302E] leading-tight mb-1">{book.title}</h2>
+              <p className="font-sans text-sm text-[#5C613E] mb-3 md:mb-6">{book.author}</p>
 
               {/* SWITCH EDITION BUTTON FOR THE BOOKSHELF UI */}
               <div className="mb-4">
@@ -211,9 +211,9 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
                 </button>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
                 {/* READ STATUS (Now conditional! Only show it if Read Status is "Intend", "Read", or "Dropped". Not "Currently Reading") */}
-                <div className="pl-4 border-l border-[#E5E0D8] flex items-center">
+                <div className="md:pl-4 md:border-l border-[#E5E0D8] flex items-center">
                   {Number(book.status_id) === 2 ? (
                     <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-[#424B2E] bg-[#EFEBE1]/50 px-3 py-1.5 rounded border border-[#E5E0D8]">
                       Currently Reading
@@ -224,7 +224,7 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
                 </div>
 
                 {/* USER RATINGS COMPONENT */}
-                <div className="pl-4 border-l border-[#E5E0D8]">
+                <div className="md:pl-4 md:border-l border-[#E5E0D8]">
                   <StarRating initialRating={book.user_rating} onRate={handleRatingUpdate} />
                 </div>
               </div>
@@ -232,7 +232,7 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
           </div>
 
           {/* BODY: Scrollable content area */}
-          <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-10">
+          <div className="flex-1 overflow-y-auto p-5 md:p-8 flex flex-col gap-10">
 
             {/* RECOMMENDATION CONTEXT */}
             <RecommendationContextSection bookshelfItemId={book.bookshelf_item_id} existingRecs={book.recommendation_context} />
