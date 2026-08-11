@@ -311,7 +311,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                   {/* The Hover Pen Icon */}
                   <button
                     onClick={() => startEditing(track.id, track.title, track.description)}
-                    className="absolute top-1 -right-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-[#5C613E]/50 hover:text-[#424B2E]"
+                    className="absolute top-1 -right-2 p-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-[#5C613E]/50 hover:text-[#424B2E]"
                     title="Edit Track"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

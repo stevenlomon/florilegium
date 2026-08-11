@@ -309,7 +309,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => startEditing(journey)}
-                          className="text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                         >
                           Edit
                         </button>

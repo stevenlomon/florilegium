@@ -82,7 +82,7 @@ export default function ReviewSection({ bookshelfItemId, initialReview }: Review
           {/* Hover Edit button to match Recommendation Context UX */}
           <button
             onClick={() => setIsEditing(true)}
-            className="absolute top-4 right-4 text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] opacity-0 group-hover:opacity-100 transition-opacity bg-[#FCF9F2] px-3 py-1 rounded-full border border-[#E5E0D8]"
+            className="absolute top-4 right-4 text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-[#FCF9F2] px-3 py-1 rounded-full border border-[#E5E0D8]"
           >
             Edit
           </button>
