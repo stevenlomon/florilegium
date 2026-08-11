@@ -109,9 +109,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
       <Link
         href={`/book/${book.external_id || book.book_id}`}
         className={`absolute inset-0 ${showOverlay ? 'pointer-events-none' : ''}`} // Disable link clicks when overlay is active
-        onClick={isCurrentlyReading && !showOverlay ? (e: React.MouseEvent) => {
-          // Mobile: first tap shows the overlay instead of navigating away.
-          // On desktop this never fires because hovering already shows the overlay before you can click.
+        onClick={(isCurrentlyReading || canPromoteDirectly) && !showOverlay ? (e: React.MouseEvent) => {
           e.preventDefault();
           setIsHovered(true);
         } : undefined}
@@ -237,6 +235,18 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         <div className={`absolute inset-0 bg-[#2C302E]/80 flex items-center justify-center rounded-md transition-all duration-300 z-10 ${showOverlay ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <button
             type="button"
+            onClick={() => {
+              setIsHovered(false);
+            }}
+            className="md:hidden absolute top-2 right-2 h-7 w-7 rounded-full bg-[#FCF9F2]/10 flex items-center justify-center text-[#FCF9F2]/60 active:text-[#FCF9F2] active:bg-[#FCF9F2]/20 transition-colors"
+            aria-label="Dismiss"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -287,7 +297,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
           className={`absolute top-2 right-2 z-20 flex h-7 w-7 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300 shadow-sm
       ${isUnassigning
               ? "opacity-100 scale-90 bg-[#8C3A3A]/80 cursor-wait text-[#FCF9F2]"
-              : "opacity-0 bg-[#2C302E]/60 text-[#FCF9F2] hover:bg-[#8C3A3A] hover:scale-110 group-hover:opacity-100"
+              : "md:opacity-0 bg-[#2C302E]/60 text-[#FCF9F2] hover:bg-[#8C3A3A] hover:scale-110 md:group-hover:opacity-100"
             }
     `}
           title="Remove from track"
