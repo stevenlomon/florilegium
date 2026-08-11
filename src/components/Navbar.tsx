@@ -43,7 +43,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 flex items-center justify-end pl-16 pr-8 md:px-8 py-4 bg-[#FCF9F2]">
 
-      <div className="relative flex items-center gap-6">
+      <div className="relative flex flex-1 md:flex-none items-center gap-6">
         {/* SEARCH FORM */}
         <form
           onSubmit={handleSubmit}
@@ -71,7 +71,7 @@ export default function Navbar() {
             )}
           </span>
           <input
-            className="w-72 bg-transparent text-sm font-sans text-[#2C302E] outline-none placeholder:text-[#5C613E]"
+            className="w-full md:w-72 bg-transparent text-sm font-sans text-[#2C302E] outline-none placeholder:text-[#5C613E]"
             type="text"
             placeholder="Search the archives..."
             value={searchTerm}
@@ -105,7 +105,7 @@ export default function Navbar() {
 
         {/* THE DROPDOWN */}
         {isOpen && (
-          <div className="absolute right-14 top-[calc(100%+10px)] z-100 w-96 overflow-hidden rounded-md border border-[#E5E0D8] bg-white shadow-lg">
+          <div className="fixed left-4 right-4 top-16 md:absolute md:left-auto md:right-14 md:top-[calc(100%+10px)] z-100 md:w-96 overflow-hidden rounded-md border border-[#E5E0D8] bg-white shadow-lg">
             {isSearching ? (
               <p className="m-0 p-4 text-center font-sans text-sm text-[#5C613E]">Searching the archives...</p>
             ) : previews.length > 0 ? (
