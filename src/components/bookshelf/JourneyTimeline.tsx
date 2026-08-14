@@ -1,7 +1,7 @@
 'use client'
 // Now a Client Component since it will be interactive!
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { type ReadingJourney } from '@/lib/types';
 
@@ -27,6 +27,14 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (confirmDeleteId !== null) {
+      confirmTimeoutRef.current = setTimeout(() => setConfirmDeleteId(null), 3000);
+      return () => { if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current); };
+    }
+  }, [confirmDeleteId]);
 
   const router = useRouter();
 
@@ -251,7 +259,8 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                             <button
                               type="button"
                               onClick={() => handleDeleteJourney(journey.id)}
-                              onMouseLeave={() => setConfirmDeleteId(null)} // Reset if mouse leaves!
+                              onMouseLeave={() => setConfirmDeleteId(null)}
+                              onBlur={() => setConfirmDeleteId(null)}
                               disabled={isUpdating || isDeleting || hasNotes}
                               title={hasNotes ? "Clear raw thoughts before deleting journey" : undefined}
                               className={`px-3 py-2 text-xs font-sans uppercase tracking-widest rounded transition-all ${hasNotes

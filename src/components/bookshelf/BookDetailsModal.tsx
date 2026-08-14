@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -27,6 +27,14 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
   // Bookshelf item deletion state
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (confirmDelete) {
+      confirmTimeoutRef.current = setTimeout(() => setConfirmDelete(false), 3000);
+      return () => { if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current); };
+    }
+  }, [confirmDelete]);
 
   // New state for tracking image loading errors
   const [imageFailed, setImageFailed] = useState(false);
@@ -263,7 +271,8 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
                       handleDelete();
                     }
                   }}
-                  onMouseLeave={() => setConfirmDelete(false)} // Gracefully reset if the mouse slips away
+                  onMouseLeave={() => setConfirmDelete(false)}
+                  onBlur={() => setConfirmDelete(false)}
                   title={hasConnectedData ? "Clear all connected data to remove this book" : "Remove from Bookshelf"}
                   className={`px-4 py-2 text-[10px] font-sans font-bold uppercase tracking-widest rounded transition-all ${hasConnectedData
                     ? 'text-[#8C3A3A]/30 cursor-not-allowed'
