@@ -82,9 +82,9 @@ npm run dev
 
 ## Screenshots
 <img width="1883" height="916" alt="Screenshot_2026-08-11_14-07-15" src="https://github.com/user-attachments/assets/30cec1bb-ede7-495d-8db0-66c3f3311962" />
-<img width="1883" height="916" alt="Screenshot_2026-08-11_13-58-14" src="https://github.com/user-attachments/assets/f49c8cad-aae7-44ca-9139-dfec90f12b43" />
-<img width="1883" height="916" alt="Screenshot_2026-08-11_22-23-09" src="https://github.com/user-attachments/assets/e955f6d0-8cd5-4179-a21e-75556449b5c5" />
+<img width="1886" height="918" alt="Screenshot_2026-08-14_11-06-19" src="https://github.com/user-attachments/assets/7e374fec-a100-47a0-8bf1-bbe336ea3517" />
+<img width="1886" height="918" alt="Screenshot_2026-08-14_11-06-40" src="https://github.com/user-attachments/assets/f7276c41-e860-4277-b940-d8debe11f358" />
 <img width="1883" height="916" alt="Screenshot_2026-08-11_22-21-39" src="https://github.com/user-attachments/assets/bfed20ab-bcb3-4d71-ad64-0d6f89deda3b" />
-<img width="1883" height="916" alt="Screenshot_2026-08-11_14-05-08" src="https://github.com/user-attachments/assets/86ef3050-d5bd-41a1-9d46-b0650c7d6c00" />
+<img width="1886" height="918" alt="Screenshot_2026-08-14_11-10-24" src="https://github.com/user-attachments/assets/4c8ac4c3-9f99-4524-a706-745258bd1c57" />
 <img width="1883" height="916" alt="Screenshot_2026-08-11_13-58-57" src="https://github.com/user-attachments/assets/6893d644-a70d-459a-a7f4-413f99e91032" />
 <img width="1883" height="916" alt="Screenshot_2026-08-11_14-06-19" src="https://github.com/user-attachments/assets/f3b6977c-619e-4211-bd6e-dc66db4e452f" />
