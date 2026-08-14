@@ -89,7 +89,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
               <>
                 <span className="opacity-50">•</span>
                 {/* The group relative wrapper for the tooltip */}
-                <div className="group relative flex items-center cursor-help">
+                <div className="group relative flex items-center cursor-help outline-none" tabIndex={0}>
                   {/* We use a subtle dotted underline to indicate interactivity if an exact count is hidden beneath */}
                   <span className={`underline-offset-4 ${exactPages ? 'underline decoration-dotted decoration-[#5C613E]/50' : ''}`}>
                     {estimatePages ? `ca ${estimatePages} pages` : `${exactPages} pages`}
@@ -97,7 +97,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
                   
                   {/* The Hover Tooltip (Only renders if an exact count exists!) */}
                   {exactPages && (
-                    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-[#2C302E] px-3 py-1.5 text-[10px] font-sans font-bold tracking-widest text-[#FCF9F2] uppercase opacity-0 transition-all duration-300 transform translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 shadow-md z-10">
+                    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-[#2C302E] px-3 py-1.5 text-[10px] font-sans font-bold tracking-widest text-[#FCF9F2] uppercase opacity-0 transition-all duration-300 transform translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 shadow-md z-10">
                       Exact printing: {exactPages} pages
                       {/* Tiny tooltip arrow pointing down */}
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#2C302E]" />
