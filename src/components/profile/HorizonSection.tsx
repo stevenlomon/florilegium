@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,14 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
 
   // NEW: State for the Two-Tap Unassignment
   const [confirmingSlot, setConfirmingSlot] = useState<number | null>(null);
+  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (confirmingSlot !== null) {
+      confirmTimeoutRef.current = setTimeout(() => setConfirmingSlot(null), 3000);
+      return () => { if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current); };
+    }
+  }, [confirmingSlot]);
   const [unassigningSlot, setUnassigningSlot] = useState<number | null>(null);
 
   const router = useRouter();
@@ -102,7 +110,8 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
                   type="button"
                   disabled={unassigningSlot === slot}
                   onClick={(e) => handleUnassign(e, assignedBook.bookshelf_item_id, slot)}
-                  onMouseLeave={() => setConfirmingSlot(null)} // Cancel confirmation if mouse leaves
+                  onMouseLeave={() => setConfirmingSlot(null)}
+                  onBlur={() => setConfirmingSlot(null)}
                   className={`absolute top-2 right-2 z-20 flex h-7 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300 shadow-sm
                     ${unassigningSlot === slot
                       ? "w-7 opacity-100 scale-90 bg-[#8C3A3A]/80 cursor-wait text-[#FCF9F2]"

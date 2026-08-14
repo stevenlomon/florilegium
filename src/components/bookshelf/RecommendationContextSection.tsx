@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { type Recommendation } from '@/lib/types';
 
@@ -29,6 +29,14 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
   // State for deleting an existing entry
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (confirmDeleteId !== null) {
+      confirmTimeoutRef.current = setTimeout(() => setConfirmDeleteId(null), 3000);
+      return () => { if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current); };
+    }
+  }, [confirmDeleteId]);
 
   const router = useRouter();
 
@@ -186,16 +194,17 @@ export default function RecommendationContextSection({ bookshelfItemId, existing
             />
 
             {/* Unified Action Bar (Right-aligned) */}
-            <div className="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-[#E5E0D8]">
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-4 mt-2 border-t border-[#E5E0D8]">
               {(() => {
                 const hasData = editRecommendedBy.trim().length > 0 || editLink.trim().length > 0 || editNotes.trim().length > 0;
 
                 return (
-                  <div className="flex items-center mr-2">
+                  <div className="flex items-center mr-auto">
                     <button
                       type="button"
                       onClick={() => handleDelete(rec.id)}
-                      onMouseLeave={() => setConfirmDeleteId(null)} // Reset if mouse leaves!
+                      onMouseLeave={() => setConfirmDeleteId(null)}
+                      onBlur={() => setConfirmDeleteId(null)}
                       disabled={isUpdating || isDeleting || hasData}
                       title={hasData ? "Clear all inputs before deleting" : undefined}
                       className={`px-3 py-2 text-xs font-sans uppercase tracking-widest rounded transition-all ${hasData
