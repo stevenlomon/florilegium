@@ -101,8 +101,9 @@ export const getBookById = async (id: string): Promise<Book> => {
     }
 
     // Construct the Large (-L) cover image URL
+    // To fix the bug in Issue #106, this may be overridden by edition fallback below. Some works only have covers at the Edition level!
     const coverId = data.covers && data.covers.length > 0 ? data.covers[0] : null;
-    const coverUrl = coverId ? `${COVER_BASE_URL}/${coverId}-L.jpg` : '';
+    let coverUrl = coverId ? `${COVER_BASE_URL}/${coverId}-L.jpg` : ''; // Since this needs to be able to change if needed, it needs to be `let` now; not `const`!
 
     // Fetch Author Names in parallel using their Author Keys
     const authors: Author[] = [];
@@ -171,6 +172,15 @@ export const getBookById = async (id: string): Promise<Book> => {
           defaultEditionId = fallbackEd.key.split('/').pop();
           defaultIsbn = fallbackEd.isbn_13?.[0] || fallbackEd.isbn_10?.[0] || null;
           pageCountExact = fallbackEd.number_of_pages || null;
+        }
+
+        // Fallback: if the Work itself has no cover, grab one from any edition
+        if (!coverUrl) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const edWithCover = editions.find((ed: any) => ed.covers && ed.covers.length > 0);
+          if (edWithCover) {
+            coverUrl = `${COVER_BASE_URL}/${edWithCover.covers[0]}-L.jpg`;
+          }
         }
       }
     } catch (err) {
