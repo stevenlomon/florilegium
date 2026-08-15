@@ -68,7 +68,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
       // Has the user scrolled past the filter bar?
       // In web coordinates, Y increases DOWNWARD. So currentY > barTop means the bar is now above the viewport.
-      if (currentY > barTop) {
+      if (currentY > barTop && window.innerWidth >= 768) { // The Sticky bar never activates on Mobile!
         if (!barPassedRef.current) {
           barPassedRef.current = true;
           setIsPastBar(true);
