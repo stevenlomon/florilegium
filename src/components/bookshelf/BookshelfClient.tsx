@@ -53,6 +53,10 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   const filterBarRef = useRef<HTMLDivElement>(null);   // Points to the invisible "sentinel" div in the render return statement. It marks where the bar naturally lives
   const lastScrollY = useRef(0);                       // Where the user was on the *previous* scroll tick, compared against the current position to determine direction
   const barPassedRef = useRef(false);                  // Has the user scrolled past the filter bar? We only care about scroll direction *after* they've gone past it. Mirrors `isPastBar`
+  
+  // Two refs to ensure that the Sticky bar is a visual clone of the real bar
+  const contentBarRef = useRef<HTMLDivElement>(null);  
+  const barHeightRef = useRef(0);                      
 
   // Empty dependency array [] -> this runs once on mount, listens forever, cleans up on unmount
   useEffect(() => {
@@ -70,6 +74,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
       // In web coordinates, Y increases DOWNWARD. So currentY > barTop means the bar is now above the viewport.
       if (currentY > barTop && window.innerWidth >= 768) { // The Sticky bar never activates on Mobile!
         if (!barPassedRef.current) {
+          if (contentBarRef.current) barHeightRef.current = contentBarRef.current.offsetHeight; 
           barPassedRef.current = true;
           setIsPastBar(true);
         }
@@ -164,54 +169,56 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
       {/* FILTER TABS & LOCAL SEARCH */}
 
       {/* THE "SENTINEL" DIV */}
-      <div ref={filterBarRef} />
+      <div ref={filterBarRef} style={isPastBar ? { height: barHeightRef.current } : undefined} />
 
       {/* THE CONDITIONAL FILTER BAR */}
-      <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-4 transition-transform duration-300 ease-out ${isPastBar ? `fixed top-16 right-0 left-0 md:left-72 z-40 bg-[#FCF9F2] border-b border-[#E5E0D8] px-8 py-4 shadow-sm ${isSticky ? 'translate-y-0' : '-translate-y-full'}` : 'border-b border-[#E5E0D8]'}`}>
+      <div ref={contentBarRef} className={`transition-transform duration-300 ease-out ${isPastBar ? `fixed top-16 right-0 left-0 md:left-72 z-40 bg-[#FCF9F2] border-b border-[#E5E0D8] shadow-sm ${isSticky ? 'translate-y-0' : '-translate-y-full'}` : 'border-b border-[#E5E0D8]'}`}>
+        <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 ${isPastBar ? 'max-w-7xl mx-auto px-8 py-4' : 'pb-4'}`}>
 
-        {/* The Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {TABS.map((tab) => {
-            const count = tab.id === 'all'
-              ? books.length
-              : books.filter(b => b.status_id.toString() === tab.id).length;
-            return (
+          {/* The Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {TABS.map((tab) => {
+              const count = tab.id === 'all'
+                ? books.length
+                : books.filter(b => b.status_id.toString() === tab.id).length;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
+                    ? 'bg-[#424B2E] text-white shadow-sm'
+                    : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
+                    }`}
+                >
+                  {tab.label} <span className="opacity-70 text-xs ml-1">({count})</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* The Deep Search Input */}
+          <div className="relative w-full lg:w-96 shrink-0 group">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              placeholder="Search authors, recommendation context, notes.."
+              className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
+            />
+            {localSearchTerm && (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
-                  ? 'bg-[#424B2E] text-white shadow-sm'
-                  : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
-                  }`}
+                onClick={() => setLocalSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
               >
-                {tab.label} <span className="opacity-70 text-xs ml-1">({count})</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
-            )
-          })}
-        </div>
+            )}
+          </div>
 
-        {/* The Deep Search Input */}
-        <div className="relative w-full lg:w-96 shrink-0 group">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={localSearchTerm}
-            onChange={(e) => setLocalSearchTerm(e.target.value)}
-            placeholder="Search authors, recommendation context, notes.."
-            className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
-          />
-          {localSearchTerm && (
-            <button
-              onClick={() => setLocalSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          )}
         </div>
-
       </div>
 
       {/* GRID */}
