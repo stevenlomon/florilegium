@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { type BookshelfItem } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
@@ -40,7 +40,67 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   const [failedImages, setFailedImages] = useState<string[]>([]);
 
   // New state for the Bookshelf search!
-  const [localSearchTerm, setLocalSearchTerm] = useState(''); // NEW
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+
+  // -- Sticky Filter Bar --
+  // The idea: when the user scrolls past the filter bar, it disappears (normal). But if they scroll *up*,
+  // the bar re-appears fixed at the top of the screen so they can switch tabs or search without scrolling
+  // all the way back up. Same "show on scroll up" pattern as our Shopify store except it's React instead 
+  // of Vanilla JS!
+  //
+  // isSticky is the only state and the only visual here. It's what actually triggers a re-render to 
+  // show/hide the bar.
+  // I've never really been confident around useRef but seeing three in a cluster here, the way I understand 
+  // them now is that they make things change in the background *WITHOUT* causing a re-render of the entire 
+  // component every time. They're "silent". They persist across renders but updating them doesn't cause
+  // a "repaint". In this specific Sticky Bar scenario, their values change *on every single scroll tick*!
+  const [isSticky, setIsSticky] = useState(false);
+  const filterBarRef = useRef<HTMLDivElement>(null);  // Points to the invisible "sentinel" div in the render return state. It marks where the bar naturally lives
+  const lastScrollY = useRef(0);                      // Where the user was on the *previous* scroll tick, compared against the current position to determine direction
+  const barPassedRef = useRef(false);                 // Has the user scrolled past the filter bar? We only care about scroll direction *after* they've gone past it
+
+  // Empty dependency array [] -> this runs once on mount, listens forever, cleans up on unmount
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY; // How far down the page the user has scrolled (in px). 0 = very top of the page
+      const filterBar = filterBarRef.current; // Grab the actual DOM element the ref is attached to
+      if (!filterBar) return; // Safety: if the ref isn't attached yet, bail
+
+      // getBoundingClientRect() returns the element's position relative to the *viewport* (what's visible on screen).
+      // Adding scrollY converts that to an absolute "distance from the top of the document". A stable number
+      // regardless of where the user has scrolled.
+      const barTop = filterBar.getBoundingClientRect().top + currentY;
+
+      // Has the user scrolled past the filter bar?
+      // In web coordinates, Y increases DOWNWARD. So currentY > barTop means the bar is now above the viewport.
+      if (currentY > barTop) {
+        barPassedRef.current = true;
+      }
+
+      // Is the user scrolling up or down?
+      if (barPassedRef.current) {
+        if (currentY < lastScrollY.current) {
+          setIsSticky(true);  // Scrolling UP (position is decreasing) → reveal the floating bar
+        } else {
+          setIsSticky(false); // Scrolling DOWN (position is increasing) → hide it, they're diving deeper
+        }
+      }
+
+      // Has the user scrolled all the way back to where the bar naturally lives?
+      // The bar resets back in its natural document flow position.
+      if (currentY <= barTop) {
+        setIsSticky(false);
+        barPassedRef.current = false;
+      }
+
+      lastScrollY.current = currentY; // Snapshot this tick's position so the *next* tick can compare against it
+    };
+
+    // `passive: true` tells the Browser we won't call preventDefault() to optimize scroll performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Important cleanup: remove the event listener when the component is destroyed
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // In order to have router.refresh() work properly as intended in the modal, it serves us more to *not* have `books` be a state variable!
   const books = initialBooks;
@@ -101,7 +161,12 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   return (
     <div className="flex flex-col gap-8">
       {/* FILTER TABS & LOCAL SEARCH */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-[#E5E0D8] pb-4">
+
+      {/* THE "SENTINEL" DIV */}
+      <div ref={filterBarRef} />
+
+      {/* THE CONDITIONAL FILTER BAR */}
+      <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-4 transition-transform duration-300 ease-out ${isSticky ? 'fixed top-16 right-0 left-0 md:left-72 z-40 bg-[#FCF9F2] border-b border-[#E5E0D8] px-8 py-4 shadow-sm' : 'border-b border-[#E5E0D8]'}`} style={isSticky ? { transform: 'translateY(0)' } : undefined}>
 
         {/* The Tabs */}
         <div className="flex flex-wrap gap-2">
