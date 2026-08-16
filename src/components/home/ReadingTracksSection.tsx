@@ -49,7 +49,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
     bookTitle: string,
     promotion: { upNextBookTitle: string | null; trackName: string; finishedJourneyId: string }
   } | null>(null); // Updated to match the new payload
-  const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string } | null>(null);
+  const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string, isHorizonBook: boolean } | null>(null); // Simple isHorizonBook boolean for special messages
 
   // Inline editing state variables
   const [localTracks, setLocalTracks] = useState(initialTrackMetadata); // Elevating TRACKS to state so we can mutate it locally!
@@ -369,7 +369,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                         onShelveBook={(e) => { //onFinishBook and onShelveBook differ in the sense that shelving doesn't immediately talk to the database. It simply delegates the database transaction to the modal rather than firing immediately. Until later when we introduce the default behavior in User Settings!
                           e.preventDefault();
                           e.stopPropagation(); // onFisnishBook also uses `e.stopPropagation();` but it lives in `handleFinishBook`!
-                          setCrossroadsPayload({ trackId: track.id, bookTitle: assignedBook.title });
+                          setCrossroadsPayload({ trackId: track.id, bookTitle: assignedBook.title, isHorizonBook: assignedBook.horizon_slot !== null });
                         }}
                         isFinishing={isFinishingId === assignedBook.bookshelf_item_id}
                       />
@@ -520,6 +520,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
         <CrossroadsModal
           bookTitle={crossroadsPayload.bookTitle}
           trackId={crossroadsPayload.trackId}
+          isHorizonBook={crossroadsPayload.isHorizonBook}
           onClose={() => setCrossroadsPayload(null)}
         />
       )}

@@ -40,6 +40,7 @@ export interface TrackBook {
   page_count_estimate: number | null; // Our old page_count column..
   page_count_exact?: number | null;   // .. now split into two distinct columns
   current_page?: number | null; // From the Reading_Journey table
+  horizon_slot: number | null; // Needed for Horizon recognition!
 }
 
 export interface BookshelfItem {

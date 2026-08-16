@@ -7,10 +7,11 @@ import { useEscapeKey } from '@/hooks/useEscapeKey';
 interface CrossroadsModalProps {
   bookTitle: string;
   trackId: number;
+  isHorizonBook: boolean;
   onClose: () => void;
 }
 
-export default function CrossroadsModal({ bookTitle, trackId, onClose }: CrossroadsModalProps) {
+export default function CrossroadsModal({ bookTitle, trackId, isHorizonBook, onClose }: CrossroadsModalProps) {
   const [isShelving, setIsShelving] = useState<number | null>(null); // Tracks which button is loading
 
   // Our new useEscapeKey custom hook! This is a conditionally rendered modal that doesn't use isOpen, we only render them
@@ -63,11 +64,28 @@ export default function CrossroadsModal({ bookTitle, trackId, onClose }: Crossro
         </button>
 
         <div className="text-center mb-8 mt-4">
+          {isHorizonBook && (
+            <p className="text-[#424B2E] font-serif text-xs font-bold uppercase tracking-widest mb-4">
+              ✦ Horizon Book ✦
+            </p>
+          )}
           <h2 className="font-heading text-3xl text-[#2C302E] leading-tight mb-2">
             Stepping away?
           </h2>
           <p className="font-serif text-[#5C613E] leading-relaxed px-2">
-            You are removing <strong className="font-semibold text-[#424B2E]">{bookTitle}</strong> from your active tracking. Where should we put it?
+            {isHorizonBook ? (
+              <>
+                You are stepping away from <strong className="font-semibold text-[#424B2E]">{bookTitle}</strong>, but this is not a failure.
+                <br /><br />
+                It takes real discernment to know when a work of this magnitude belongs to a different season of your life. Has your focus simply shifted, or is this volume waiting for a quieter state of mind?
+                <br /><br />
+                Where should we place it for now?
+              </>
+            ) : (
+              <>
+                You are removing <strong className="font-semibold text-[#424B2E]">{bookTitle}</strong> from your active tracking. Where should we put it?
+              </>
+            )}
           </p>
         </div>
 
