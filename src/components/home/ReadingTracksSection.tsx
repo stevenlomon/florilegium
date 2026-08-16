@@ -47,9 +47,10 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
   const [isFinishingId, setIsFinishingId] = useState<string | null>(null);
   const [celebrationPayload, setCelebrationPayload] = useState<{
     bookTitle: string,
+    isHorizonBook: boolean, // Added for the special Horizon celebration message!
     promotion: { upNextBookTitle: string | null; trackName: string; finishedJourneyId: string }
   } | null>(null); // Updated to match the new payload
-  const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string } | null>(null);
+  const [crossroadsPayload, setCrossroadsPayload] = useState<{ trackId: number, bookTitle: string, isHorizonBook: boolean } | null>(null); // Simple isHorizonBook boolean for special messages
 
   // Inline editing state variables
   const [localTracks, setLocalTracks] = useState(initialTrackMetadata); // Elevating TRACKS to state so we can mutate it locally!
@@ -88,7 +89,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
   // The rest of the file stays exactly the same! Completely untouched.
   // It's... it's all so simple yet incredibly elegant. And it just makes intuitive sense! I can never Step back from using Next.js now haha!
 
-  const handleFinishBook = async (e: React.MouseEvent, bookshelfItemId: string, bookTitle: string) => {
+  const handleFinishBook = async (e: React.MouseEvent, bookshelfItemId: string, bookTitle: string, isHorizonBook: boolean) => {
     e.preventDefault();
     e.stopPropagation(); // Completely new to me, first time seeing! It's used here to prevent Event Bubbling and any unwanted side effects from the click. The click is contained strictly to the "Finish" button so that we can be in control when we show the modal
 
@@ -111,7 +112,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
 
       if (data.promotion) {
         // Intercept the payload!! In order to show our new modal
-        setCelebrationPayload({ bookTitle, promotion: data.promotion }); // Now includes the finishedJourneyId we've added
+        setCelebrationPayload({ bookTitle, isHorizonBook, promotion: data.promotion }); // Now includes the finishedJourneyId we've added
       } else {
         // Fallback just in case
         router.refresh();
@@ -365,11 +366,11 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                             preStagedBook: { data: assignedBook, source: 'UserBookshelf' } // Pre-stage the book in the modal state
                           });
                         }}
-                        onFinishBook={(e) => handleFinishBook(e, assignedBook.bookshelf_item_id, assignedBook.title)}
+                        onFinishBook={(e) => handleFinishBook(e, assignedBook.bookshelf_item_id, assignedBook.title, assignedBook.horizon_slot !== null)}
                         onShelveBook={(e) => { //onFinishBook and onShelveBook differ in the sense that shelving doesn't immediately talk to the database. It simply delegates the database transaction to the modal rather than firing immediately. Until later when we introduce the default behavior in User Settings!
                           e.preventDefault();
                           e.stopPropagation(); // onFisnishBook also uses `e.stopPropagation();` but it lives in `handleFinishBook`!
-                          setCrossroadsPayload({ trackId: track.id, bookTitle: assignedBook.title });
+                          setCrossroadsPayload({ trackId: track.id, bookTitle: assignedBook.title, isHorizonBook: assignedBook.horizon_slot !== null });
                         }}
                         isFinishing={isFinishingId === assignedBook.bookshelf_item_id}
                       />
@@ -511,6 +512,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
       {celebrationPayload && (
         <CelebrationModal
           bookTitle={celebrationPayload.bookTitle}
+          isHorizonBook={celebrationPayload.isHorizonBook}
           promotion={celebrationPayload.promotion}
           onClose={handleCloseCelebration}
         />
@@ -520,6 +522,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
         <CrossroadsModal
           bookTitle={crossroadsPayload.bookTitle}
           trackId={crossroadsPayload.trackId}
+          isHorizonBook={crossroadsPayload.isHorizonBook}
           onClose={() => setCrossroadsPayload(null)}
         />
       )}

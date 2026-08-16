@@ -357,6 +357,18 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
               </button>
             </div>
 
+            {/* Horizon Book Recognition — only shown when the book being assigned has a Horizon slot */}
+            {stagedBook.source === 'UserBookshelf' && (stagedBook.data as BookshelfItem).horizon_slot !== null && (
+              <div className="bg-[#EFEBE1] border border-[#424B2E]/20 rounded p-5 mb-6">
+                <p className="text-center text-[#424B2E] font-serif text-xs font-bold uppercase tracking-widest mb-3">
+                  ✦ Horizon Book ✦
+                </p>
+                <p className="font-serif text-sm text-[#5C613E] leading-relaxed text-center">
+                  You&apos;re about to start reading one of your Horizon Books. You set this book apart for a reason. Settle in, breathe deeply, and give your mind the unhurried space it needs to absorb every word. Take your time and enjoy the journey.
+                </p>
+              </div>
+            )}
+
             {/* The Prompt */}
             <div className="bg-[#EFEBE1]/50 p-5 rounded border border-[#E5E0D8] mb-8 mt-2">
 

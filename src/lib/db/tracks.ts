@@ -46,6 +46,7 @@ export async function getReadingTracks() {
     // Update: Now also includes bookshelf_item_id which is needed from the Reading Tracks UI
     // Update: Now also include custom_page_count and page_count for the real Progress Tracker
     // Update: Now also includes current_page for the Progress Tracker
+    // Update: NOw also includes horizon_slot for Horizon Recognition!
     text: `
       -- SLOT 1: Currently Reading (Linked via Reading_Journey)
       SELECT 
@@ -60,7 +61,8 @@ export async function getReadingTracks() {
         b.page_count_exact,
         bi.id AS bookshelf_item_id,
         bi.custom_page_count,
-        rj.current_page -- Bug fixed: current_page added here so that we don't see a permanent 0 haha
+        rj.current_page, -- Bug fixed: current_page added here so that we don't see a permanent 0 haha
+        bi.horizon_slot
       FROM "Reading_Track" rt
       JOIN "Reading_Journey" rj ON rt.reading_journey_id = rj.id
       JOIN "Bookshelf_Item" bi ON rj.bookshelf_item_id = bi.id
@@ -70,7 +72,7 @@ export async function getReadingTracks() {
       UNION ALL
 
       -- SLOT 2: Follow-up (Linked directly via Bookshelf_Item)
-      SELECT 
+      SELECT
         rt.id AS track_id, -- No more string manipulation needed!
         2 AS slot_id,
         b.id AS book_id,
@@ -78,11 +80,12 @@ export async function getReadingTracks() {
         b.title,
         b.author,
         b.cover_image_url,
-        b.page_count_estimate, 
+        b.page_count_estimate,
         b.page_count_exact,
         bi.id AS bookshelf_item_id,
         bi.custom_page_count,
-        NULL AS current_page -- Required! Both sides of a UNION ALL needs to have the exact same mathching numbers of columns
+        NULL AS current_page, -- Required! Both sides of a UNION ALL needs to have the exact same mathching numbers of columns
+        bi.horizon_slot
       FROM "Reading_Track" rt
       JOIN "Bookshelf_Item" bi ON rt.follow_up_book_id = bi.id
       JOIN "Book" b ON bi.book_id = b.id
