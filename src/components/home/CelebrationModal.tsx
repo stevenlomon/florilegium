@@ -11,11 +11,12 @@ interface PromotionData {
 
 interface CelebrationModalProps {
   bookTitle: string;
+  isHorizonBook: boolean; // For the special Horizon celebration message!
   promotion: PromotionData;
   onClose: () => void;
 }
 
-export default function CelebrationModal({ bookTitle, promotion, onClose }: CelebrationModalProps) {
+export default function CelebrationModal({ bookTitle, isHorizonBook, promotion, onClose }: CelebrationModalProps) {
   const [rawThoughts, setRawThoughts] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -47,34 +48,59 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
 
         {/* 1. THE CELEBRATION HEADER */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#424B2E] text-[#FCF9F2] mb-6 shadow-sm">
-            <span className="text-3xl">✨</span>
-          </div>
-          <h2 className="font-heading text-4xl text-[#2C302E] leading-tight mb-3">
-            You finished {bookTitle}!
-          </h2>
-
-          {/* Dynamic Promotion Message: updated to integrate Ma (間) whether the Up Next slot is filled or not, now without explicitly mentioning it */}
-          {promotion.upNextBookTitle ? (
+          {isHorizonBook ? (
             <>
-              <p className="font-serif text-lg text-[#5C613E]">
-                <strong className="font-semibold text-[#424B2E]">{promotion.upNextBookTitle}</strong> is resting in Up Next for your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track.
+              <p className="text-[#424B2E] font-serif text-xs font-bold uppercase tracking-widest mb-6">
+                ✦ Horizon Book ✦
+              </p>
+              <h2 className="font-heading text-4xl text-[#2C302E] leading-tight mb-3">
+                A summit reached.
+              </h2>
+              <p className="font-serif text-lg text-[#5C613E] mb-4">
+                You have finished <strong className="font-semibold text-[#424B2E]">{bookTitle}</strong>.
+              </p>
+              <p className="font-serif text-lg text-[#5C613E] mb-4">
+                Completing a work from your Horizon is no small feat&mdash;it is a quiet triumph of sustained attention and deep devotion to the page.
+              </p>
+              <p className="font-serif text-lg text-[#5C613E] mb-4">
+                You set this masterpiece apart, climbed its dense terrain, and saw it through to the very last line.
               </p>
               <p className="font-serif text-lg text-[#5C613E]">
-                Whenever your heart feels is the right time, it&apos;s there to begin.
-              </p>
-              <p className="font-serif text-lg text-[#5C613E] mt-4">
-                For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
+                A monumental book leaves an indelible mark on how you think and see. Resist the urge to rush to the next book; step away, breathe deeply, and give yourself permission to linger in the quiet space you&apos;ve earned.
               </p>
             </>
           ) : (
             <>
-              <p className="font-serif text-lg text-[#5C613E]">
-                Your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track is now open for your next great undertaking.
-              </p>
-              <p className="font-serif text-lg text-[#5C613E] mt-4">
-                For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
-              </p>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#424B2E] text-[#FCF9F2] mb-6 shadow-sm">
+                <span className="text-3xl">✨</span>
+              </div>
+              <h2 className="font-heading text-4xl text-[#2C302E] leading-tight mb-3">
+                You finished {bookTitle}!
+              </h2>
+
+              {/* Dynamic Promotion Message: updated to integrate Ma (間) whether the Up Next slot is filled or not, now without explicitly mentioning it */}
+              {promotion.upNextBookTitle ? (
+                <>
+                  <p className="font-serif text-lg text-[#5C613E]">
+                    <strong className="font-semibold text-[#424B2E]">{promotion.upNextBookTitle}</strong> is resting in Up Next for your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track.
+                  </p>
+                  <p className="font-serif text-lg text-[#5C613E]">
+                    Whenever your heart feels is the right time, it&apos;s there to begin.
+                  </p>
+                  <p className="font-serif text-lg text-[#5C613E] mt-4">
+                    For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-serif text-lg text-[#5C613E]">
+                    Your <strong className="font-semibold text-[#424B2E]">{promotion.trackName}</strong> track is now open for your next great undertaking.
+                  </p>
+                  <p className="font-serif text-lg text-[#5C613E] mt-4">
+                    For now, this is an invitation to take a few moments to simply exist in this intentional space in between.
+                  </p>
+                </>
+              )}
             </>
           )}
         </div>
@@ -87,7 +113,9 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
           <textarea
             value={rawThoughts}
             onChange={(e) => setRawThoughts(e.target.value)}
-            placeholder={`You just turned the last page. What's lingering in your mind right now?\n\nThis will be a log post completely separate from your polished review of the book\n\nDon't overthink it—just write`}
+            placeholder={isHorizonBook
+              ? `The final page is turned, and the weight of the book is still in your hands.\n\nWhat is echoing in your thoughts right now?\n\nCapture the unpolished residue before it fades—or simply close the volume and sit in the quiet.`
+              : `You just turned the last page. What's lingering in your mind right now?\n\nThis will be a log post completely separate from your polished review of the book\n\nDon't overthink it—just write`}
             className="w-full min-h-37.5 p-5 border border-[#E5E0D8] rounded-md bg-white text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] resize-none shadow-sm transition-all"
           />
 
@@ -120,5 +148,5 @@ export default function CelebrationModal({ bookTitle, promotion, onClose }: Cele
         </div>
       </div>
     </div>
-  );
-}
+  )
+};
