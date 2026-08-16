@@ -120,8 +120,9 @@ export async function PATCH(req: Request) {
         }
 
         // 4. Update the Bookshelf Item Status (1 = Intend to Read, 4 = Dropped)
+        // If dropped, also clear the Horizon slot so the data is truthful!
         await client.query(
-          'UPDATE "Bookshelf_Item" SET status_id = $1 WHERE id = $2 AND user_id = $3',
+          `UPDATE "Bookshelf_Item" SET status_id = $1${target_status_id === 4 ? ', horizon_slot = NULL' : ''} WHERE id = $2 AND user_id = $3`,
           [target_status_id, bookshelfItemId, user.id]
         );
 

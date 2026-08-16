@@ -171,9 +171,9 @@ export async function PATCH(req: Request) {
         try {
           await client.query('BEGIN');
 
-          // Before anything, actually update the status of the current book to "Read"
+          // Before anything, actually update the status of the current book to "Read". We now also clear its Horizon slot!
           const updateRes = await client.query(
-            'UPDATE "Bookshelf_Item" SET status_id = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+            'UPDATE "Bookshelf_Item" SET status_id = $1, horizon_slot = NULL WHERE id = $2 AND user_id = $3 RETURNING *',
             [status_id, bookshelf_item_id, user.id]
           );
 
