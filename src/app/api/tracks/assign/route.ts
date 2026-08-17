@@ -57,8 +57,15 @@ export async function POST(req: Request) {
       if (isCurrentlyReading) {
         // -- Scenario A: Currently Reading (Slot 1)
 
+        // Snapshot the book's current status before we change it
+        const statusSnapshot = await client.query(
+          'SELECT status_id FROM "Bookshelf_Item" WHERE id = $1 AND user_id = $2',
+          [bookshelf_item_id, user.id]
+        );
+        const previousStatus = statusSnapshot.rows[0]?.status_id;
+
         // Update the reading status of the Bookshelf Item to Currently Reading (status_id = 2)
-        await client.query('UPDATE "Bookshelf_Item" SET status_id = 2 WHERE id = $1 AND user_id = $2', [bookshelf_item_id, user.id]); // We can await a db query without assigning it to a variable! This is the first time this has properly clicked for me haha!
+        await client.query('UPDATE "Bookshelf_Item" SET status_id = 2 WHERE id = $1 AND user_id = $2', [bookshelf_item_id, user.id]);
 
         // Bugfix: we missed this haha. Clear this book from ANY "Up Next" slot so it doesn't duplicate in the UI!
         await client.query(
@@ -89,26 +96,43 @@ export async function POST(req: Request) {
               [startingPage, activeJourneyId]
             );
           }
+        } else if (previousStatus === 4) {
+          // Book was Dropped. Re-open the most recent journey instead of creating a duplicate
+          const droppedJourney = await client.query(
+            'SELECT id FROM "Reading_Journey" WHERE bookshelf_item_id = $1 AND finished_at IS NOT NULL ORDER BY iteration DESC LIMIT 1',
+            [bookshelf_item_id]
+          );
+
+          if ((droppedJourney.rowCount ?? 0) > 0) {
+            activeJourneyId = droppedJourney.rows[0].id;
+            await client.query('UPDATE "Reading_Journey" SET finished_at = NULL WHERE id = $1', [activeJourneyId]);
+
+            if (initial_current_page) {
+              await client.query('UPDATE "Reading_Journey" SET current_page = $1 WHERE id = $2', [startingPage, activeJourneyId]);
+            }
+          } else {
+            // Journey was manually deleted. Fall through to fresh start
+            const newJourneyId = crypto.randomUUID();
+            await client.query(
+              `INSERT INTO "Reading_Journey" (id, current_page, bookshelf_item_id, iteration) VALUES ($1, $2, $3, 1)`,
+              [newJourneyId, startingPage, bookshelf_item_id]
+            );
+            activeJourneyId = newJourneyId;
+          }
         } else {
-          // No active Reading Journey exists, we need look at previous history to determine the iteration
+          // Fresh start or re-read — create a new journey
           const iterationRes = await client.query(
             'SELECT COUNT(*) FROM "Reading_Journey" WHERE bookshelf_item_id = $1',
             [bookshelf_item_id]
           );
 
-          // From the amount of rows that correspongs to the Bookshelf Item, we get the iteration. If rows is 0, which null fallbacks to, it's
-          // their first time reading the book. We add 1 and iteration is set to 1. If count is 1, it's their second time reading. We add 1 and 
-          // iteration is instead set to 2. And whatever it's set to, we generate the new UUID for the row
-          // COUNT(*) in Postgres aggregates and always returns exactly one row as a string. Like `[ { count: '0' } ]` or `[ { count: '5' } ]`.
-          // We need to extract the string value from the `count` column and parse it
           const currentCount = parseInt(iterationRes.rows[0].count, 10);
           const nextIteration = currentCount + 1;
           const newJourneyId = crypto.randomUUID();
 
           await client.query(
-            // started_at is taken care of by Postgres. current_page defaults to 0 when starting a new Reading Journey with the book
-            `INSERT INTO "Reading_Journey" (id, current_page, bookshelf_item_id, iteration) 
-            VALUES ($1, $2, $3, $4)`, // We now insert using our new dynamic startingPage instead of a hardcoded 0!
+            `INSERT INTO "Reading_Journey" (id, current_page, bookshelf_item_id, iteration)
+            VALUES ($1, $2, $3, $4)`,
             [newJourneyId, startingPage, bookshelf_item_id, nextIteration]
           );
 
