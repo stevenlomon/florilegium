@@ -23,7 +23,11 @@ export async function GET() {
           b.external_id,
           b.title,
           b.author,
-          b.cover_image_url
+          b.cover_image_url,
+          EXISTS (
+            SELECT 1 FROM "Reading_Journey" rj
+            WHERE rj.bookshelf_item_id = bi.id AND rj.finished_at IS NULL
+          ) AS has_shelved_journey
         FROM "Bookshelf_Item" bi
         JOIN "Book" b ON bi.book_id = b.id
         WHERE bi.user_id = $1

@@ -58,6 +58,7 @@ export interface BookshelfItem {
   recommendation_context: Recommendation[];
   review: string | null;
   journeys: ReadingJourney[];
+  has_shelved_journey?: boolean;
 }
 
 export interface Recommendation {
