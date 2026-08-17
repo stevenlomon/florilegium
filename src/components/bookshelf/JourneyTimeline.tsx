@@ -193,7 +193,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
 
             let journeyStatusLabel = '';
             if (isFirstOfDuplicate) {
-              journeyStatusLabel = 'Journey Ended';
+              journeyStatusLabel = journey.rekindled ? 'Journey Ended' : 'Journey On Hold';
             } else if (isFinished) {
               journeyStatusLabel = (currentStatus === 4 && isLatest) ? 'Journey Ended' : journey.rekindled ? 'Journey Rekindled' : 'Completed Read';
             } else {
