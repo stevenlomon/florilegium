@@ -169,6 +169,10 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
   // Sort journeys by iteration (1st read, 2nd read, etc.)
   const sortedJourneys = [...journeys].sort((a, b) => a.iteration - b.iteration);
 
+  const journeyIdCounts = new Map<string, number>();
+  sortedJourneys.forEach(j => journeyIdCounts.set(j.id, (journeyIdCounts.get(j.id) || 0) + 1));
+  const journeyIdSeen = new Map<string, number>();
+
   // Fully vibe coded return render statement
   return (
     <div className="flex flex-col gap-6">
@@ -181,32 +185,36 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             const isEditing = editingId === journey.id;
             const isLatest = index === sortedJourneys.length - 1;
 
-            // Normalize the statusId to guarantee it's an integer at runtime
+            const thisIdSeenCount = (journeyIdSeen.get(journey.id) || 0) + 1;
+            journeyIdSeen.set(journey.id, thisIdSeenCount);
+            const isFirstOfDuplicate = (journeyIdCounts.get(journey.id) || 1) > 1 && thisIdSeenCount === 1;
+
             const currentStatus = Number(statusId);
 
-            // Using the new `isLatest` variable; determine the exact, nuanced journey state!
             let journeyStatusLabel = '';
-            if (isFinished) {
-              // If it's finished and status is 4 (Dropped), we display "JOURNEY ENDED"
-              // If it's finished and status is not 4, we display "COMPLETED READ"
+            if (isFirstOfDuplicate) {
+              journeyStatusLabel = 'Journey Ended';
+            } else if (isFinished) {
               journeyStatusLabel = (currentStatus === 4 && isLatest) ? 'Journey Ended' : journey.rekindled ? 'Journey Rekindled' : 'Completed Read';
             } else {
-              // If it's not finished and the status is 2 (Currently Reading), we display "ACTIVE READ"
-              // If ti's not finished and the status is not 2, we display "JOURNEY ON HOLD"
               journeyStatusLabel = currentStatus === 2 ? 'Active Read' : 'Journey On Hold';
             }
 
             return (
-              <div key={journey.id} className="relative z-10 flex items-start gap-4 group">
+              <div key={`${journey.id}-${thisIdSeenCount}`} className="relative z-10 flex items-start gap-4 group">
                 {/* Node */}
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 mt-1 shadow-sm transition-colors ${isFinished && !isEditing
-                    ? 'bg-[#EFEBE1] border-[#424B2E] text-[#424B2E]'
-                    : 'bg-white border-[#5C613E]/50 text-[#5C613E]'
-                    }`}
-                >
-                  <span className="font-sans text-[10px] font-bold">{journey.iteration}</span>
-                </div>
+                {isFirstOfDuplicate ? (
+                  <div className="w-8 h-8 shrink-0 mt-1" />
+                ) : (
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 mt-1 shadow-sm transition-colors ${isFinished && !isEditing
+                      ? 'bg-[#EFEBE1] border-[#424B2E] text-[#424B2E]'
+                      : 'bg-white border-[#5C613E]/50 text-[#5C613E]'
+                      }`}
+                  >
+                    <span className="font-sans text-[10px] font-bold">{journey.iteration}</span>
+                  </div>
+                )}
 
                 {/* Card */}
                 {isEditing ? (
