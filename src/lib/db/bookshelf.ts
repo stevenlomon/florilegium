@@ -82,7 +82,8 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
               'finished_at', rj.finished_at,
               'current_page', rj.current_page,
               'iteration', rj.iteration,
-              'notes', rlp.notes -- Notes from the Reading_Log_Post table added to the Reading Journeys!
+              'notes', rlp.notes,
+              'rekindled', rj.rekindled
             )
           ) FILTER (WHERE rj.id IS NOT NULL),
           '[]'

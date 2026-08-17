@@ -189,7 +189,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             if (isFinished) {
               // If it's finished and status is 4 (Dropped), we display "JOURNEY ENDED"
               // If it's finished and status is not 4, we display "COMPLETED READ"
-              journeyStatusLabel = (currentStatus === 4 && isLatest) ? 'Journey Ended' : 'Completed Read';
+              journeyStatusLabel = (currentStatus === 4 && isLatest) ? 'Journey Ended' : journey.rekindled ? 'Journey Rekindled' : 'Completed Read';
             } else {
               // If it's not finished and the status is 2 (Currently Reading), we display "ACTIVE READ"
               // If ti's not finished and the status is not 2, we display "JOURNEY ON HOLD"

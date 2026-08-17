@@ -62,7 +62,7 @@ export async function POST(req: Request) {
           'SELECT status_id FROM "Bookshelf_Item" WHERE id = $1 AND user_id = $2',
           [bookshelf_item_id, user.id]
         );
-        const previousStatus = statusSnapshot.rows[0]?.status_id;
+        const previousStatus = Number(statusSnapshot.rows[0]?.status_id);
 
         // Update the reading status of the Bookshelf Item to Currently Reading (status_id = 2)
         await client.query('UPDATE "Bookshelf_Item" SET status_id = 2 WHERE id = $1 AND user_id = $2', [bookshelf_item_id, user.id]);
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
 
           if ((droppedJourney.rowCount ?? 0) > 0) {
             activeJourneyId = droppedJourney.rows[0].id;
-            await client.query('UPDATE "Reading_Journey" SET finished_at = NULL WHERE id = $1', [activeJourneyId]);
+            await client.query('UPDATE "Reading_Journey" SET finished_at = NULL, rekindled = true WHERE id = $1', [activeJourneyId]);
 
             if (initial_current_page) {
               await client.query('UPDATE "Reading_Journey" SET current_page = $1 WHERE id = $2', [startingPage, activeJourneyId]);

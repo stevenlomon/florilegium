@@ -77,5 +77,6 @@ export interface ReadingJourney {
   finished_at: string | null;
   current_page: number;
   iteration: number;
-  notes?: string | null; // Optional: represents the raw thoughts captured upon finishing a book for now
+  notes?: string | null;
+  rekindled?: boolean;
 }
