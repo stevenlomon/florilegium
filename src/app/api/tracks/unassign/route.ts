@@ -96,11 +96,12 @@ export async function PATCH(req: Request) {
 
         // 2. Identify the Bookshelf Item attached to this Journey
         const journeyCheck = await client.query(
-          'SELECT bookshelf_item_id FROM "Reading_Journey" WHERE id = $1',
+          'SELECT bookshelf_item_id, current_page FROM "Reading_Journey" WHERE id = $1',
           [journeyId]
         );
 
         const bookshelfItemId = journeyCheck.rows[0].bookshelf_item_id;
+        const currentPage = journeyCheck.rows[0].current_page; // We grab current_page now too so that...
 
         // // 3. Close the Reading Journey (Freeze the progress in time)
         // await client.query(
@@ -117,6 +118,10 @@ export async function PATCH(req: Request) {
             'UPDATE "Reading_Journey" SET finished_at = NOW() WHERE id = $1',
             [journeyId]
           );
+          // ...if the user is still at page 0, the Reading Journey is delted. No "footprint"
+        } else if (target_status_id === 1 && currentPage === 0) {
+          await client.query('DELETE FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journeyId]);
+          await client.query('DELETE FROM "Reading_Journey" WHERE id = $1', [journeyId]);
         }
 
         // 4. Update the Bookshelf Item Status (1 = Intend to Read, 4 = Dropped)

@@ -250,7 +250,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
 
                     {/* Unified Action Bar */}
                     <div className="flex items-center justify-end gap-3 pt-4 mt-2 border-t border-[#E5E0D8]">
-                      {isFinished && (() => {
+                      {(isFinished || journeyStatusLabel === 'Journey On Hold') && (() => {
                         const hasNotes = editNotes.trim().length > 0;
                         const isConfirming = confirmDeleteId === journey.id;
 
