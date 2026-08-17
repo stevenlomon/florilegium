@@ -59,6 +59,8 @@ export interface BookshelfItem {
   review: string | null;
   journeys: ReadingJourney[];
   has_shelved_journey?: boolean;
+  stored_current_page?: number;
+  custom_page_count?: number | null;
 }
 
 export interface Recommendation {

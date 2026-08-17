@@ -27,7 +27,14 @@ export async function GET() {
           EXISTS (
             SELECT 1 FROM "Reading_Journey" rj
             WHERE rj.bookshelf_item_id = bi.id AND rj.finished_at IS NULL
-          ) AS has_shelved_journey
+          ) AS has_shelved_journey,
+          (
+            SELECT rj.current_page FROM "Reading_Journey" rj
+            WHERE rj.bookshelf_item_id = bi.id
+            ORDER BY rj.finished_at IS NULL DESC, rj.iteration DESC
+            LIMIT 1
+          ) AS stored_current_page,
+          bi.custom_page_count
         FROM "Bookshelf_Item" bi
         JOIN "Book" b ON bi.book_id = b.id
         WHERE bi.user_id = $1

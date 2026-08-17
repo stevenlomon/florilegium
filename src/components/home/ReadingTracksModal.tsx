@@ -32,8 +32,18 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
     source: 'UserBookshelf' | 'OpenLibrary' 
   } | null>(targetSlot?.preStagedBook || null); // stagedBook is now set directly, no need for a useEffect
 
-  const [customPageCount, setCustomPageCount] = useState<string>("");
-  const [initialCurrentPage, setInitialCurrentPage] = useState<string>(""); // New state for the new form input
+  const [customPageCount, setCustomPageCount] = useState<string>(() => {
+    const pre = targetSlot?.preStagedBook?.data;
+    if (!pre) return "";
+    const count = (pre as BookshelfItem).custom_page_count ?? (pre as TrackBook).custom_page_count;
+    return count && count > 0 ? String(count) : "";
+  });
+  const [initialCurrentPage, setInitialCurrentPage] = useState<string>(() => {
+    const pre = targetSlot?.preStagedBook?.data;
+    if (!pre) return "";
+    const page = (pre as TrackBook).current_page ?? (pre as BookshelfItem).stored_current_page;
+    return page && page > 0 ? String(page) : "";
+  });
 
   const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Reading Tracks Modal Search Error:");
   const { books: bookshelfItems, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
@@ -282,7 +292,19 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
                     {filteredBookshelf.map((book: BookshelfItem) => (
                       <li key={book.bookshelf_item_id}>
                         <button
-                          onClick={() => targetSlot?.slotId === 1 ? setStagedBook({ data: book, source: 'UserBookshelf' }) : handleAssignBook(book, 'UserBookshelf')}
+                          onClick={() => {
+                            if (targetSlot?.slotId === 1) {
+                              setStagedBook({ data: book, source: 'UserBookshelf' });
+                              if (book.stored_current_page && book.stored_current_page > 0) {
+                                setInitialCurrentPage(String(book.stored_current_page));
+                              }
+                              if (book.custom_page_count && book.custom_page_count > 0) {
+                                setCustomPageCount(String(book.custom_page_count));
+                              }
+                            } else {
+                              handleAssignBook(book, 'UserBookshelf');
+                            }
+                          }}
                           className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
                         >
                           <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
