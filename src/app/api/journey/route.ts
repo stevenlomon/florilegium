@@ -250,7 +250,14 @@ export async function DELETE(req: Request) {
       `, [journey_id, user.id]);
 
       if (ownershipCheck.rowCount === 0) throw new Error("ItemNotOwned");
-      if (ownershipCheck.rows[0].finished_at === null) throw new Error("ActiveJourney");
+
+      if (ownershipCheck.rows[0].finished_at === null) {
+        const trackCheck = await client.query(
+          'SELECT id FROM "Reading_Track" WHERE reading_journey_id = $1',
+          [journey_id]
+        );
+        if ((trackCheck.rowCount ?? 0) > 0) throw new Error("ActiveJourney");
+      }
 
       const bookshelfItemId = ownershipCheck.rows[0].bookshelf_item_id;
 
