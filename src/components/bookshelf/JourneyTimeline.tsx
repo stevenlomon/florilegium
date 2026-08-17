@@ -324,12 +324,14 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                       </h4>
 
                       <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => startEditing(journey)}
-                          className="text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                        >
-                          Edit
-                        </button>
+                        {!isFirstOfDuplicate && (
+                          <button
+                            onClick={() => startEditing(journey)}
+                            className="text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          >
+                            Edit
+                          </button>
+                        )}
                         <span className={`text-xs font-serif italic ${isFinished ? 'text-[#5C613E]' : 'text-[#424B2E] font-medium'}`}>
                           {journey.started_at ? `${formatDate(journey.started_at)} — ${formatDate(journey.finished_at)}` : `Finished ${formatDate(journey.finished_at)}`}
                         </span>
