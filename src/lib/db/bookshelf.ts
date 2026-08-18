@@ -85,7 +85,8 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
               'notes', rlp.notes,
               'log_post_id', rlp.id,
               'rekindled', rj.rekindled,
-              'note_type', rlp.note_type
+              'note_type', rlp.note_type,
+              'pages_read', rlp.pages_read
             ) ORDER BY rlp.created_at NULLS FIRST
           )
           FROM "Reading_Journey" rj

@@ -189,7 +189,9 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
 
             const thisIdSeenCount = (journeyIdSeen.get(journey.id) || 0) + 1;
             journeyIdSeen.set(journey.id, thisIdSeenCount);
-            const isFirstOfDuplicate = (journeyIdCounts.get(journey.id) || 1) > 1 && thisIdSeenCount === 1;
+            const totalForThisId = journeyIdCounts.get(journey.id) || 1;
+            const isFirstOfDuplicate = totalForThisId > 1 && thisIdSeenCount === 1;
+            const isNotLastOfDuplicate = totalForThisId > 1 && thisIdSeenCount < totalForThisId;
 
             const currentStatus = Number(statusId);
 
@@ -209,7 +211,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             return (
               <div key={`${journey.id}-${thisIdSeenCount}`} className="relative z-10 flex items-start gap-4 group">
                 {/* Node */}
-                {isFirstOfDuplicate ? (
+                {isNotLastOfDuplicate ? (
                   <div className="w-8 h-8 shrink-0 mt-1" />
                 ) : (
                   <div
@@ -354,7 +356,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                         {journeyStatusLabel === 'Active Read' && `Currently on page ${journey.current_page}`}
                         {journeyStatusLabel === 'Journey On Hold' && `Put on hold at page ${journey.current_page}`}
                         {journeyStatusLabel === 'Journey Ended' && `Ended at page ${journey.current_page}`}
-                        {journeyStatusLabel === 'Stepping Away' && `Stepped away at page ${journey.current_page}`}
+                        {journeyStatusLabel === 'Stepping Away' && `Stepped away at page ${journey.pages_read ?? journey.current_page}`}
                       </p>
                     )}
                   </div>
