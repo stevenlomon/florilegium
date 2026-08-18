@@ -135,7 +135,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
     }
   };
 
-  const handleDeleteJourney = async (journeyId: string) => {
+  const handleDeleteJourney = async (journeyId: string, logPostId?: string | null) => {
     // Tap 1: Ask for confirmation inline
     if (confirmDeleteId !== journeyId) {
       setConfirmDeleteId(journeyId);
@@ -148,7 +148,10 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
       const res = await fetch('/api/journey', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ journey_id: journeyId }),
+        body: JSON.stringify({
+          journey_id: journeyId,
+          ...(logPostId && { log_post_id: logPostId }),
+        }),
       });
 
       if (!res.ok) {
@@ -276,7 +279,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                           <div className="flex items-center mr-2">
                             <button
                               type="button"
-                              onClick={() => handleDeleteJourney(journey.id)}
+                              onClick={() => handleDeleteJourney(journey.id, journey.log_post_id)}
                               onMouseLeave={() => setConfirmDeleteId(null)}
                               onBlur={() => setConfirmDeleteId(null)}
                               disabled={isUpdating || isDeleting || hasNotes}

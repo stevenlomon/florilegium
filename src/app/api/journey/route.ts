@@ -237,7 +237,7 @@ export async function DELETE(req: Request) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { journey_id } = body;
+    const { journey_id, log_post_id } = body;
 
     if (!journey_id) {
       return NextResponse.json({ error: 'Missing required journey_id' }, { status: 400 });
@@ -256,6 +256,12 @@ export async function DELETE(req: Request) {
       `, [journey_id, user.id]);
 
       if (ownershipCheck.rowCount === 0) throw new Error("ItemNotOwned");
+
+      if (log_post_id) {
+        await client.query('DELETE FROM "Reading_Log_Post" WHERE id = $1', [log_post_id]);
+        await client.query('COMMIT');
+        return NextResponse.json({ success: true, message: 'Log post deleted.' });
+      }
 
       if (ownershipCheck.rows[0].finished_at === null) {
         const trackCheck = await client.query(
