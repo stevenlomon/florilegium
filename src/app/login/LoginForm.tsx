@@ -98,6 +98,12 @@ export default function LoginForm() {
         >
           {isLoading ? "Consulting archives..." : "Log In"}
         </button>
+
+        <div className="mt-3 text-right">
+          <Link href="/forgot-password" className="text-[#5C613E] font-serif italic text-xs hover:text-[#424B2E] transition-colors">
+            Forgot your password?
+          </Link>
+        </div>
       </form>
 
       {/* Registration Link Stub */}
