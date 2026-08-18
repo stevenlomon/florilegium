@@ -11,6 +11,9 @@ export function useBookSearch(errorLogPrefix = "Book search error:") {
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null); // For the debouncing
 
+  // I really wanna do a deep dive on how Abort Controller works. But not now
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   // Our useEffect to achieve debouncing. Mostly untouched compared to the Pokémon project, and now the core of a custom hook!
   useEffect(() => {
     // If the input is empty or too short, reset state and prevent fetching
@@ -30,13 +33,21 @@ export function useBookSearch(errorLogPrefix = "Book search error:") {
 
     // If the user stops typing for 500ms, this runs
     timeoutRef.current = setTimeout(async () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       // ...the local state updates is done *here*. This prevents synchronous cascading renders
       setIsSearching(true);
       setError(null);
       // Do the fetching business via our Proxy Route Handler
       try {
         // We want our API key securely on our server, never in the Browser. We don't use searchBooks directly here
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`); // Upgraded to using encodeURIComponent here. For example, if a user searched for "pride & prejudice", it becomes "pride%20%26%20prejudice" and not break the URL
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`, { // Upgraded to using encodeURIComponent here. For example, if a user searched for "pride & prejudice", it becomes "pride%20%26%20prejudice" and not break the URL
+          signal: controller.signal,
+        });
 
         if (!res.ok) {
           throw new Error(`Proxy route returned status code: ${res.status}`);
@@ -45,11 +56,14 @@ export function useBookSearch(errorLogPrefix = "Book search error:") {
         const data = await res.json();
         setResults(data.results || []);
       } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         console.error(errorLogPrefix, err);
         setError(err instanceof Error ? err.message : "An unexpected error occurred.");
         setResults([]);
       } finally {
-        setIsSearching(false);
+        if (!controller.signal.aborted) {
+          setIsSearching(false);
+        }
       }
     }, 500);
 
@@ -57,6 +71,9 @@ export function useBookSearch(errorLogPrefix = "Book search error:") {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, [searchTerm, errorLogPrefix]); // Run every time there is a change in the searchTerm state variable. Now also errorLogPrefix since it makes an appearance

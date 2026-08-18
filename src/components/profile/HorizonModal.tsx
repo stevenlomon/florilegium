@@ -18,7 +18,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
   const [isAssigning, setIsAssigning] = useState(false);
 
   // Our Book search hook in action!
-  const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Horizon Modal Search Error:");
+  const { searchTerm, setSearchTerm, isSearching, results: externalBooks, error } = useBookSearch("Horizon Modal Search Error:");
 
   // And our new Bookshelf hook in action!
   const { books: bookshelfBooks, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
@@ -188,6 +188,8 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
               <h3 className="px-4 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E]">The Archives</h3>
               {isSearching ? (
                 <div className="p-8 flex justify-center text-[#5C613E] font-sans text-sm">Searching the archives...</div>
+              ) : error ? (
+                <div className="p-8 flex justify-center text-[#5C613E] font-sans text-sm">Search is currently unavailable. Please try again in a bit.</div>
               ) : externalBooks.length > 0 ? (
                 <div className="flex flex-col p-2">
                   <ul className="flex flex-col gap-1 mb-4">
