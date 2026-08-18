@@ -259,9 +259,9 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
                 setShowNotesInput(true);
                 setShowNotesPrompt(false);
               }}
-              className="text-[10px] font-serif italic text-[#FCF9F2]/50 hover:text-[#FCF9F2]/80 transition-colors pointer-events-auto mt-2 animate-in fade-in duration-500"
+              className="text-[13px] font-serif italic text-[#FCF9F2]/90 hover:underline transition-all pointer-events-auto mt-2 animate-in fade-in duration-500"
             >
-              Capture thoughts?
+              Capture a thought
             </button>
           )}
 
@@ -281,7 +281,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
                   type="button"
                   onClick={handleSaveNotes}
                   disabled={!progressNotes.trim() || isSavingNotes}
-                  className="flex-1 bg-[#FCF9F2] text-[#2C302E] font-sans text-[10px] font-bold tracking-wider uppercase py-1.5 rounded disabled:opacity-50 hover:bg-[#E5E0D8] transition-colors"
+                  className="flex-1 bg-[#FCF9F2] text-[#2C302E] font-sans text-[10px] font-bold tracking-wider uppercase py-1.5 rounded disabled:opacity-50 hover:bg-[#E5E0D8] transition-colors shadow-sm"
                 >
                   {isSavingNotes ? "Saving..." : "Save"}
                 </button>
