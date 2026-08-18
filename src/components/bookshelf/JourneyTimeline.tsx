@@ -176,6 +176,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
   const journeyIdCounts = new Map<string, number>();
   sortedJourneys.forEach(j => journeyIdCounts.set(j.id, (journeyIdCounts.get(j.id) || 0) + 1));
   const journeyIdSeen = new Map<string, number>();
+  const firstHasShip = sortedJourneys.length > 0 && (journeyIdCounts.get(sortedJourneys[0].id) || 1) > 1;
 
   // Fully vibe coded return render statement
   return (
@@ -183,7 +184,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
       {/* TIMELINE LIST */}
       {sortedJourneys.length > 0 ? (
         <div className="flex flex-col gap-6 relative">
-          <div className="absolute left-3.75 top-4 bottom-4 w-px bg-[#E5E0D8] z-0" />
+          <div className={`absolute left-3.75 ${firstHasShip ? 'top-16' : 'top-4'} bottom-16 w-px bg-[#E5E0D8] z-0`} />
           {sortedJourneys.map((journey, index) => { // We grab the index now too so that we can find the latest journey
             const isFinished = journey.finished_at !== null;
             const editKey = journey.log_post_id ? `${journey.id}-${journey.log_post_id}` : journey.id;
@@ -219,10 +220,20 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
               <div key={`${journey.id}-${thisIdSeenCount}`} className="relative z-10 flex items-start gap-4 group">
                 {/* Node */}
                 {isNotLastOfDuplicate ? (
-                  <div className="w-8 h-8 shrink-0 mt-1" />
+                  isFirstOfDuplicate ? (
+                    <div className="w-8 h-8 shrink-0 self-center flex items-center justify-center">
+                      <svg viewBox="0 0 20 20" fill="none" className="w-8 h-8 text-[#424B2E]/50">
+                        <path d="M10 3v10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M10 4l5 7H10" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                        <path d="M4 14.5h12l-1.5 3.5h-9l-1.5-3.5z" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 shrink-0 mt-1" />
+                  )
                 ) : (
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 mt-1 shadow-sm transition-colors ${isFinished && !isEditing
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 self-center border-2 shadow-sm transition-colors ${isFinished && !isEditing
                       ? 'bg-[#EFEBE1] border-[#424B2E] text-[#424B2E]'
                       : 'bg-white border-[#5C613E]/50 text-[#5C613E]'
                       }`}
