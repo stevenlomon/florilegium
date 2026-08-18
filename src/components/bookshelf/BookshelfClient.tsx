@@ -128,10 +128,10 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
   return (
     <div className="flex flex-col gap-8">
-      {/* FILTER TABS & LOCAL SEARCH */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-[#E5E0D8] pb-4">
+      {/* FILTER TABS, SORT & SEARCH */}
+      <div className="flex flex-col gap-4 border-b border-[#E5E0D8] pb-4">
 
-        {/* The Tabs */}
+        {/* Row 1: Tabs */}
         <div className="flex flex-wrap gap-2">
           {TABS.map((tab) => {
             const count = tab.id === 'all'
@@ -152,8 +152,8 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           })}
         </div>
 
-        <div className="flex items-center gap-3 w-full lg:w-auto shrink-0">
-          {/* Sort Dropdown */}
+        {/* Row 2: Sort + Search */}
+        <div className="flex items-center justify-between gap-3">
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
@@ -164,8 +164,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
             ))}
           </select>
 
-          {/* The Deep Search Input */}
-          <div className="relative flex-1 lg:w-80 group">
+          <div className="relative flex-1 lg:max-w-sm group">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
