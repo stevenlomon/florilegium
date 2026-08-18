@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
 import { type BookshelfItem } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
@@ -54,15 +54,15 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   // New state for the Bookshelf search!
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('added-newest');
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia('(max-width: 1023px)');
-    setIsMobile(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
-  }, []);
+  const isMobile = useSyncExternalStore(
+    (callback) => {
+      const mql = window.matchMedia('(max-width: 1023px)');
+      mql.addEventListener('change', callback);
+      return () => mql.removeEventListener('change', callback);
+    },
+    () => window.matchMedia('(max-width: 1023px)').matches,
+    () => false
+  );
 
   // In order to have router.refresh() work properly as intended in the modal, it serves us more to *not* have `books` be a state variable!
   const books = initialBooks;
