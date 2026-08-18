@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -119,24 +120,18 @@ export default function Sidebar() {
         `}
       >
 
-      {/* 1. TOP SECTION: Logo & Title */}
-      <div className="pt-10 pb-8 flex flex-col items-center">
-        {/* Placeholder for the olive branch logo: emoji for now until I find an AI that can do an SVG that feels just as true and alive */}
+      {/* 1. TOP SECTION: Logo */}
+      <div className="pt-8 pb-6 flex flex-col items-center">
         <Link href={'/'}>
-          <div className="w-16 h-16 rounded-lg bg-[#EFEBE1] border border-[#E5E0D8] flex items-center justify-center mb-4 shadow-sm">
-            <span className="text-2xl opacity-80">🌿</span>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Florilegium — Digital Renaissance Book Garden"
+            width={200}
+            height={200}
+            className="opacity-90"
+            priority
+          />
         </Link>
-
-        <Link href={'/'}>
-          <h1 className="font-heading text-2xl text-[#2C302E] tracking-wide mb-1">
-            Florilegium
-          </h1>
-        </Link>
-
-        <h2 className="font-sans text-[9px] font-bold uppercase tracking-[0.25em] text-[#5C613E]">
-          DIGITAL RENAISSANCE BOOK GARDEN
-        </h2>
       </div>
 
       {/* 2. MIDDLE SECTION: Navigation Links */}
@@ -204,10 +199,6 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        {/* Decorative Bottom Edge */}
-        <div className="w-full h-16 bg-[#EFEBE1] rounded-lg opacity-50 overflow-hidden flex items-end justify-center pb-2">
-          <span className="text-xl opacity-30">🌿</span>
-        </div>
       </div>
 
     </aside>

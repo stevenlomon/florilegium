@@ -1,6 +1,7 @@
 // Login Page is a Server Component that imports the Login Page Form which is a Client Component and the only interactive part of the page!
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import Image from 'next/image';
 import LoginForm from './LoginForm';
 
 // Clean, static SEO metadata (which is only possible in Server Components)
@@ -27,11 +28,9 @@ export default async function LoginPage() {
         
         {/* Header Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#EFEBE1] border border-[#E5E0D8] mb-6 shadow-sm">
-            <span className="text-xl opacity-80">🌿</span>
-          </div>
+          <Image src="/logo.png" alt="Florilegium" width={240} height={240} className="mb-4 mx-auto" />
           <h1 className="text-3xl font-heading text-[#2C302E] mb-2">
-            Welcome back.
+            Welcome back
           </h1>
           <p className="text-[#5C613E] font-serif italic text-sm">
             Enter your credentials to access your garden.

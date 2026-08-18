@@ -35,9 +35,6 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
 
         {status === 'success' ? (
           <>
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#EFEBE1] border border-[#E5E0D8] mb-6 shadow-sm">
-              <span className="text-xl">🌿</span>
-            </div>
             <h1 className="text-2xl font-heading text-[#2C302E] mb-2">Email verified!</h1>
             <p className="text-[#5C613E] font-serif italic text-sm mb-8">Your garden is ready. You can now log in.</p>
             <Link
