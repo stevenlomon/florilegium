@@ -198,9 +198,9 @@ export async function POST(req: Request) {
       if (notes && notes.trim().length > 0) {
         const newLogId = crypto.randomUUID();
         await client.query(
-          `INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes)
-           VALUES ($1, $2, $3, $4)`,
-          [newLogId, user.id, newJourneyId, notes.trim()]
+          `INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes, note_type)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [newLogId, user.id, newJourneyId, notes.trim(), 'finished']
         );
       }
 
