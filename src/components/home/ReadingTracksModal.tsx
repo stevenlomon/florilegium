@@ -295,7 +295,7 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
                           onClick={() => {
                             if (targetSlot?.slotId === 1) {
                               setStagedBook({ data: book, source: 'UserBookshelf' });
-                              if (book.stored_current_page && book.stored_current_page > 0) {
+                              if (book.has_shelved_journey && book.stored_current_page && book.stored_current_page > 0) {
                                 setInitialCurrentPage(String(book.stored_current_page));
                               }
                               if (book.custom_page_count && book.custom_page_count > 0) {
