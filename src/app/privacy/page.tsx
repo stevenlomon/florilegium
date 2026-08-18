@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             What We Collect
           </h2>
           <ul className="list-disc pl-5 space-y-2 text-[#5C613E]">
-            <li><strong className="font-semibold text-[#2C302E]">Your Username & Password:</strong> Now in Beta, we won&apos;t ask for your email. Your password is irreversibly hashed and salted before it ever touches our database. We cannot see it, and we cannot recover it for you.</li>
+            <li><strong className="font-semibold text-[#2C302E]">Your Username, Email & Password:</strong> Your email is used solely for account verification and password recovery. Your password is irreversibly hashed and salted before it ever touches our database. We cannot see it.</li>
             <li><strong className="font-semibold text-[#2C302E]">Your Library:</strong> The books you add, the statuses you set, the reviews you write, and the reading journeys you log are stored securely on our servers so you can access them across your devices.</li>
           </ul>
         </section>
