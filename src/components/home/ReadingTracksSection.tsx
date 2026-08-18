@@ -323,35 +323,18 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
               )}
             </div>
 
-            {/* Track Grid: Exactly 2 slots (Currently Reading + Up Next) */}
-            <div className="grid grid-cols-2 gap-6 flex-1">
+            {/* Track Grid: Horizontal scroll on mobile, 2-col grid on desktop */}
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:snap-none flex-1">
               {[1, 2].map((slot) => {
                 const assignedBook = trackBooks.find(b => b.track_id === track.id && b.slot_id === slot);
                 const slotLabel = slot === 1 ? "Currently Reading" : "Up Next";
 
                 if (assignedBook) {
-                  // SCENARIO A: THE SLOT IS FILLED
-                  // Now has a fully dedicated client component for the Reading Track card with the new current_page input feature 
-                  // being implemented. We make this into its own dedicated component but *not* the Assignment button in Scenario B.
-                  // Yes, we *could* make that its own component and even try to make it so that it could live both here and in the
-                  // Horizon section. But.. just because you *can* do something doesn't mean that you *should* and that it serves
-                  // you to. 
-                  // Here it doesn't serve us; the need isn't there and it would slow down MVP momentum. *Just in time, not just in case*
                   const isCurrentlyReading = slot === 1;
-
-                  // The logic here is now updated: 
-                  // If the Currently Reading slot is empty AND the Up Next slot has a book (let's use Piranesi as an example),
-                  // then a clean button [START READING] appears that is ONLY visible in this very uniqu scenario.
-                  // Clicking this button triggers the Reading Tracks Modal for Currently Reading, pre-staged with Piranesi in 
-                  // this example scenario. 
-                  // The user confirms/adjusts their starting page and total pages according to the standard setup ritual, and upon
-                  // clicking "Start Reading" in the modal:
-                  // * Piranesi is assigned to the Currently Reading slot
-                  // * Piranesi is cleared from the Up Next slot
                   const slot1IsBooked = trackBooks.some(b => b.track_id === track.id && b.slot_id === 1);
 
                   return (
-                    <div key={`${track.id}-${slot}`} className="flex flex-col gap-3 relative">
+                    <div key={`${track.id}-${slot}`} className={`flex flex-col gap-3 relative shrink-0 snap-start ${slot === 1 ? 'w-[72%]' : 'w-[40%]'} md:w-auto md:shrink`}>
                       {/* The new, self-contained component. `e` is type inferred as `MouseEvent<Element, MouseEvent>`! */}
                       <ReadingTrackCard
                         book={assignedBook}
@@ -387,7 +370,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                   <button
                     key={`${track.id}-${slot}`}
                     type='button'
-                    className="group relative flex flex-col items-center justify-center aspect-2/3 border-2 border-dashed border-[#E5E0D8] rounded-md bg-white/30 hover:bg-[#EFEBE1]/50 hover:border-[#5C613E]/40 transition-all cursor-pointer w-full"
+                    className={`group relative flex flex-col items-center justify-center aspect-2/3 border-2 border-dashed border-[#E5E0D8] rounded-md bg-white/30 hover:bg-[#EFEBE1]/50 hover:border-[#5C613E]/40 transition-all cursor-pointer shrink-0 snap-start ${slot === 1 ? 'w-[72%]' : 'w-[40%]'} md:w-full md:shrink`}
                     onClick={() => setActiveModalContext({ trackId: track.id, slotId: slot, trackTitle: track.title })}
                   >
                     <div className="w-8 h-8 flex items-center justify-center border border-[#E5E0D8] rounded bg-white text-[#5C613E] group-hover:text-[#2C302E] group-hover:border-[#5C613E] transition-colors mb-3 shadow-sm">
