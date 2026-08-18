@@ -78,5 +78,6 @@ export interface ReadingJourney {
   current_page: number;
   iteration: number;
   notes?: string | null;
+  log_post_id?: string | null;
   rekindled?: boolean;
 }
