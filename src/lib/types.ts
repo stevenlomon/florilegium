@@ -61,6 +61,7 @@ export interface BookshelfItem {
   has_shelved_journey?: boolean;
   stored_current_page?: number;
   custom_page_count?: number | null;
+  added_at: string;
 }
 
 export interface Recommendation {

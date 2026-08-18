@@ -51,12 +51,13 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
     // So this is why both COALESCE clauses now don't have `json_build_object(` but rather the new improved `DISTINCT jsonb_build_object(`!
     // UPDATE: A third LEFT JOIN haha! Reading_Log_Post has entered the picture in order to show the raw thoughts captured upon finishing a book
     text: `
-      SELECT 
+      SELECT
         bi.id AS bookshelf_item_id,
         bi.status_id,
         bi.user_rating,
         bi.review,
         bi.horizon_slot, -- For the new Horizon Crest!
+        bi.added_at,
         b.id AS book_id,
         b.external_id,
         b.title,

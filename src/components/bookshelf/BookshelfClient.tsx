@@ -17,6 +17,18 @@ const TABS = [
   { id: '4', label: 'Dropped' }
 ];
 
+const SORT_OPTIONS = [
+  { id: 'added-newest', label: 'Date Added (Newest)' },
+  { id: 'added-oldest', label: 'Date Added (Oldest)' },
+  { id: 'title-asc', label: 'Title A → Z' },
+  { id: 'title-desc', label: 'Title Z → A' },
+  { id: 'author-asc', label: 'Author A → Z' },
+  { id: 'author-desc', label: 'Author Z → A' },
+  { id: 'rating-desc', label: 'Rating (Highest)' },
+  { id: 'rating-asc', label: 'Rating (Lowest)' },
+  { id: 'recs-desc', label: 'Most Recommended' },
+];
+
 // 3 distinct organic squish shapes
 const WAX_SHAPES = [
   "rounded-[45%_55%_32%_68%_/_60%_35%_65%_40%]", // Heavy bottom-right squish
@@ -40,7 +52,8 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   const [failedImages, setFailedImages] = useState<string[]>([]);
 
   // New state for the Bookshelf search!
-  const [localSearchTerm, setLocalSearchTerm] = useState(''); // NEW
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState('added-newest');
 
   // In order to have router.refresh() work properly as intended in the modal, it serves us more to *not* have `books` be a state variable!
   const books = initialBooks;
@@ -98,6 +111,21 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
     return true;
   });
 
+  const sortedBooks = [...filteredBooks].sort((a, b) => {
+    switch (sortOption) {
+      case 'added-newest': return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
+      case 'added-oldest': return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
+      case 'title-asc': return a.title.localeCompare(b.title);
+      case 'title-desc': return b.title.localeCompare(a.title);
+      case 'author-asc': return a.author.localeCompare(b.author);
+      case 'author-desc': return b.author.localeCompare(a.author);
+      case 'rating-desc': return (b.user_rating ?? 0) - (a.user_rating ?? 0);
+      case 'rating-asc': return (a.user_rating ?? 0) - (b.user_rating ?? 0);
+      case 'recs-desc': return b.recommendation_context.length - a.recommendation_context.length;
+      default: return 0;
+    }
+  });
+
   return (
     <div className="flex flex-col gap-8">
       {/* FILTER TABS & LOCAL SEARCH */}
@@ -124,33 +152,46 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           })}
         </div>
 
-        {/* The Deep Search Input */}
-        <div className="relative w-full lg:w-96 shrink-0 group">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={localSearchTerm}
-            onChange={(e) => setLocalSearchTerm(e.target.value)}
-            placeholder="Search authors, recommendation context, notes.."
-            className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
-          />
-          {localSearchTerm && (
-            <button
-              onClick={() => setLocalSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          )}
+        <div className="flex items-center gap-3 w-full lg:w-auto shrink-0">
+          {/* Sort Dropdown */}
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="bg-white/50 border border-[#E5E0D8] rounded-md px-3 py-2 text-sm font-sans text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm cursor-pointer"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>{opt.label}</option>
+            ))}
+          </select>
+
+          {/* The Deep Search Input */}
+          <div className="relative flex-1 lg:w-80 group">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              placeholder="Search authors, recommendation context, notes.."
+              className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
+            />
+            {localSearchTerm && (
+              <button
+                onClick={() => setLocalSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            )}
+          </div>
         </div>
 
       </div>
 
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        {filteredBooks.map((book, index) => { // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
+        {sortedBooks.map((book, index) => { // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
 
           // We now check if this specific book cover has failed
           const hasFailed = failedImages.includes(book.bookshelf_item_id);
