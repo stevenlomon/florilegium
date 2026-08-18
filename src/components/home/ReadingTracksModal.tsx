@@ -32,8 +32,18 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
     source: 'UserBookshelf' | 'OpenLibrary' 
   } | null>(targetSlot?.preStagedBook || null); // stagedBook is now set directly, no need for a useEffect
 
-  const [customPageCount, setCustomPageCount] = useState<string>("");
-  const [initialCurrentPage, setInitialCurrentPage] = useState<string>(""); // New state for the new form input
+  const [customPageCount, setCustomPageCount] = useState<string>(() => {
+    const pre = targetSlot?.preStagedBook?.data;
+    if (!pre) return "";
+    const count = (pre as BookshelfItem).custom_page_count ?? (pre as TrackBook).custom_page_count;
+    return count && count > 0 ? String(count) : "";
+  });
+  const [initialCurrentPage, setInitialCurrentPage] = useState<string>(() => {
+    const pre = targetSlot?.preStagedBook?.data;
+    if (!pre) return "";
+    const page = (pre as TrackBook).current_page ?? (pre as BookshelfItem).stored_current_page;
+    return page && page > 0 ? String(page) : "";
+  });
 
   const { searchTerm, setSearchTerm, isSearching, results: externalBooks } = useBookSearch("Reading Tracks Modal Search Error:");
   const { books: bookshelfItems, isLoading: isLoadingUserBookshelf } = useBookshelf(isOpen);
@@ -218,6 +228,12 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
 
   if (!isOpen) return null;
 
+  const isBookshelfBook = stagedBook?.source === 'UserBookshelf';
+  const stagedStatus = isBookshelfBook ? Number((stagedBook.data as BookshelfItem).status_id) : null;
+  const stagedHasShelvedJourney = isBookshelfBook ? (stagedBook.data as BookshelfItem).has_shelved_journey : false;
+  const isDroppedBook = stagedStatus === 4;
+  const isShelvedBook = stagedStatus === 1 && stagedHasShelvedJourney;
+
   // Fully vibe coded render return statement
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C302E]/40 backdrop-blur-sm p-4">
@@ -276,7 +292,19 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
                     {filteredBookshelf.map((book: BookshelfItem) => (
                       <li key={book.bookshelf_item_id}>
                         <button
-                          onClick={() => targetSlot?.slotId === 1 ? setStagedBook({ data: book, source: 'UserBookshelf' }) : handleAssignBook(book, 'UserBookshelf')}
+                          onClick={() => {
+                            if (targetSlot?.slotId === 1) {
+                              setStagedBook({ data: book, source: 'UserBookshelf' });
+                              if (book.stored_current_page && book.stored_current_page > 0) {
+                                setInitialCurrentPage(String(book.stored_current_page));
+                              }
+                              if (book.custom_page_count && book.custom_page_count > 0) {
+                                setCustomPageCount(String(book.custom_page_count));
+                              }
+                            } else {
+                              handleAssignBook(book, 'UserBookshelf');
+                            }
+                          }}
                           className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
                         >
                           <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
@@ -346,7 +374,12 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl text-[#2C302E] font-serif mb-1">
-                  Starting {stagedBook.data.title}
+                  {isDroppedBook
+                    ? <>Giving {stagedBook.data.title} a second chance</>
+                    : isShelvedBook
+                      ? <>Picking {stagedBook.data.title} back up again</>
+                      : <>Starting {stagedBook.data.title}</>
+                  }
                 </h2>
                 <p className="text-[#5C613E] text-sm">
                   {targetSlot?.trackTitle} Track
@@ -374,7 +407,12 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
 
               {/* ZONE 1: Gentle Context Nudge */}
               <p className="text-[#2C302E] text-sm mb-5 leading-relaxed">
-                Set up progress tracking for your edition.
+                {isDroppedBook
+                  ? 'Pick up where you left off, or start fresh.'
+                  : isShelvedBook
+                    ? 'Your progress has been preserved. Adjust if needed.'
+                    : 'Set up progress tracking for your edition.'
+                }
               </p>
 
               {/* ZONE 2: Two-Column Input Grid */}
@@ -454,7 +492,10 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
                 disabled={isAssigning}
                 className="bg-[#424B2E] text-[#FCF9F2] font-sans text-sm font-medium tracking-wide px-6 py-2 rounded hover:bg-[#343b24] transition shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {isAssigning ? "Starting..." : "Start Reading"}
+                {isAssigning
+                  ? (isDroppedBook ? "Rekindling..." : "Starting...")
+                  : (isDroppedBook ? "Rekindle Journey" : isShelvedBook ? "Resume Reading" : "Start Reading")
+                }
               </button>
             </div>
           </div>

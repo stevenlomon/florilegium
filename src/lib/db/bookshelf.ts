@@ -75,23 +75,25 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
           '[]'
         ) AS recommendation_context,
          COALESCE(
-          json_agg(
-            DISTINCT jsonb_build_object(
+          (SELECT json_agg(
+            json_build_object(
               'id', rj.id,
               'started_at', rj.started_at,
               'finished_at', rj.finished_at,
               'current_page', rj.current_page,
               'iteration', rj.iteration,
-              'notes', rlp.notes -- Notes from the Reading_Log_Post table added to the Reading Journeys!
-            )
-          ) FILTER (WHERE rj.id IS NOT NULL),
+              'notes', rlp.notes,
+              'rekindled', rj.rekindled
+            ) ORDER BY rlp.created_at NULLS FIRST
+          )
+          FROM "Reading_Journey" rj
+          LEFT JOIN "Reading_Log_Post" rlp ON rj.id = rlp.reading_journey_id
+          WHERE rj.bookshelf_item_id = bi.id),
           '[]'
         ) AS journeys
       FROM "Bookshelf_Item" bi
       JOIN "Book" b ON bi.book_id = b.id
       LEFT JOIN "Recommendation_Context_Row" rcr ON bi.id = rcr.bookshelf_item_id
-      LEFT JOIN "Reading_Journey" rj ON bi.id = rj.bookshelf_item_id
-      LEFT JOIN "Reading_Log_Post" rlp ON rj.id = rlp.reading_journey_id
       WHERE bi.user_id = $1
       GROUP BY bi.id, b.id
       ORDER BY bi.added_at DESC
