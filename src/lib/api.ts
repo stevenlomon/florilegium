@@ -27,6 +27,7 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
 
     const res = await fetch(`${BASE_URL}/search.json?${params.toString()}`, {
       headers: getHeaders(),
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!res.ok) {

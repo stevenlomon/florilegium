@@ -10,7 +10,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   // Our hook variables! `results` gets the alias `previews` here in the Navbar
-  const { searchTerm, setSearchTerm, isSearching, results: previews } = useBookSearch("Navbar Search Error:");
+  const { searchTerm, setSearchTerm, isSearching, results: previews, error } = useBookSearch("Navbar Search Error:");
 
   const router = useRouter();
 
@@ -108,6 +108,8 @@ export default function Navbar() {
           <div className="fixed left-4 right-4 top-16 md:absolute md:left-auto md:right-14 md:top-[calc(100%+10px)] z-100 md:w-96 overflow-hidden rounded-md border border-[#E5E0D8] bg-white shadow-lg">
             {isSearching ? (
               <p className="m-0 p-4 text-center font-sans text-sm text-[#5C613E]">Searching the archives...</p>
+            ) : error ? (
+              <p className="m-0 p-4 text-center font-sans text-sm text-[#5C613E]">Search is currently unavailable. Please try again in a bit.</p>
             ) : previews.length > 0 ? (
               <div className="flex flex-col max-h-[70vh]">
 
