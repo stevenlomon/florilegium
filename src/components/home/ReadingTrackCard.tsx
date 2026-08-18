@@ -60,7 +60,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   const percentage = total > 0 ? Math.min(100, Math.round(((book.current_page || 0) / total) * 100)) : 0;
 
   // Our core logic: The overlay is visible if the mouse is over it, OR if the user has clicked the input.
-  const showOverlay = isHovered || isLocked || showNotesInput;
+  const showOverlay = isHovered || isLocked || showNotesInput || showNotesPrompt;
 
   const router = useRouter();
 
@@ -193,6 +193,10 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
               setIsHovered(false);
               setIsLocked(false);
               setPageInput(book.current_page || 0);
+              setShowNotesPrompt(false);
+              setShowNotesInput(false);
+              setProgressNotes('');
+              setSavedJourneyId(null);
             }}
             className="md:hidden absolute top-2 right-2 h-7 w-7 rounded-full bg-[#FCF9F2]/10 flex items-center justify-center text-[#FCF9F2]/60 active:text-[#FCF9F2] active:bg-[#FCF9F2]/20 transition-colors pointer-events-auto"
             aria-label="Dismiss"
