@@ -199,7 +199,9 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             const currentStatus = Number(statusId);
 
             let journeyStatusLabel = '';
-            if (journey.note_type === 'shelved') {
+            if (journey.note_type === 'progress') {
+              journeyStatusLabel = 'Reading Note';
+            } else if (journey.note_type === 'shelved') {
               journeyStatusLabel = 'Journey Put on Hold';
             } else if (journey.note_type === 'dropped') {
               journeyStatusLabel = 'Journey Ended';
@@ -362,6 +364,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                         {journeyStatusLabel === 'Journey On Hold' && `Put on hold at page ${journey.current_page}`}
                         {journeyStatusLabel === 'Journey Put on Hold' && `Journey put on hold at page ${journey.pages_read ?? journey.current_page}`}
                         {journeyStatusLabel === 'Journey Ended' && `Journey ended at page ${journey.pages_read ?? journey.current_page}`}
+                        {journeyStatusLabel === 'Reading Note' && `At page ${journey.pages_read ?? journey.current_page}`}
                       </p>
                     )}
                   </div>

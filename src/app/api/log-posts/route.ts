@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { reading_journey_id, notes } = body; // To be filled with minutes_logged, intended_minutes, and pages_read later
+    const { reading_journey_id, notes, note_type, pages_read } = body;
 
     if (!reading_journey_id || !notes) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -31,11 +31,11 @@ export async function POST(req: Request) {
     const query = {
       name: 'insert-reading-log-post',
       text: `
-        INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes) 
-        VALUES ($1, $2, $3, $4) 
+        INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes, note_type, pages_read)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
       `,
-      values: [newLogId, user.id, reading_journey_id, trimmedNotes]
+      values: [newLogId, user.id, reading_journey_id, trimmedNotes, note_type || 'general', pages_read ?? null]
     };
 
     const res = await pool.query(query);
