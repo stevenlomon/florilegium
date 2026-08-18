@@ -47,7 +47,7 @@ export default function Sidebar() {
   }, [isOpen]);
 
   // Easy to miss but super important: Hide the sidebar entirely on auth pages!!
-  if (pathname === '/login' || pathname === '/register') return null;
+  if (pathname === '/login' || pathname === '/register' || pathname === '/verify-email' || pathname === '/forgot-password' || pathname === '/reset-password') return null;
 
   // Bookshelf and Settings only to begin with but more can easily be added here
   const navItems = [
