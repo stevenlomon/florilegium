@@ -21,9 +21,11 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
       <div className="w-full max-w-md bg-[#FCF9F2] rounded-lg shadow-xl border border-[#E5E0D8] p-10 relative overflow-hidden">
 
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#EFEBE1] border border-[#E5E0D8] mb-6 shadow-sm">
-            <span className="text-xl opacity-80">{isValid ? '🌿' : '🍂'}</span>
-          </div>
+          {!isValid && (
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-[#EFEBE1] border border-[#E5E0D8] mb-6 shadow-sm">
+              <span className="text-xl">🍂</span>
+            </div>
+          )}
           {isValid ? (
             <>
               <h1 className="text-3xl font-heading text-[#2C302E] mb-2">
