@@ -38,6 +38,12 @@ export async function POST(req: Request) {
     console.log("Hashed password:", hashedPassword);
 
     if (await bcrypt.compare(body.password, hashedPassword)) {
+      if (user.email && !user.email_verified) {
+        return NextResponse.json({
+          success: "not ok",
+          reason: "email_not_verified"
+        }, { status: 403 });
+      }
       // Initiate the session. I'm gonna dig up jwt knowledge from my Python days and deep layers of my memory here!
       // I'll implement custom manual jwt session management for now when me, my friends and family will be the only users. It's gonna be a nice
       // nod to my old Python days. And after some feedback once the app goes public for real for real, I'll give myself the luxury upgrade of 
