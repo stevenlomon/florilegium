@@ -141,7 +141,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
       // The CSS hover scaling is conditional and based on whether or not we show the overlay
       // It shrinks back to regular size only on commit or cancel
       className={`group relative block w-full aspect-2/3 rounded-md border border-[#E5E0D8] bg-[#FCF9F2] origin-bottom transition-all duration-300 ${isCurrentlyReading
-        ? (showOverlay ? 'scale-112 z-50 shadow-2xl cursor-default' : 'scale-100 z-10 shadow-sm cursor-default')
+        ? (showOverlay ? 'md:scale-112 z-50 shadow-2xl cursor-default' : 'scale-100 z-10 shadow-sm cursor-default')
         : 'hover:scale-106 hover:border-[#5C613E] hover:shadow-md hover:z-20 transition-all z-10' // hover:scale-106 and hover:z-20 added here
         }`}
       onMouseEnter={() => setIsHovered(true)}
@@ -263,7 +263,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
                 setShowNotesInput(true);
                 setShowNotesPrompt(false);
               }}
-              className="hidden md:block text-[13px] font-serif italic text-[#FCF9F2]/90 hover:underline transition-all pointer-events-auto mt-2 animate-in fade-in duration-500"
+              className="text-[13px] font-serif italic text-[#FCF9F2]/90 hover:underline transition-all pointer-events-auto mt-2 animate-in fade-in duration-500"
             >
               Capture a thought
             </button>
@@ -271,7 +271,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
 
           {/* NOTES INPUT — expands when prompt is clicked */}
           {showNotesInput && (
-            <div className="hidden md:flex w-full flex-col gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300 pointer-events-auto">
+            <div className="flex w-full flex-col gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300 pointer-events-auto">
               <textarea
                 rows={3}
                 value={progressNotes}
