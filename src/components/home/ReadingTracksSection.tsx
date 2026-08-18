@@ -324,7 +324,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
             </div>
 
             {/* Track Grid: Horizontal scroll on mobile, 2-col grid on desktop */}
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory -mr-12 md:mr-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:snap-none flex-1">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory -mr-12 pr-12 md:mr-0 md:pr-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:snap-none flex-1">
               {[1, 2].map((slot) => {
                 const assignedBook = trackBooks.find(b => b.track_id === track.id && b.slot_id === slot);
                 const slotLabel = slot === 1 ? "Currently Reading" : "Up Next";
@@ -334,7 +334,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                   const slot1IsBooked = trackBooks.some(b => b.track_id === track.id && b.slot_id === 1);
 
                   return (
-                    <div key={`${track.id}-${slot}`} className={`flex flex-col gap-3 relative shrink-0 snap-start ${slot === 1 ? 'w-[72%]' : 'w-[40%]'} md:w-auto md:shrink`}>
+                    <div key={`${track.id}-${slot}`} className="flex flex-col gap-3 relative shrink-0 snap-start w-[72%] md:w-auto md:shrink">
                       {/* The new, self-contained component. `e` is type inferred as `MouseEvent<Element, MouseEvent>`! */}
                       <ReadingTrackCard
                         book={assignedBook}
@@ -370,7 +370,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
                   <button
                     key={`${track.id}-${slot}`}
                     type='button'
-                    className={`group relative flex flex-col items-center justify-center aspect-2/3 border-2 border-dashed border-[#E5E0D8] rounded-md bg-white/30 hover:bg-[#EFEBE1]/50 hover:border-[#5C613E]/40 transition-all cursor-pointer shrink-0 snap-start ${slot === 1 ? 'w-[72%]' : 'w-[40%]'} md:w-full md:shrink`}
+                    className="group relative flex flex-col items-center justify-center aspect-2/3 border-2 border-dashed border-[#E5E0D8] rounded-md bg-white/30 hover:bg-[#EFEBE1]/50 hover:border-[#5C613E]/40 transition-all cursor-pointer shrink-0 snap-start w-[72%] md:w-full md:shrink"
                     onClick={() => setActiveModalContext({ trackId: track.id, slotId: slot, trackTitle: track.title })}
                   >
                     <div className="w-8 h-8 flex items-center justify-center border border-[#E5E0D8] rounded bg-white text-[#5C613E] group-hover:text-[#2C302E] group-hover:border-[#5C613E] transition-colors mb-3 shadow-sm">
