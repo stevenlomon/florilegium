@@ -263,7 +263,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
                 setShowNotesInput(true);
                 setShowNotesPrompt(false);
               }}
-              className="text-[13px] font-serif italic text-[#FCF9F2]/90 hover:underline transition-all pointer-events-auto mt-2 animate-in fade-in duration-500"
+              className="hidden md:block text-[13px] font-serif italic text-[#FCF9F2]/90 hover:underline transition-all pointer-events-auto mt-2 animate-in fade-in duration-500"
             >
               Capture a thought
             </button>
@@ -271,7 +271,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
 
           {/* NOTES INPUT — expands when prompt is clicked */}
           {showNotesInput && (
-            <div className="w-full flex flex-col gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300 pointer-events-auto">
+            <div className="hidden md:flex w-full flex-col gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300 pointer-events-auto">
               <textarea
                 rows={3}
                 value={progressNotes}
