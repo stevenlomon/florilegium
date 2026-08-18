@@ -196,8 +196,10 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             const currentStatus = Number(statusId);
 
             let journeyStatusLabel = '';
-            if (journey.note_type === 'stepping_away') {
-              journeyStatusLabel = 'Stepping Away';
+            if (journey.note_type === 'shelved') {
+              journeyStatusLabel = 'Journey Put on Hold';
+            } else if (journey.note_type === 'dropped') {
+              journeyStatusLabel = 'Journey Ended';
             } else if (journey.note_type === 'finished') {
               journeyStatusLabel = journey.rekindled ? 'Journey Rekindled' : 'Completed Read';
             } else if (isFirstOfDuplicate) {
@@ -355,8 +357,8 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                       <p className="font-sans text-xs text-[#5C613E]/80 mt-3">
                         {journeyStatusLabel === 'Active Read' && `Currently on page ${journey.current_page}`}
                         {journeyStatusLabel === 'Journey On Hold' && `Put on hold at page ${journey.current_page}`}
-                        {journeyStatusLabel === 'Journey Ended' && `Ended at page ${journey.current_page}`}
-                        {journeyStatusLabel === 'Stepping Away' && `Stepped away at page ${journey.pages_read ?? journey.current_page}`}
+                        {journeyStatusLabel === 'Journey Put on Hold' && `Journey put on hold at page ${journey.pages_read ?? journey.current_page}`}
+                        {journeyStatusLabel === 'Journey Ended' && `Journey ended at page ${journey.pages_read ?? journey.current_page}`}
                       </p>
                     )}
                   </div>

@@ -127,7 +127,7 @@ export async function PATCH(req: Request) {
           const logId = crypto.randomUUID();
           await client.query(
             'INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes, note_type, pages_read) VALUES ($1, $2, $3, $4, $5, $6)',
-            [logId, user.id, journeyId, stepping_away_notes, 'stepping_away', currentPage]
+            [logId, user.id, journeyId, stepping_away_notes, target_status_id === 4 ? 'dropped' : 'shelved', currentPage]
           );
         }
 
