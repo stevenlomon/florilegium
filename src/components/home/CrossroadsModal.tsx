@@ -54,7 +54,7 @@ export default function CrossroadsModal({ bookTitle, trackId, isHorizonBook, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C302E]/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="w-full max-w-md bg-[#FCF9F2] rounded-lg shadow-2xl flex flex-col p-8 relative animate-in zoom-in-95 duration-300 border border-[#E5E0D8]">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-[#FCF9F2] rounded-lg shadow-2xl flex flex-col p-6 sm:p-8 relative animate-in zoom-in-95 duration-300 border border-[#E5E0D8]">
         
         {/* Close Button */}
         <button 
