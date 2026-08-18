@@ -185,14 +185,17 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
               <div className="relative w-28 h-full md:w-24 md:h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden bg-[#EFEBE1]/50">
                 {/* UPDATED: The Image Fallback Logic */}
                 {book.cover_image_url && !imageFailed ? (
-                  <Image
-                    src={book.cover_image_url}
-                    alt={book.title}
-                    fill
-                    sizes='96px' // To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/10590366-L.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance." warning
-                    className="object-cover"
-                    onError={() => setImageFailed(true)}
-                  />
+                  <>
+                    <div className="absolute inset-0 skeleton-shimmer" />
+                    <Image
+                      src={book.cover_image_url}
+                      alt={book.title}
+                      fill
+                      sizes='96px' // To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/10590366-L.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance." warning
+                      className="object-cover"
+                      onError={() => setImageFailed(true)}
+                    />
+                  </>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center">
                     <span className="font-heading text-[#2C302E] text-[10px] leading-tight line-clamp-3">{book.title}</span>

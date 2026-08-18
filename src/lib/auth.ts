@@ -25,7 +25,6 @@ export async function getCurrentUser() {
 
     const res = await pool.query(query);
     const currentUser = res.rows[0];
-    console.log("CurrentUser fetch results", currentUser);
 
     return currentUser || null;
   } catch (err: unknown) {

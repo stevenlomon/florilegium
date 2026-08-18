@@ -163,16 +163,19 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         } : undefined}
       >
         {book.cover_image_url ? (
-          <Image
-            src={book.cover_image_url}
-            alt={`Cover of ${book.title}`}
-            fill
-            sizes="(max-width: 768px) 50vw, 15vw"
-            // priority={true}
-            loading="eager"
-            fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
-            className="object-cover w-full h-full transition-transform duration-500" // group-hover:scale-105 removed from here to avoid double-scaling
-          />
+          <>
+            <div className="absolute inset-0 skeleton-shimmer" />
+            <Image
+              src={book.cover_image_url}
+              alt={`Cover of ${book.title}`}
+              fill
+              sizes="(max-width: 768px) 50vw, 15vw"
+              // priority={true}
+              loading="eager"
+              fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
+              className="object-cover w-full h-full transition-transform duration-500" // group-hover:scale-105 removed from here to avoid double-scaling
+            />
+          </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-[#EFEBE1]/50 border-4 border-transparent group-hover:border-white/20 transition-all">
             <h3 className="font-heading text-base text-[#2C302E] leading-tight line-clamp-3 mb-2">{book.title}</h3>

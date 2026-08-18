@@ -1,11 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* 
+  /*
    * Mapping Next.js CSS variables to Tailwind font families.
    * Now you can use `font-heading`, `font-serif`, and `font-sans` in your code!
    */
   --font-heading: var(--font-eb-garamond);  /* Headlines */
   --font-serif: var(--font-source-serif);   /* Body text */
   --font-sans: var(--font-inter);           /* Labels, UI elements, Buttons */
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@utility skeleton-shimmer {
+  background: linear-gradient(90deg, #E5E0D8 25%, #F0EDE6 50%, #E5E0D8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
