@@ -39,7 +39,13 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   const [isHovered, setIsHovered] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isUnassigning, setIsUnassigning] = useState(false); // New state for the new unassigning action!
+  const [isUnassigning, setIsUnassigning] = useState(false);
+  const [showNotesPrompt, setShowNotesPrompt] = useState(false);
+  const [showNotesInput, setShowNotesInput] = useState(false);
+  const [progressNotes, setProgressNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [savedJourneyId, setSavedJourneyId] = useState<string | null>(null);
+  const [savedPage, setSavedPage] = useState<number>(0);
 
   // This was an unexpected UX obstance; it needs to be able to be an empty string! Otherwise, when we remove all our input, it defaults to 0 
   // and self-inserts this. If we remove 49 in order to write 56 real quick, it wouldn't become 56, it would become 056. This would drive
@@ -54,13 +60,47 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   const percentage = total > 0 ? Math.min(100, Math.round(((book.current_page || 0) / total) * 100)) : 0;
 
   // Our core logic: The overlay is visible if the mouse is over it, OR if the user has clicked the input.
-  const showOverlay = isHovered || isLocked;
+  const showOverlay = isHovered || isLocked || showNotesInput;
 
   const router = useRouter();
+
+  async function handleSaveNotes() {
+    if (!progressNotes.trim() || !savedJourneyId) return;
+
+    setIsSavingNotes(true);
+    try {
+      const res = await fetch('/api/log-posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reading_journey_id: savedJourneyId,
+          notes: progressNotes.trim(),
+          note_type: 'progress',
+          pages_read: savedPage,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to save notes');
+
+      setShowNotesInput(false);
+      setShowNotesPrompt(false);
+      setProgressNotes('');
+      setSavedJourneyId(null);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save notes. Please try again.');
+    } finally {
+      setIsSavingNotes(false);
+    }
+  }
 
   async function handleUpdateProgress(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsUpdating(true);
+    setShowNotesPrompt(false);
+    setShowNotesInput(false);
+    setProgressNotes('');
 
     // Safety fallback: if they submit an empty string, save it as 0
     const finalPageToSave = pageInput === '' ? 0 : Number(pageInput);
@@ -79,9 +119,11 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         throw new Error("Failed to update progress");
       }
 
-      // Success! Release the lock and tell the server to update the UI.
-      // The overlay stays open so the user sees the progress bar update — the dismiss button gives them agency to close it.
+      const data = await res.json();
+      setSavedJourneyId(data.data.id);
+      setSavedPage(finalPageToSave);
       setIsLocked(false);
+      setShowNotesPrompt(true);
       router.refresh();
     } catch (err) {
       console.error("Error saving progress:", err);
@@ -103,7 +145,13 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         : 'hover:scale-106 hover:border-[#5C613E] hover:shadow-md hover:z-20 transition-all z-10' // hover:scale-106 and hover:z-20 added here
         }`}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        if (!isLocked && !showNotesInput) {
+          setShowNotesPrompt(false);
+          setSavedJourneyId(null);
+        }
+      }}
     >
       {/* COVER IMAGE (Remains a link only if NOT currently reading, or if the overlay is hidden) */}
       <Link
@@ -203,29 +251,80 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
             </button>
           </form>
 
-          {/* BOTTOM ACTIONS CONTAINER */}
-          <div className="mt-auto w-full flex flex-col items-center pt-3 border-t border-[#FCF9F2]/10 gap-2">
-
-            {/* SECONDARY DE-PRIORITIZED ACTION */}
+          {/* NOTES PROMPT — appears after successful page update */}
+          {showNotesPrompt && !showNotesInput && (
             <button
               type="button"
-              className="flex items-center justify-center gap-1.5 text-[9px] font-sans font-semibold tracking-widest text-[#FCF9F2] border border-[#FCF9F2]/30 px-4 py-1.5 rounded-full hover:bg-[#FCF9F2] hover:text-[#2C302E] transition-all duration-300 pointer-events-auto"
-              onClick={onFinishBook}
-              disabled={isFinishing}
+              onClick={() => {
+                setShowNotesInput(true);
+                setShowNotesPrompt(false);
+              }}
+              className="text-[10px] font-serif italic text-[#FCF9F2]/50 hover:text-[#FCF9F2]/80 transition-colors pointer-events-auto mt-2 animate-in fade-in duration-500"
             >
-              {isFinishing ? "FINISHING..." : "✦ FINISH BOOK"}
+              Capture thoughts?
             </button>
+          )}
 
-            {/* TERTIARY ACTION: Shelve For Now */}
-            <button
-              type="button"
-              className="text-[8px] font-sans font-semibold tracking-widest text-[#FCF9F2]/50 hover:text-[#FCF9F2] hover:bg-[#FCF9F2]/10 px-3 py-1 rounded-full transition-all duration-300 pointer-events-auto"
-              onClick={onShelveBook}
-            >
-              SHELVE FOR NOW
-            </button>
+          {/* NOTES INPUT — expands when prompt is clicked */}
+          {showNotesInput && (
+            <div className="w-full flex flex-col gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300 pointer-events-auto">
+              <textarea
+                rows={3}
+                value={progressNotes}
+                onChange={(e) => setProgressNotes(e.target.value)}
+                autoFocus
+                placeholder="What struck you in these pages?"
+                className="w-full bg-[#FCF9F2]/10 border border-[#FCF9F2]/20 rounded p-2 font-serif text-xs text-[#FCF9F2] placeholder:text-[#FCF9F2]/30 outline-none focus:border-[#FCF9F2]/40 resize-none"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSaveNotes}
+                  disabled={!progressNotes.trim() || isSavingNotes}
+                  className="flex-1 bg-[#FCF9F2] text-[#2C302E] font-sans text-[10px] font-bold tracking-wider uppercase py-1.5 rounded disabled:opacity-50 hover:bg-[#E5E0D8] transition-colors"
+                >
+                  {isSavingNotes ? "Saving..." : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNotesInput(false);
+                    setProgressNotes('');
+                    setSavedJourneyId(null);
+                  }}
+                  className="flex-1 text-[#FCF9F2]/50 font-sans text-[10px] font-bold tracking-wider uppercase py-1.5 rounded hover:text-[#FCF9F2] hover:bg-[#FCF9F2]/10 transition-colors"
+                >
+                  Skip
+                </button>
+              </div>
+            </div>
+          )}
 
-          </div>
+          {/* BOTTOM ACTIONS CONTAINER — hidden when notes input is expanded */}
+          {!showNotesInput && (
+            <div className="mt-auto w-full flex flex-col items-center pt-3 border-t border-[#FCF9F2]/10 gap-2">
+
+              {/* SECONDARY DE-PRIORITIZED ACTION */}
+              <button
+                type="button"
+                className="flex items-center justify-center gap-1.5 text-[9px] font-sans font-semibold tracking-widest text-[#FCF9F2] border border-[#FCF9F2]/30 px-4 py-1.5 rounded-full hover:bg-[#FCF9F2] hover:text-[#2C302E] transition-all duration-300 pointer-events-auto"
+                onClick={onFinishBook}
+                disabled={isFinishing}
+              >
+                {isFinishing ? "FINISHING..." : "✦ FINISH BOOK"}
+              </button>
+
+              {/* TERTIARY ACTION: Shelve For Now */}
+              <button
+                type="button"
+                className="text-[8px] font-sans font-semibold tracking-widest text-[#FCF9F2]/50 hover:text-[#FCF9F2] hover:bg-[#FCF9F2]/10 px-3 py-1 rounded-full transition-all duration-300 pointer-events-auto"
+                onClick={onShelveBook}
+              >
+                SHELVE FOR NOW
+              </button>
+
+            </div>
+          )}
 
         </div>
       )}
