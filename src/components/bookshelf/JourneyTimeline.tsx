@@ -99,16 +99,16 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
     }
   };
 
-  const startEditing = (journey: ReadingJourney) => {
-    setIsAdding(false); // Close add form to prevent visual clutter
-    setEditingId(journey.id);
-    setConfirmDeleteId(null); // Deletion confirmation state is reset when we start editing
+  const startEditing = (journey: ReadingJourney, editKey: string) => {
+    setIsAdding(false);
+    setEditingId(editKey);
+    setConfirmDeleteId(null);
     setEditStartedAt(toDateInputValue(journey.started_at));
     setEditFinishedAt(toDateInputValue(journey.finished_at));
     setEditNotes(journey.notes || '');
   };
 
-  const handleUpdateJourney = async (journeyId: string) => {
+  const handleUpdateJourney = async (journeyId: string, logPostId?: string | null) => {
     setIsUpdating(true);
     try {
       const res = await fetch('/api/journey', {
@@ -119,6 +119,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
           started_at: editStartedAt ? editStartedAt : null,
           finished_at: editFinishedAt ? editFinishedAt : null,
           notes: editNotes.trim() || null,
+          ...(logPostId && { log_post_id: logPostId }),
         }),
       });
 
@@ -182,17 +183,26 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
           <div className="absolute left-3.75 top-4 bottom-4 w-px bg-[#E5E0D8] z-0" />
           {sortedJourneys.map((journey, index) => { // We grab the index now too so that we can find the latest journey
             const isFinished = journey.finished_at !== null;
-            const isEditing = editingId === journey.id;
+            const editKey = journey.log_post_id ? `${journey.id}-${journey.log_post_id}` : journey.id;
+            const isEditing = editingId === editKey;
             const isLatest = index === sortedJourneys.length - 1;
 
             const thisIdSeenCount = (journeyIdSeen.get(journey.id) || 0) + 1;
             journeyIdSeen.set(journey.id, thisIdSeenCount);
-            const isFirstOfDuplicate = (journeyIdCounts.get(journey.id) || 1) > 1 && thisIdSeenCount === 1;
+            const totalForThisId = journeyIdCounts.get(journey.id) || 1;
+            const isFirstOfDuplicate = totalForThisId > 1 && thisIdSeenCount === 1;
+            const isNotLastOfDuplicate = totalForThisId > 1 && thisIdSeenCount < totalForThisId;
 
             const currentStatus = Number(statusId);
 
             let journeyStatusLabel = '';
-            if (isFirstOfDuplicate) {
+            if (journey.note_type === 'shelved') {
+              journeyStatusLabel = 'Journey Put on Hold';
+            } else if (journey.note_type === 'dropped') {
+              journeyStatusLabel = 'Journey Ended';
+            } else if (journey.note_type === 'finished') {
+              journeyStatusLabel = journey.rekindled ? 'Journey Rekindled' : 'Completed Read';
+            } else if (isFirstOfDuplicate) {
               journeyStatusLabel = journey.rekindled ? 'Journey Ended' : 'Journey On Hold';
             } else if (isFinished) {
               journeyStatusLabel = (currentStatus === 4 && isLatest) ? 'Journey Ended' : journey.rekindled ? 'Journey Rekindled' : 'Completed Read';
@@ -203,7 +213,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             return (
               <div key={`${journey.id}-${thisIdSeenCount}`} className="relative z-10 flex items-start gap-4 group">
                 {/* Node */}
-                {isFirstOfDuplicate ? (
+                {isNotLastOfDuplicate ? (
                   <div className="w-8 h-8 shrink-0 mt-1" />
                 ) : (
                   <div
@@ -307,7 +317,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
 
                       <button
                         type="button"
-                        onClick={() => handleUpdateJourney(journey.id)}
+                        onClick={() => handleUpdateJourney(journey.id, journey.log_post_id)}
                         disabled={isUpdating || isDeleting}
                         className="px-5 py-2 bg-[#424B2E] text-[#FCF9F2] text-xs font-sans uppercase tracking-widest rounded disabled:opacity-50 hover:bg-[#343b24] transition-colors shadow-sm"
                       >
@@ -324,14 +334,12 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                       </h4>
 
                       <div className="flex items-center gap-3">
-                        {!isFirstOfDuplicate && (
-                          <button
-                            onClick={() => startEditing(journey)}
-                            className="text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                          >
-                            Edit
-                          </button>
-                        )}
+                        <button
+                          onClick={() => startEditing(journey, editKey)}
+                          className="text-xs font-sans text-[#5C613E]/50 hover:text-[#424B2E] md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                        >
+                          Edit
+                        </button>
                         <span className={`text-xs font-serif italic ${isFinished ? 'text-[#5C613E]' : 'text-[#424B2E] font-medium'}`}>
                           {journey.started_at ? `${formatDate(journey.started_at)} — ${formatDate(journey.finished_at)}` : `Finished ${formatDate(journey.finished_at)}`}
                         </span>
@@ -349,7 +357,8 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                       <p className="font-sans text-xs text-[#5C613E]/80 mt-3">
                         {journeyStatusLabel === 'Active Read' && `Currently on page ${journey.current_page}`}
                         {journeyStatusLabel === 'Journey On Hold' && `Put on hold at page ${journey.current_page}`}
-                        {journeyStatusLabel === 'Journey Ended' && `Ended at page ${journey.current_page}`}
+                        {journeyStatusLabel === 'Journey Put on Hold' && `Journey put on hold at page ${journey.pages_read ?? journey.current_page}`}
+                        {journeyStatusLabel === 'Journey Ended' && `Journey ended at page ${journey.pages_read ?? journey.current_page}`}
                       </p>
                     )}
                   </div>

@@ -12,7 +12,8 @@ interface CrossroadsModalProps {
 }
 
 export default function CrossroadsModal({ bookTitle, trackId, isHorizonBook, onClose }: CrossroadsModalProps) {
-  const [isShelving, setIsShelving] = useState<number | null>(null); // Tracks which button is loading
+  const [isShelving, setIsShelving] = useState<number | null>(null);
+  const [steppingAwayNotes, setSteppingAwayNotes] = useState('');
 
   // Our new useEscapeKey custom hook! This is a conditionally rendered modal that doesn't use isOpen, we only render them
   // when they're active. Our hook is smart enough to default to true when mounted!
@@ -30,7 +31,8 @@ export default function CrossroadsModal({ bookTitle, trackId, isHorizonBook, onC
         body: JSON.stringify({
           track_id: trackId,
           slot_id: 1,
-          target_status_id: targetStatusId
+          target_status_id: targetStatusId,
+          ...(steppingAwayNotes.trim() && { stepping_away_notes: steppingAwayNotes.trim() })
         })
       });
 
@@ -52,7 +54,7 @@ export default function CrossroadsModal({ bookTitle, trackId, isHorizonBook, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C302E]/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="w-full max-w-md bg-[#FCF9F2] rounded-lg shadow-2xl flex flex-col p-8 relative animate-in zoom-in-95 duration-300 border border-[#E5E0D8]">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-[#FCF9F2] rounded-lg shadow-2xl flex flex-col p-6 sm:p-8 relative animate-in zoom-in-95 duration-300 border border-[#E5E0D8]">
         
         {/* Close Button */}
         <button 
@@ -78,16 +80,32 @@ export default function CrossroadsModal({ bookTitle, trackId, isHorizonBook, onC
                 You are stepping away from <strong className="font-semibold text-[#424B2E]">{bookTitle}</strong>, but this is not a failure.
                 <br /><br />
                 It takes real discernment to know when a work of this magnitude belongs to a different season of your life. Has your focus simply shifted, or is this volume waiting for a quieter state of mind?
-                <br /><br />
-                Where should we place it for now?
               </>
             ) : (
               <>
-                You are removing <strong className="font-semibold text-[#424B2E]">{bookTitle}</strong> from your active tracking. Where should we put it?
+                You are removing <strong className="font-semibold text-[#424B2E]">{bookTitle}</strong> from your active tracking.
               </>
             )}
           </p>
         </div>
+
+        <div className="mb-6">
+          <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E] block mb-2">
+            Stepping Away Note (Optional)
+          </label>
+          <textarea
+            rows={7}
+            value={steppingAwayNotes}
+            onChange={(e) => setSteppingAwayNotes(e.target.value)}
+            disabled={isShelving !== null}
+            placeholder={"Reading is never an obligation.\n\nIs this book simply waiting for a different season of life, or is it not the right fit?\n\nCapture what's on your mind—there is no wrong reason to step away."}
+            className="w-full bg-white border border-[#E5E0D8] rounded-md p-3 font-serif text-sm text-[#2C302E] placeholder:text-[#5C613E]/40 outline-none focus:border-[#424B2E] resize-none disabled:opacity-50"
+          />
+        </div>
+
+        <p className="font-serif text-[#5C613E] text-center mb-4">
+          Where should we put it?
+        </p>
 
         <div className="flex flex-col gap-4 w-full">
           {/* Option A: Intend to Read */}

@@ -55,7 +55,7 @@ export async function PATCH(req: Request) {
 
     // The more complicated Crossroads Modal transaction for Slot 1: Now updated to align with Ma (間)! No more assembly line rushing. Issue #94
     if (slot_id === 1) {
-      const { target_status_id } = body;
+      const { target_status_id, stepping_away_notes } = body;
 
       // For this MVP version, the user is asked if they want to put it back as "Intend to Read" (1) or "Dropped" (4)
       // Post MVP, I want to integrate a choice in User Settings to set a default so that they don't have to choose every time
@@ -118,10 +118,17 @@ export async function PATCH(req: Request) {
             'UPDATE "Reading_Journey" SET finished_at = NOW() WHERE id = $1',
             [journeyId]
           );
-          // ...if the user is still at page 0, the Reading Journey is delted. No "footprint"
-        } else if (target_status_id === 1 && currentPage === 0) {
+        } else if (target_status_id === 1 && currentPage === 0 && !stepping_away_notes) {
           await client.query('DELETE FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journeyId]);
           await client.query('DELETE FROM "Reading_Journey" WHERE id = $1', [journeyId]);
+        }
+
+        if (stepping_away_notes) {
+          const logId = crypto.randomUUID();
+          await client.query(
+            'INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes, note_type, pages_read) VALUES ($1, $2, $3, $4, $5, $6)',
+            [logId, user.id, journeyId, stepping_away_notes, target_status_id === 4 ? 'dropped' : 'shelved', currentPage]
+          );
         }
 
         // 4. Update the Bookshelf Item Status (1 = Intend to Read, 4 = Dropped)

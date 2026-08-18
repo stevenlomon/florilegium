@@ -10,7 +10,7 @@ export async function PATCH(req: Request) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { bookshelf_item_id, current_page, journey_id, started_at, finished_at, notes } = body;
+    const { bookshelf_item_id, current_page, journey_id, started_at, finished_at, notes, log_post_id } = body;
 
     // SCENARIO A: EDITING AN EXISTING JOURNEY (Dates & Notes)
     if (journey_id) {
@@ -41,21 +41,27 @@ export async function PATCH(req: Request) {
         if (notes !== undefined) {
           const trimmedNotes = notes ? notes.trim() : '';
 
-          if (trimmedNotes === '') {
-            // If they cleared the input, delete the log post to keep DB clean
-            await client.query('DELETE FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
-          } else {
-            // Upsert logic: Update if it exists, insert if it doesn't
-            const logCheck = await client.query('SELECT id FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
-
-            if ((logCheck.rowCount ?? 0) > 0) {
-              await client.query('UPDATE "Reading_Log_Post" SET notes = $1 WHERE reading_journey_id = $2', [trimmedNotes, journey_id]);
+          if (log_post_id) {
+            if (trimmedNotes === '') {
+              await client.query('DELETE FROM "Reading_Log_Post" WHERE id = $1', [log_post_id]);
             } else {
-              const newLogId = crypto.randomUUID();
-              await client.query(
-                `INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes) VALUES ($1, $2, $3, $4)`,
-                [newLogId, user.id, journey_id, trimmedNotes]
-              );
+              await client.query('UPDATE "Reading_Log_Post" SET notes = $1 WHERE id = $2', [trimmedNotes, log_post_id]);
+            }
+          } else {
+            if (trimmedNotes === '') {
+              await client.query('DELETE FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
+            } else {
+              const logCheck = await client.query('SELECT id FROM "Reading_Log_Post" WHERE reading_journey_id = $1', [journey_id]);
+
+              if ((logCheck.rowCount ?? 0) > 0) {
+                await client.query('UPDATE "Reading_Log_Post" SET notes = $1 WHERE reading_journey_id = $2', [trimmedNotes, journey_id]);
+              } else {
+                const newLogId = crypto.randomUUID();
+                await client.query(
+                  `INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes) VALUES ($1, $2, $3, $4)`,
+                  [newLogId, user.id, journey_id, trimmedNotes]
+                );
+              }
             }
           }
         }
@@ -192,9 +198,9 @@ export async function POST(req: Request) {
       if (notes && notes.trim().length > 0) {
         const newLogId = crypto.randomUUID();
         await client.query(
-          `INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes)
-           VALUES ($1, $2, $3, $4)`,
-          [newLogId, user.id, newJourneyId, notes.trim()]
+          `INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes, note_type)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [newLogId, user.id, newJourneyId, notes.trim(), 'finished']
         );
       }
 
