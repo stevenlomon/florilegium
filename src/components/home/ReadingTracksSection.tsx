@@ -324,7 +324,7 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
             </div>
 
             {/* Track Grid: Horizontal scroll on mobile, 2-col grid on desktop */}
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:snap-none flex-1">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory -mr-12 md:mr-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:snap-none flex-1">
               {[1, 2].map((slot) => {
                 const assignedBook = trackBooks.find(b => b.track_id === track.id && b.slot_id === slot);
                 const slotLabel = slot === 1 ? "Currently Reading" : "Up Next";
