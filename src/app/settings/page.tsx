@@ -2,6 +2,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import LogoutButton from '@/components/settings/LogoutButton';
 import AccountDetailsSection from '@/components/settings/AccountSettingsSection';
+import DismantleAccountButton from '@/components/settings/DismantleAccountButton';
 
 export const dynamic = 'force-dynamic'; // Signals to Next.js that this page is server-rendered per request!
 
@@ -87,9 +88,7 @@ export default async function SettingsPage() {
                   Permanently delete your garden and all associated data from our active databases. This action cannot be undone.
                 </p>
               </div>
-              <button disabled className="text-[#8C3A3A]/50 font-sans text-[10px] font-bold uppercase tracking-widest cursor-not-allowed shrink-0">
-                Delete (Soon)
-              </button>
+              <DismantleAccountButton username={user.username} />
             </div>
 
           </div>
