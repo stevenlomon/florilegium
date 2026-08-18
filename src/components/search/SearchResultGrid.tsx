@@ -51,14 +51,17 @@ export default function SearchResultsGrid({ searchResults }: SearchResultsGridPr
               {/* Cover Image Container */}
               <div className="relative aspect-2/3 mb-3 border border-[#E5E0D8] rounded-md overflow-hidden bg-[#EFEBE1]/50 group-hover:border-[#5C613E]/50 group-hover:shadow-md transition-all duration-300">
                 {work.cover_i && !hasFailed ? (
-                  <Image
-                    src={`https://covers.openlibrary.org/b/id/${work.cover_i}-M.jpg`}
-                    alt={`Cover of ${title}`}
-                    fill
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={() => setFailedImages((prev) => [...prev, workId])} // onError is a native property of `Image`!
-                  />
+                  <>
+                    <div className="absolute inset-0 skeleton-shimmer" />
+                    <Image
+                      src={`https://covers.openlibrary.org/b/id/${work.cover_i}-M.jpg`}
+                      alt={`Cover of ${title}`}
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={() => setFailedImages((prev) => [...prev, workId])} // onError is a native property of `Image`!
+                    />
+                  </>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
                     <span className="font-heading text-[#2C302E] text-sm line-clamp-3">{title}</span>

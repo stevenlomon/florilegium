@@ -54,18 +54,21 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
         <div className="w-full md:w-1/3 shrink-0">
           {/* UPDATED: New improved Image Fallback Logic */}
           {displayCover && !imageFailed ? (
-            <Image
-              key={displayCover} // Force Image to re-render if the URL changes
-              src={displayCover}
-              alt={`Cover of ${displayTitle}`}
-              width={400}
-              height={600}
-              // priority={true}
-              loading="eager"
-              fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
-              className="w-full h-auto rounded shadow-sm object-cover border border-[#E5E0D8] transition-all duration-300"
-              onError={() => setImageFailed(true)} // Catch the Open Library 503s!
-            />
+            <div className="relative w-full aspect-2/3 rounded shadow-sm border border-[#E5E0D8] overflow-hidden">
+              <div className="absolute inset-0 skeleton-shimmer" />
+              <Image
+                key={displayCover} // Force Image to re-render if the URL changes
+                src={displayCover}
+                alt={`Cover of ${displayTitle}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                // priority={true}
+                loading="eager"
+                fetchPriority="high" // The `priority`property has been deprecated! These two lines replaces it
+                className="object-cover transition-all duration-300"
+                onError={() => setImageFailed(true)} // Catch the Open Library 503s!
+              />
+            </div>
           ) : (
             <div className="w-full aspect-2/3 rounded shadow-sm border border-[#E5E0D8] bg-[#EFEBE1]/50 flex flex-col items-center justify-center p-6 text-center">
               <h3 className="font-heading text-2xl text-[#2C302E] leading-tight line-clamp-4 mb-2">{displayTitle}</h3>

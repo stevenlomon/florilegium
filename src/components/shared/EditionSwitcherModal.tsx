@@ -121,14 +121,17 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
                       >
                         {/* UPDATED: Image Fallback Logic */}
                         {edition.cover_image_url && !hasFailed ? (
-                          <Image
-                            src={edition.cover_image_url}
-                            alt={`Cover of ${edition.title}`}
-                            fill
-                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                            onError={() => setFailedImages((prev) => [...prev, edition.id])} // Catch timeouts!
-                          />
+                          <>
+                            <div className="absolute inset-0 skeleton-shimmer" />
+                            <Image
+                              src={edition.cover_image_url}
+                              alt={`Cover of ${edition.title}`}
+                              fill
+                              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+                              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                              onError={() => setFailedImages((prev) => [...prev, edition.id])} // Catch timeouts!
+                            />
+                          </>
                         ) : (
                           <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
                             <span className="font-heading text-[#2C302E] text-sm line-clamp-3">{edition.title}</span>
