@@ -161,37 +161,38 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           })}
         </div>
 
-        {/* Row 2: Sort */}
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-          className="w-full lg:w-fit bg-white/50 border border-[#E5E0D8] rounded-md px-3 py-2 text-sm font-sans text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm cursor-pointer"
-        >
-          {SORT_OPTIONS.map((opt) => (
-            <option key={opt.id} value={opt.id}>{opt.label}</option>
-          ))}
-        </select>
+        {/* Row 2: Sort + Search (side-by-side on desktop, stacked on mobile) */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="w-full lg:w-56 bg-white/50 border border-[#E5E0D8] rounded-md px-3 py-2 text-sm font-sans text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm cursor-pointer"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>{opt.label}</option>
+            ))}
+          </select>
 
-        {/* Row 3: Search */}
-        <div className="relative group">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={localSearchTerm}
-            onChange={(e) => setLocalSearchTerm(e.target.value)}
-            placeholder={isMobile ? "Search authors, titles, notes etc." : "Search authors, recommendation context, notes etc."}
-            className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
-          />
-          {localSearchTerm && (
-            <button
-              onClick={() => setLocalSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          )}
+          <div className="relative flex-1 lg:max-w-lg lg:ml-auto group">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C613E] opacity-50 group-focus-within:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              placeholder={isMobile ? "Search authors, titles, notes etc." : "Search authors, recommendation context, notes etc."}
+              className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
+            />
+            {localSearchTerm && (
+              <button
+                onClick={() => setLocalSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            )}
+          </div>
         </div>
 
       </div>
