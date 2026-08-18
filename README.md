@@ -1,6 +1,6 @@
 # Florilegium
 
-> **Status:** Currently in Beta, live at [beta.florilegium.page](https://beta.florilegium.page)
+> **Status:** Out of Beta! Live now at [florilegium.page](https://florilegium.page) without the beta subdomain
 
 ## *A digital renaissance book garden*
 
@@ -42,7 +42,7 @@ Florilegium is a full-stack web application leveraging the modern web, while hea
 * **Database:** PostgreSQL (via `pg`), entirely self-managed relational data without relying on an ORM.
 * **Styling:** Tailwind CSS, utilizing a custom typography stack (EB Garamond, Source Serif 4, Inter).
 * **External Data:** The [Open Library API](https://openlibrary.org/developers/api) proxy for fetching book metadata, page counts, and cover art without tracking the user.
-* **Authentication:** Custom, lightweight JWT-based session management using `jose`.
+* **Authentication:** Custom, lightweight JWT-based session management using jose, with email verification and password recovery via Resend.
 
 ## Local Cultivation
 
@@ -68,7 +68,8 @@ Create a `.env.local` file in the root directory and provide the necessary keys:
 ```env
 DATABASE_URL="postgres://username:password@your-database-host:port/database-name"
 JWT_SECRET="your-cryptographically-secure-secret-string"
-
+NEXT_PUBLIC_APP_URL=
+RESEND_API_KEY=
 ```
 
 
@@ -81,10 +82,11 @@ npm run dev
 *The garden will be open at `http://localhost:3000`.*
 
 ## Screenshots
-<img width="1883" height="916" alt="Screenshot_2026-08-11_14-07-15" src="https://github.com/user-attachments/assets/30cec1bb-ede7-495d-8db0-66c3f3311962" />
-<img width="1886" height="918" alt="Screenshot_2026-08-14_11-06-19" src="https://github.com/user-attachments/assets/7e374fec-a100-47a0-8bf1-bbe336ea3517" />
-<img width="1886" height="918" alt="Screenshot_2026-08-14_11-06-40" src="https://github.com/user-attachments/assets/f7276c41-e860-4277-b940-d8debe11f358" />
-<img width="1883" height="916" alt="Screenshot_2026-08-11_22-21-39" src="https://github.com/user-attachments/assets/bfed20ab-bcb3-4d71-ad64-0d6f89deda3b" />
-<img width="1886" height="918" alt="Screenshot_2026-08-14_11-10-24" src="https://github.com/user-attachments/assets/4c8ac4c3-9f99-4524-a706-745258bd1c57" />
-<img width="1883" height="916" alt="Screenshot_2026-08-11_13-58-57" src="https://github.com/user-attachments/assets/6893d644-a70d-459a-a7f4-413f99e91032" />
-<img width="1883" height="916" alt="Screenshot_2026-08-11_14-06-19" src="https://github.com/user-attachments/assets/f3b6977c-619e-4211-bd6e-dc66db4e452f" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-29-00" src="https://github.com/user-attachments/assets/ed340895-bda2-4a4e-b355-30a885fb279b" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-31-10" src="https://github.com/user-attachments/assets/7ca4ed07-78a6-41fd-bdfa-e05bd5444857" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-32-03" src="https://github.com/user-attachments/assets/c38298d6-8fb8-4ddc-8cc7-f1055c132032" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-34-16" src="https://github.com/user-attachments/assets/c3adf60e-17c9-4b6b-b889-66419c5376c6" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-35-20" src="https://github.com/user-attachments/assets/e6d76d89-04dc-42ad-9674-f03658aa9837" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-36-08" src="https://github.com/user-attachments/assets/956d1ce8-0673-46ad-ba64-e0a131541456" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-41-31" src="https://github.com/user-attachments/assets/830c5cec-18ed-4590-a2a0-6f3bb81e765e" />
+<img width="1880" height="918" alt="Screenshot_2026-08-19_01-42-01" src="https://github.com/user-attachments/assets/b6460946-9e8b-4fd5-b134-019426177b89" />
