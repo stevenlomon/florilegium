@@ -184,7 +184,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
       {/* TIMELINE LIST */}
       {sortedJourneys.length > 0 ? (
         <div className="flex flex-col gap-6 relative">
-          <div className={`absolute left-3.75 ${firstHasShip ? 'top-16' : 'top-4'} bottom-4 w-px bg-[#E5E0D8] z-0`} />
+          <div className={`absolute left-3.75 ${firstHasShip ? 'top-16' : 'top-4'} bottom-16 w-px bg-[#E5E0D8] z-0`} />
           {sortedJourneys.map((journey, index) => { // We grab the index now too so that we can find the latest journey
             const isFinished = journey.finished_at !== null;
             const editKey = journey.log_post_id ? `${journey.id}-${journey.log_post_id}` : journey.id;
@@ -233,7 +233,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                   )
                 ) : (
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 mt-1 shadow-sm transition-colors ${isFinished && !isEditing
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 self-center border-2 shadow-sm transition-colors ${isFinished && !isEditing
                       ? 'bg-[#EFEBE1] border-[#424B2E] text-[#424B2E]'
                       : 'bg-white border-[#5C613E]/50 text-[#5C613E]'
                       }`}
