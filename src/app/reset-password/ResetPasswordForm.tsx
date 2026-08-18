@@ -14,24 +14,6 @@ export default function ResetPasswordForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  if (!token) {
-    return (
-      <div className="text-center">
-        <div className="bg-[#8C3A3A]/10 border border-[#8C3A3A]/20 rounded-md p-6 mb-6">
-          <p className="text-[#8C3A3A] font-serif italic text-sm">
-            Invalid reset link. Please request a new one.
-          </p>
-        </div>
-        <Link
-          href="/forgot-password"
-          className="inline-block bg-[#424B2E] text-[#FCF9F2] font-sans text-sm font-medium tracking-wide px-8 py-3 rounded-md hover:bg-[#343b24] transition shadow-sm"
-        >
-          Request New Link
-        </Link>
-      </div>
-    );
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
