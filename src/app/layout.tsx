@@ -3,6 +3,7 @@ import { EB_Garamond, Source_Serif_4, Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import BetaEmailBanner from '@/components/BetaEmailBanner';
 
 // Load the fonts exactly as specified in your UI Kit (Screenshot_2026-07-06_16-49-39.png)
 const ebGaramond = EB_Garamond({
@@ -41,6 +42,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
           {/* Top Navbar for Search and Profile */}
           < Navbar />
+
+          <BetaEmailBanner />
 
           {/* 4. The actual page content (<Outlet /> equivalent) */}
           <main className="flex-1">

@@ -36,6 +36,8 @@ export default function LoginForm() {
 
         // Navigate safely to the profile page
         router.push('/profile');
+      } else if (data.reason === "email_not_verified") {
+        setError("Please verify your email before logging in. Check your inbox for the verification link we sent when you registered.");
       } else {
         setError("Invalid username or password. Please try again."); // Security best practice: never give away which one is incorrect to any potential malicious user
       }
