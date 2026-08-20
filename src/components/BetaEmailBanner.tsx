@@ -69,7 +69,7 @@ export default function BetaEmailBanner() {
       <p className="font-heading text-base text-[#2C302E] mb-1">
         Hey, Beta tester! 🌱
       </p>
-      <p className="font-serif text-sm text-[#5C613E] italic leading-relaxed mb-4">
+      <p className="font-serif text-sm text-[#5C613E] leading-relaxed mb-4">
         I wholeheartedly appreciate you being here from the start. Genuinely. Email verification is now live!
         Please take a moment to add yours so you can reset your password if you ever need to.
       </p>
