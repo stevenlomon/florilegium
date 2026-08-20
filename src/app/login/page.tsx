@@ -28,7 +28,7 @@ export default async function LoginPage() {
         
         {/* Header Section */}
         <div className="text-center mb-8">
-          <Image src="/logo.png" alt="Florilegium" width={240} height={240} className="mb-4 mx-auto" />
+          <Image src="/logo.png" alt="Florilegium" width={240} height={240} className="mb-4 mx-auto" loading="eager" fetchPriority="high" />
           <h1 className="text-3xl font-heading text-[#2C302E] mb-2">
             Welcome back
           </h1>
