@@ -1,13 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function BetaEmailBanner() {
+  const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'checking' | 'idle' | 'loading' | 'success' | 'error' | 'hidden'>('checking');
   const [errorMessage, setErrorMessage] = useState('');
 
+  const authPages = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password'];
+  const isAuthPage = authPages.includes(pathname);
+
   useEffect(() => {
+    if (isAuthPage) return;
     fetch('/api/users/status')
       .then(res => res.json())
       .then(data => {
@@ -46,7 +52,7 @@ export default function BetaEmailBanner() {
     }
   };
 
-  if (status === 'checking' || status === 'hidden') return null;
+  if (isAuthPage || status === 'checking' || status === 'hidden') return null;
 
   if (status === 'success') {
     return (
