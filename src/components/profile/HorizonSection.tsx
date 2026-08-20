@@ -95,6 +95,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
           // Not 5 purely visual empty slots anymore; now we need actually some logic haha!
           // Check if any book in our state is assigned to this specific slot
           const assignedBook = horizonBooks.find(book => book.horizon_slot === slot);
+          const lastSlotCenter = slot === 5 ? 'col-span-2 md:col-span-1 max-w-[calc(50%-12px)] md:max-w-none mx-auto md:mx-0' : '';
 
           if (assignedBook) {
             // SCENARIO A: THE SLOT IS FILLED (Letterboxd Style)
@@ -102,7 +103,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
               <Link
                 key={slot}
                 href={`/book/${assignedBook.external_id}`} // No longer `href={`/book/${assignedBook.external_id || assignedBook.book_id}`}`, we can confidently remove the fallback that crashes the app anyway
-                className="group relative block aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-md transition-all shadow-sm w-full bg-[#FCF9F2]"
+                className={`group relative block aspect-2/3 rounded-md overflow-hidden border border-[#E5E0D8] hover:border-[#5C613E] hover:shadow-md transition-all shadow-sm w-full bg-[#FCF9F2] ${lastSlotCenter}`}
               >
 
                 {/* The Two-Tap Unassign Button */}
@@ -168,7 +169,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
             <button // Changed from <div> to <button> for semantic HTML and accessibility
               key={slot}
               type='button' // So it doesn't accidentally trigger forms
-              className="group relative flex flex-col items-center justify-center aspect-2/3 border-2 border-dashed border-[#E5E0D8] rounded-md bg-white/30 hover:bg-[#EFEBE1]/50 hover:border-[#5C613E]/40 transition-all cursor-pointer w-full" // Added w-full to ensure the button perfectly fills the grid column space
+              className={`group relative flex flex-col items-center justify-center aspect-2/3 border-2 border-dashed border-[#E5E0D8] rounded-md bg-white/30 hover:bg-[#EFEBE1]/50 hover:border-[#5C613E]/40 transition-all cursor-pointer w-full ${lastSlotCenter}`} // Added w-full to ensure the button perfectly fills the grid column space
               onClick={() => setActiveSlot(slot)} // onClick intentionally put here for better UX! Don't force the user to specifically click the "+"! Apparently this is in line with what is called Fitt's Law in UX haha! Never heard of it but it makes perfect intuitive sense
             >
               {/* The Plus Button */}
