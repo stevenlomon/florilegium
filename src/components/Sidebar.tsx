@@ -129,7 +129,8 @@ export default function Sidebar() {
             width={200}
             height={200}
             className="opacity-90"
-            priority
+            loading="eager"
+            fetchPriority="high"
           />
         </Link>
       </div>
