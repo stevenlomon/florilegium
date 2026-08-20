@@ -1,13 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function BetaEmailBanner() {
+  const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'checking' | 'idle' | 'loading' | 'success' | 'error' | 'hidden'>('checking');
   const [errorMessage, setErrorMessage] = useState('');
 
+  const authPages = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password'];
+  const isAuthPage = authPages.includes(pathname);
+
   useEffect(() => {
+    if (isAuthPage) return;
     fetch('/api/users/status')
       .then(res => res.json())
       .then(data => {
@@ -46,7 +52,7 @@ export default function BetaEmailBanner() {
     }
   };
 
-  if (status === 'checking' || status === 'hidden') return null;
+  if (isAuthPage || status === 'checking' || status === 'hidden') return null;
 
   if (status === 'success') {
     return (
@@ -63,7 +69,7 @@ export default function BetaEmailBanner() {
       <p className="font-heading text-base text-[#2C302E] mb-1">
         Hey, Beta tester! 🌱
       </p>
-      <p className="font-serif text-sm text-[#5C613E] italic leading-relaxed mb-4">
+      <p className="font-serif text-sm text-[#5C613E] leading-relaxed mb-4">
         I wholeheartedly appreciate you being here from the start. Genuinely. Email verification is now live!
         Please take a moment to add yours so you can reset your password if you ever need to.
       </p>
