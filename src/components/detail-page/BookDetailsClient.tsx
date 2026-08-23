@@ -137,11 +137,25 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
 
           {/* SUBJECT TAGS */}
           <div className="flex flex-wrap gap-2 mb-8">
-            {book.subjects?.slice(0, 4).map((subject: string, idx: number) => (
-              <span key={idx} className="bg-[#EFEBE1] text-[#424B2E] text-xs font-sans px-3 py-1 rounded-full">
-                {subject.split(' -- ')[0]}
-              </span>
-            ))}
+            {book.subjects
+              ?.map((subject: string) =>
+                subject
+                  .split(' -- ')[0]
+                  .replace(/\s*\(fictional works by one author\)/gi, '')
+                  .trim()
+              )
+              .filter((subject: string) => {
+                if (!subject) return false;
+                if (subject.toLowerCase().startsWith('nyt:')) return false;
+                if (subject.toLowerCase() === 'literature') return false;
+                return true;
+              })
+              .slice(0, 4)
+              .map((subject: string, idx: number) => (
+                <span key={idx} className="bg-[#EFEBE1] text-[#424B2E] text-xs font-sans px-3 py-1 rounded-full">
+                  {subject}
+                </span>
+              ))}
           </div>
 
           {/* SUMMARY */}
