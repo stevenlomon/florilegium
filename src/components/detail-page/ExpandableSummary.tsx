@@ -14,14 +14,19 @@ export default function ExpandableSummary({ text }: { text: string | null }) {
     );
   }
 
-  
-  const needsExpansion = text.length > CHARACTER_LIMIT;
+  const cleanedText = text
+    .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .trim();
+
+  const needsExpansion = cleanedText.length > CHARACTER_LIMIT;
   
   // If it's expanded or doesn't need expansion, show full text.
   // Otherwise, slice it to the limit and append an ellipsis.
-  const displayText = isExpanded || !needsExpansion 
-    ? text 
-    : text.slice(0, CHARACTER_LIMIT) + '...';
+  const displayText = isExpanded || !needsExpansion
+    ? cleanedText
+    : cleanedText.slice(0, CHARACTER_LIMIT) + '...';
 
   return (
     // break-words fixes the URL spillover. 
