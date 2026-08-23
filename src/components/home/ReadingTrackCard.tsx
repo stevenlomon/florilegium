@@ -265,7 +265,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
 
           {/* CONFIRMATION — appears briefly after a thought is saved */}
           {showConfirmation && (
-            <p className="text-[13px] font-serif text-[#FCF9F2]/90 mt-2 animate-in fade-in duration-500">
+            <p className="text-[13px] font-serif text-[#FCF9F2]/90 mt-2 text-center animate-in fade-in duration-500">
               Thought captured ✦
             </p>
           )}
