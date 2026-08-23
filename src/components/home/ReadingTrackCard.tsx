@@ -46,6 +46,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [savedJourneyId, setSavedJourneyId] = useState<string | null>(null);
   const [savedPage, setSavedPage] = useState<number>(0);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // This was an unexpected UX obstance; it needs to be able to be an empty string! Otherwise, when we remove all our input, it defaults to 0 
   // and self-inserts this. If we remove 49 in order to write 56 real quick, it wouldn't become 56, it would become 056. This would drive
@@ -86,6 +87,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
       setShowNotesPrompt(false);
       setProgressNotes('');
       setSavedJourneyId(null);
+      setShowConfirmation(true);
+      setTimeout(() => setShowConfirmation(false), 2000);
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -258,8 +261,15 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
             </button>
           </form>
 
+          {/* CONFIRMATION — appears briefly after a thought is saved */}
+          {showConfirmation && (
+            <p className="text-[13px] font-serif text-[#FCF9F2]/90 mt-2 animate-in fade-in duration-500">
+              Thought captured ✦
+            </p>
+          )}
+
           {/* NOTES PROMPT — appears after successful page update */}
-          {showNotesPrompt && !showNotesInput && (
+          {showNotesPrompt && !showNotesInput && !showConfirmation && (
             <button
               type="button"
               onClick={() => {
