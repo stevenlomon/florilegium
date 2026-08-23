@@ -24,7 +24,7 @@ export default function BetaEmailBanner() {
         }
       })
       .catch(() => setStatus('hidden'));
-  }, []);
+  }, [isAuthPage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

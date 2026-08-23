@@ -21,7 +21,7 @@ export default function HelpPage() {
             The Core Ethos: Intentional, grounded, human. Signal Over Noise
           </h2>
           <p className="text-base leading-relaxed">
-            Florilegium is a sanctuary designed, first and foremost, for myself to rekindle and cultivate my love for reading.
+            Florilegium is a sanctuary designed, first and foremost, for myself to rekindle and cultivate my love for reading. I want to get back to reading as much as I did when I was 10-12. And I&apos;d say I&apos;m getting there!
           </p>
           <p className="text-base leading-relaxed">
             My own personal problem with modern book tracking sites is that somewhere along the way we started valuing noise over signal. Before we have even read the first page our mind is poisoned by aggregated scores from thousands of strangers and the top-voted &quot;hot takes&quot; that generate cynical discourse and confirmation bias. It&apos;s cognitive pollution. It&apos;s all noise.
