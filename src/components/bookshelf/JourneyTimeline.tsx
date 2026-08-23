@@ -195,6 +195,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             journeyIdSeen.set(journey.id, thisIdSeenCount);
             const totalForThisId = journeyIdCounts.get(journey.id) || 1;
             const isFirstOfDuplicate = totalForThisId > 1 && thisIdSeenCount === 1;
+            const isLastOfDuplicate = totalForThisId > 1 && thisIdSeenCount === totalForThisId;
             const isNotLastOfDuplicate = totalForThisId > 1 && thisIdSeenCount < totalForThisId;
 
             const currentStatus = Number(statusId);
@@ -357,7 +358,15 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                           Edit
                         </button>
                         <span className={`text-xs font-serif italic ${isFinished ? 'text-[#5C613E]' : 'text-[#424B2E] font-medium'}`}>
-                          {journey.started_at ? `${formatDate(journey.started_at)} — ${formatDate(journey.finished_at)}` : `Finished ${formatDate(journey.finished_at)}`}
+                          {totalForThisId === 1
+                            ? (isFinished
+                                ? (journey.started_at ? `${formatDate(journey.started_at)} — ${formatDate(journey.finished_at)}` : `Finished ${formatDate(journey.finished_at)}`)
+                                : (journey.started_at ? formatDate(journey.started_at) : ''))
+                            : isFirstOfDuplicate
+                              ? (journey.started_at ? formatDate(journey.started_at) : '')
+                              : isLastOfDuplicate && isFinished
+                                ? formatDate(journey.finished_at)
+                                : (journey.log_post_created_at ? formatDate(journey.log_post_created_at) : '')}
                         </span>
                       </div>
                     </div>

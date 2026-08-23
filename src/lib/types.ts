@@ -83,4 +83,5 @@ export interface ReadingJourney {
   rekindled?: boolean;
   note_type?: string | null;
   pages_read?: number | null;
+  log_post_created_at?: string | null;
 }
