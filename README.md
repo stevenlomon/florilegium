@@ -4,7 +4,7 @@
 
 ## *A digital renaissance book garden*
 
-Florilegium is a sanctuary designed, first and foremost, for myself to rekindle and cultivate my love for reading.  
+Florilegium is a sanctuary designed, first and foremost, for myself to rekindle and cultivate my love for reading. I want to get back to reading as much as I did when I was 10-12. And I'd say I'm getting there!  
 
 My own personal problem with modern book tracking sites is that somewhere along the way we started valuing noise over signal. Before we have even read the first page our mind is poisoned by aggregated scores from thousands of strangers and the top-voted "hot takes" that generate cynical discourse and confirmation bias. It's cognitive pollution. It's all noise.  
 
