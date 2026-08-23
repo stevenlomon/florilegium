@@ -48,7 +48,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   const [savedPage, setSavedPage] = useState<number>(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  // This was an unexpected UX obstance; it needs to be able to be an empty string! Otherwise, when we remove all our input, it defaults to 0 
+  // This was an unexpected UX obstacle; it needs to be able to be an empty string! Otherwise, when we remove all our input, it defaults to 0 
   // and self-inserts this. If we remove 49 in order to write 56 real quick, it wouldn't become 56, it would become 056. This would drive
   // people insane over time haha
   const [pageInput, setPageInput] = useState<number | string>(book.current_page || 0);
@@ -61,7 +61,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
   const percentage = total > 0 ? Math.min(100, Math.round(((book.current_page || 0) / total) * 100)) : 0;
 
   // Our core logic: The overlay is visible if the mouse is over it, OR if the user has clicked the input.
-  const showOverlay = isHovered || isLocked || showNotesInput || showNotesPrompt;
+  const showOverlay = isHovered || isLocked || showNotesInput || showNotesPrompt || showConfirmation;
 
   const router = useRouter();
 
@@ -153,6 +153,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         if (!isLocked && !showNotesInput) {
           setShowNotesPrompt(false);
           setSavedJourneyId(null);
+          setShowConfirmation(false);
         }
       }}
     >
@@ -203,6 +204,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
               setShowNotesInput(false);
               setProgressNotes('');
               setSavedJourneyId(null);
+              setShowConfirmation(false);
             }}
             className="md:hidden absolute top-2 right-2 h-7 w-7 rounded-full bg-[#FCF9F2]/10 flex items-center justify-center text-[#FCF9F2]/60 active:text-[#FCF9F2] active:bg-[#FCF9F2]/20 transition-colors pointer-events-auto"
             aria-label="Dismiss"
