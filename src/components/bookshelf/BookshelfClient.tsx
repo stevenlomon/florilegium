@@ -26,6 +26,8 @@ const SORT_OPTIONS = [
   { id: 'author-desc', label: 'Author Z → A' },
   { id: 'rating-desc', label: 'Rating (Highest)' },
   { id: 'rating-asc', label: 'Rating (Lowest)' },
+  { id: 'est-page-count-desc', label: 'Estimated Page Count (Highest)' },
+  { id: 'est-page-count-asc', label: 'Estimated Page Count (Lowest)' },
   { id: 'recs-desc', label: 'Most Recommended' },
 ];
 
@@ -130,6 +132,8 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
       case 'author-desc': return b.author.localeCompare(a.author);
       case 'rating-desc': return (b.user_rating ?? 0) - (a.user_rating ?? 0);
       case 'rating-asc': return (a.user_rating ?? 0) - (b.user_rating ?? 0);
+      case 'est-page-count-desc': return (b.page_count_estimate ?? 0) - (a.page_count_estimate ?? 0);
+      case 'est-page-count-asc': return (a.page_count_estimate ?? 0) - (b.page_count_estimate ?? 0);
       case 'recs-desc': return b.recommendation_context.length - a.recommendation_context.length;
       default: return 0;
     }
