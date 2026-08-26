@@ -170,7 +170,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
-            className="w-full lg:w-56 bg-white/50 border border-[#E5E0D8] rounded-md px-3 py-2 text-sm font-sans text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm cursor-pointer"
+            className="w-full lg:w-72 bg-white/50 border border-[#E5E0D8] rounded-md px-3 py-2 text-sm font-sans text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm cursor-pointer"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>{opt.label}</option>
