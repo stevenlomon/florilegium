@@ -57,11 +57,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
   // Helper to format Postgres timestamp strings for the input[type="date"]
   const toDateInputValue = (dateString: string | null) => {
     if (!dateString) return '';
-    try {
-      return new Date(dateString.replace(' ', 'T')).toISOString().split('T')[0];
-    } catch {
-      return dateString.split(' ')[0].split('T')[0];
-    }
+    return dateString.split(' ')[0].split('T')[0];
   };
 
   const resetForm = () => {
@@ -246,30 +242,32 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                 {/* Card */}
                 {isEditing ? (
                   <div className="flex-1 bg-white border border-[#E5E0D8] rounded-md p-4 shadow-sm animate-in fade-in duration-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                      <div className="flex flex-col gap-1">
-                        <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E]">
-                          Started Date (Optional)
-                        </label>
-                        <input
-                          type="date"
-                          value={editStartedAt}
-                          onChange={(e) => setEditStartedAt(e.target.value)}
-                          className="bg-[#FCF9F2] border border-[#E5E0D8] rounded px-3 py-1.5 font-sans text-xs text-[#2C302E] outline-none focus:border-[#424B2E]"
-                        />
+                    {totalForThisId === 1 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E]">
+                            Started Date (Optional)
+                          </label>
+                          <input
+                            type="date"
+                            value={editStartedAt}
+                            onChange={(e) => setEditStartedAt(e.target.value)}
+                            className="bg-[#FCF9F2] border border-[#E5E0D8] rounded px-3 py-1.5 font-sans text-xs text-[#2C302E] outline-none focus:border-[#424B2E]"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E]">
+                            Finished Date
+                          </label>
+                          <input
+                            type="date"
+                            value={editFinishedAt}
+                            onChange={(e) => setEditFinishedAt(e.target.value)}
+                            className="bg-[#FCF9F2] border border-[#E5E0D8] rounded px-3 py-1.5 font-sans text-xs text-[#2C302E] outline-none focus:border-[#424B2E]"
+                          />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E]">
-                          Finished Date
-                        </label>
-                        <input
-                          type="date"
-                          value={editFinishedAt}
-                          onChange={(e) => setEditFinishedAt(e.target.value)}
-                          className="bg-[#FCF9F2] border border-[#E5E0D8] rounded px-3 py-1.5 font-sans text-xs text-[#2C302E] outline-none focus:border-[#424B2E]"
-                        />
-                      </div>
-                    </div>
+                    )}
                     <div className="flex flex-col gap-1">
                       <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#5C613E]">
                         Raw Thoughts (Optional)
