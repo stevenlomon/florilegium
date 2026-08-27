@@ -57,11 +57,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
   // Helper to format Postgres timestamp strings for the input[type="date"]
   const toDateInputValue = (dateString: string | null) => {
     if (!dateString) return '';
-    try {
-      return new Date(dateString.replace(' ', 'T')).toISOString().split('T')[0];
-    } catch {
-      return dateString.split(' ')[0].split('T')[0];
-    }
+    return dateString.split(' ')[0].split('T')[0];
   };
 
   const resetForm = () => {
