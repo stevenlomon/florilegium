@@ -111,7 +111,7 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
           body: JSON.stringify({
             title: openLibraryBook.title,
             author: openLibraryBook.authors?.[0]?.name || 'Unknown Author',
-            external_provider: 'open_library',
+            external_provider: 'Open Library',
             external_id: openLibraryBook.id,
             // page_count: openLibraryBook.page_count || null,
             page_count: openLibraryBook.page_count_exact || openLibraryBook.page_count_estimate || null,

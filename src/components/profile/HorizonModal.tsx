@@ -69,7 +69,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
           body: JSON.stringify({
             title: openLibraryBook.title,
             author: openLibraryBook.authors?.[0]?.name || 'Unknown Author',
-            external_provider: 'open_library',
+            external_provider: 'Open Library',
             external_id: openLibraryBook.id,
             page_count: openLibraryBook.page_count_exact || openLibraryBook.page_count_estimate || null,
             cover_image_url: openLibraryBook.cover_image || null,
