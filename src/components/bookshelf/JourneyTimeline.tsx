@@ -172,7 +172,6 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
   const journeyIdCounts = new Map<string, number>();
   sortedJourneys.forEach(j => journeyIdCounts.set(j.id, (journeyIdCounts.get(j.id) || 0) + 1));
   const journeyIdSeen = new Map<string, number>();
-  const firstHasShip = sortedJourneys.length > 0 && (journeyIdCounts.get(sortedJourneys[0].id) || 1) > 1;
 
   // Fully vibe coded return render statement
   return (
@@ -180,7 +179,6 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
       {/* TIMELINE LIST */}
       {sortedJourneys.length > 0 ? (
         <div className="flex flex-col gap-6 relative">
-          <div className={`absolute left-3.75 ${firstHasShip ? 'top-16' : 'top-4'} bottom-16 w-px bg-[#E5E0D8] z-0`} />
           {sortedJourneys.map((journey, index) => { // We grab the index now too so that we can find the latest journey
             const isFinished = journey.finished_at !== null;
             const editKey = journey.log_post_id ? `${journey.id}-${journey.log_post_id}` : journey.id;
@@ -215,6 +213,12 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
 
             return (
               <div key={`${journey.id}-${thisIdSeenCount}`} className="relative z-10 flex items-start gap-4 group">
+                {!isLatest && sortedJourneys.length > 1 && (
+                  <div className="absolute left-3.75 top-1/2 bottom-0 w-px bg-[#E5E0D8] -z-10" style={{ marginBottom: '-24px' }} />
+                )}
+                {index > 0 && sortedJourneys.length > 1 && (
+                  <div className="absolute left-3.75 top-0 bottom-1/2 w-px bg-[#E5E0D8] -z-10" style={{ marginTop: '-24px' }} />
+                )}
                 {/* Node */}
                 {isNotLastOfDuplicate ? (
                   isFirstOfDuplicate ? (
