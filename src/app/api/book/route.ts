@@ -13,6 +13,11 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    // New guard clause to ensure there is no more "Yellow Wallpaper confusion" haha; see Issue #164
+    if (!body.external_id) {
+      return NextResponse.json({ error: "Missing external book ID" }, { status: 400 });
+    }
+
     // We dynamically route the page count based on the Open Library ID type. Editions end with 'M', Works with 'W'
     const isEdition = body.external_id.toUpperCase().endsWith('M');
     const pageCountExact = isEdition ? body.page_count : null;
