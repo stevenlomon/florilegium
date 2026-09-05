@@ -84,8 +84,29 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
 // the responsibility of fetching Editions to our new getEditionsForWork function below this one
 export const getBookById = async (id: string): Promise<Book> => {
   try {
-    // Fetch the exact Work using the ID we stripped out during the search
-    const res = await fetch(`${BASE_URL}/works/${id}.json`, {
+    let workId = id;
+    let editionCoverUrl = '';
+
+    if (id.toUpperCase().endsWith('M')) {
+      try {
+        const editionRes = await fetch(`${BASE_URL}/books/${id}.json`, {
+          headers: getHeaders(),
+        });
+        if (editionRes.ok) {
+          const editionData = await editionRes.json();
+          if (editionData.works && editionData.works.length > 0 && editionData.works[0].key) {
+            workId = editionData.works[0].key.split('/').pop();
+          }
+          if (editionData.covers && editionData.covers.length > 0) {
+            editionCoverUrl = `${COVER_BASE_URL}/${editionData.covers[0]}-L.jpg`;
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not resolve Edition ${id} to parent Work, falling back:`, err);
+      }
+    }
+
+    const res = await fetch(`${BASE_URL}/works/${workId}.json`, {
       headers: getHeaders(),
     });
 
@@ -136,7 +157,7 @@ export const getBookById = async (id: string): Promise<Book> => {
     let defaultIsbn: string | null = null; // Needed now that we want to show ISBN for the Defaul Edition
 
     try {
-      const editionsRes = await fetch(`${BASE_URL}/works/${id}/editions.json?limit=${MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE}`, {
+      const editionsRes = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE}`, {
         headers: getHeaders(),
       });
 
@@ -185,7 +206,7 @@ export const getBookById = async (id: string): Promise<Book> => {
         }
       }
     } catch (err) {
-      console.warn(`Could not fetch editions for Work ${id}:`, err);
+      console.warn(`Could not fetch editions for Work ${workId}:`, err);
     }
 
     // Map everything back into our UI's expected Book type
@@ -195,7 +216,7 @@ export const getBookById = async (id: string): Promise<Book> => {
       authors: authors.length > 0 ? authors : [{ name: 'Unknown Author' }],
       subjects: data.subjects || [],
       summary: summary,
-      cover_image: coverUrl,
+      cover_image: editionCoverUrl || coverUrl,
       // Now returns `page_count_estimate` and `page_count_exact` rather than just `page_count`
       page_count_estimate: pageCount,
       page_count_exact: pageCountExact, // Not null anymore
