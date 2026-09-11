@@ -4,7 +4,7 @@ export default function Loading() {
       <img
         src="/logo-no-text.png"
         alt=""
-        className="w-24 h-24 animate-pulse opacity-60"
+        className="w-48 h-48 animate-pulse opacity-60"
       />
       <p className="font-serif text-sm italic text-[#5C613E]/70 animate-pulse">
         Retrieving from the archives&hellip;
