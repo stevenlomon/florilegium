@@ -7,7 +7,7 @@ export default function Loading() {
       
       {/* The pulsing text to create the Labor Illusion */}
       <p className="mt-8 text-lg font-serif italic text-[#5C613E] animate-pulse">
-        Consulting the archives...
+        Retrieving from the archives...
       </p>
       
     </div>
