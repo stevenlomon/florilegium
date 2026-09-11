@@ -11,5 +11,5 @@ export default function Loading() {
       </p>
       
     </div>
-  );
-}
+  )
+};
