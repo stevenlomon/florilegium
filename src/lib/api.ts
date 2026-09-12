@@ -1,9 +1,35 @@
 import { Book, Author, Edition } from './types';
-import { MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE, MAX_EDITIONS_FOR_EDITION_SWITCHER } from './constants';
+import { MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE, MAX_EDITIONS_FOR_EDITION_SWITCHER, OPEN_LIBRARY_PAGE_SEARCH_RESULT_LIMIT as LIMIT } from './constants';
 
 // For our communication with the Open Library (dropped Gutenberg) where we'll get all book data
 const BASE_URL = 'https://openlibrary.org';
 const COVER_BASE_URL = 'https://covers.openlibrary.org/b/id';
+
+// Cache Limits and LRU Helpers (LRU = Least-Recently-Used)
+const MAX_SEARCH_CACHE_SIZE = 100;
+const MAX_BOOK_CACHE_SIZE = 200;
+const MAX_EDITIONS_CACHE_SIZE = 500;
+
+// I'm gonna allow myself to "just buy" this one
+function setBoundedCache<K, V>(map: Map<K, V>, key: K, value: V, limit: number) {
+  if (map.has(key)) {
+    map.delete(key);
+  } else if (map.size >= limit) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey !== undefined) {
+      map.delete(oldestKey);
+    }
+  }
+  map.set(key, value);
+}
+
+// Centralized "Desk Caches" for the entire Node environment
+// We also centralize the artificial Labor Illusion latency logic to this single file! These are all conditionally applied 
+// from this file now instead of several other files across the codebase
+const searchDeskCache = new Map<string, Book[]>();
+const bookDeskCache = new Map<string, Book>();
+const editionsDeskCache = new Map<string, Edition[]>();
+const archiveDeskCache = new Map<string, { searchResults: Record<string, unknown>[]; totalResults: number; totalPages: number }>();
 
 // Small helper function so that we don't have to repeat headers
 function getHeaders() {
@@ -17,9 +43,23 @@ function getHeaders() {
 };
 
 export const searchBooks = async (query: string, page = 1, limit = 5) => { // Keeping the exact same function defition like in the Pokémon project. Limit default dropped to 5 now with Open Library
+  const normalizedQuery = query.toLowerCase().trim(); // We want the cache to cover both "Dune" and "dune"
+  const cacheKey = `${normalizedQuery}-${page}-${limit}`;
+
+  // Before doing anything, check cache!
+    const cached = searchDeskCache.get(cacheKey);
+    if (cached) {
+      // In the three other API functions we add a "maintain trust delay" here. But the debouncing already has a 400ms delay built into it
+      return { results: cached };
+    }
+  
   try {
+    // I had *completely* misunderstood this function. This is not for the "retrieve all results for the hobbit" result; this
+    // is for typing something in the navbar search and seeing the 5 title "sneak peak" dropdown!!!
+    // The debounce already waits 400ms so natural latency *only* is the way to go here!
+
     const params = new URLSearchParams({
-      q: query,
+      q: normalizedQuery,
       page: page.toString(),
       limit: limit.toString(),
       fields: 'key,title,author_name,subject,cover_i,editions,editions.key,editions.number_of_pages' // We explicitly ask only for what we need. Now includes editions and page count
@@ -28,6 +68,7 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
     const res = await fetch(`${BASE_URL}/search.json?${params.toString()}`, {
       headers: getHeaders(),
       signal: AbortSignal.timeout(10000),
+      next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
     });
 
     if (!res.ok) {
@@ -63,6 +104,8 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
       };
     });
 
+    // Save to cache before returning, now using our bounded LRU
+    setBoundedCache(searchDeskCache, cacheKey, mappedBooks, MAX_SEARCH_CACHE_SIZE);
     return { results: mappedBooks };
 
   } catch (error) {
@@ -80,10 +123,75 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
   }
 };
 
+// This is the function I mistook `searchBooks` for. The logic for this function lived in /app/search/page.tsx, now it will live here.
+// This is the "Full Catalog" search
+export const searchArchive = async (query: string, page = 1) => {
+  const normalizedQuery = query.toLowerCase().trim();
+  const cacheKey = `${normalizedQuery}-${page}`;
+
+  // Before doing anything, we check cache
+  const cached = archiveDeskCache.get(cacheKey);
+  if (cached) {
+    // In all of three other cases where cached data *would* be served instantaneously (which deteriorates trust), 
+    // we add a small 800ms / 1000ms / 1200ms artificial delay!
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    return cached;
+  }
+
+  try {
+    // This is the logic I had living in `searchBooks`. Conditional dynamic artificial latency!
+    const TARGET_LATENCY = 2200; // The weighty 2.2s minimum latency for deep archive dives
+    const startTime = Date.now();
+
+    const res = await fetch(
+      `${BASE_URL}/search.json?q=${encodeURIComponent(normalizedQuery)}&page=${page}&limit=${LIMIT}`,
+      {
+        headers: getHeaders(),
+        signal: AbortSignal.timeout(10000),
+        next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch search result data from Open Library');
+    }
+
+    const data = await res.json();
+    const searchResults: Record<string, unknown>[] = data.docs || [];
+    const totalResults = data.numFound || 0;
+    const totalPages = Math.ceil(totalResults / LIMIT);
+
+    const elapsed = Date.now() - startTime;
+    if (elapsed < TARGET_LATENCY) {
+      await new Promise((resolve) => setTimeout(resolve, TARGET_LATENCY - elapsed));
+    }
+
+    const payload = { searchResults, totalResults, totalPages };
+
+    // Save to cache before returning, now using our bounded LRU
+    setBoundedCache(archiveDeskCache, cacheKey, payload, MAX_SEARCH_CACHE_SIZE);
+
+    return payload;
+    
+  } catch (error) {
+    console.error('Archive Search Error:', error);
+    throw error;
+  }
+}; 
+
 // Rather than trying to do double duty grabbing Works *and* Editions, this API function now goes back to only focusing on Works. We outsource 
 // the responsibility of fetching Editions to our new getEditionsForWork function below this one
 export const getBookById = async (id: string): Promise<Book> => {
+  // Before even jumping into the try and potentially fetching, check cache!
+  const cached = bookDeskCache.get(id);
+  if (cached) {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return cached;
+  }
+
   try {
+    // There used to be rigid "blind" artificial Labor Illusion latency here. Natural latency *only* works perfectly good here!!
+
     let workId = id;
     let editionCoverUrl = '';
 
@@ -210,7 +318,7 @@ export const getBookById = async (id: string): Promise<Book> => {
     }
 
     // Map everything back into our UI's expected Book type
-    return {
+    const finalBook = {
       id: id,
       title: data.title || 'Unknown Title',
       authors: authors.length > 0 ? authors : [{ name: 'Unknown Author' }],
@@ -224,6 +332,11 @@ export const getBookById = async (id: string): Promise<Book> => {
       // editions: mappedEditions, Outsourced now to getEditionsForWork below
       isbn: defaultIsbn, // But we do include the ISBN now for the default edition
     };
+
+    // Cache it before returning. Now using our bounded LRU
+    setBoundedCache(bookDeskCache, id, finalBook, MAX_BOOK_CACHE_SIZE);
+    return finalBook;
+
   } catch (error) {
     console.error(`Server error fetching book details with id ${id} using getBookById:`, error);
 
@@ -238,7 +351,18 @@ export const getBookById = async (id: string): Promise<Book> => {
 // Dedicated API function purely for fetching Editions for a Work using our new constant
 // Now handles both Work IDs (ending in W) and Edition IDs (ending in M)
 export const getEditionsForWork = async (identifier: string): Promise<Edition[]> => {
+  // Before jumping into the try and potentially fetching, we check cache!
+  const cached = editionsDeskCache.get(identifier);
+  if (cached) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return cached;
+  }
+
   try {
+    // Flexible Labor Illusion! 
+    const TARGET_LATENCY = 1400; // 1.4 seconds for editions
+    const startTime = Date.now();
+
     let workId = identifier;
 
     // If the identifier is an Edition ID (typically ends with 'M'), resolve the parent Work ID first!
@@ -257,6 +381,7 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
     // This fetch now remains completely untouched!
     const res = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_EDITION_SWITCHER}`, {
       headers: getHeaders(),
+      next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
     });
 
     if (!res.ok) throw new Error(`Open Library API returned status: ${res.status}`);
@@ -287,6 +412,21 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
           isbn: primaryIsbn,
         };
       });
+
+    const elapsed = Date.now() - startTime;
+    if (elapsed < TARGET_LATENCY) {
+      await new Promise(resolve => setTimeout(resolve, TARGET_LATENCY - elapsed));
+    }
+    
+    // Before returning, update our current session "Desk Cache" memory with the resource. Now using LRU!
+    setBoundedCache(editionsDeskCache, identifier, completeEditions, MAX_EDITIONS_CACHE_SIZE);
+
+    // And for editions we also index every individual edition in this list!
+    for (const ed of completeEditions) {
+      if (ed.id) {
+        editionsDeskCache.set(ed.id, completeEditions);
+      }
+    }
 
     return completeEditions;
   } catch (error) {

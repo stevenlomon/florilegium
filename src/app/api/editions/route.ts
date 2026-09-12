@@ -12,10 +12,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Adding the Labor Illusion to respect the act of "searching the archives"
-    await new Promise((resolve) => setTimeout(resolve, 1600));
-    
+    // Cache and conditional Labor Illusion is already taken care of by
     const editions = await getEditionsForWork(workId);
+
     return NextResponse.json({ success: "ok", data: editions });
   } catch (error) {
     console.error("Editions Route Handler Error:", error);

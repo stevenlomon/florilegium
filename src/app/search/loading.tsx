@@ -1,4 +1,4 @@
-export default function Loading() {
+export default function SearchLoading() {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center px-4">
       
