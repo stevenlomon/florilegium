@@ -13,10 +13,18 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
   let book;
   try {
     book = await getBookById(id);
-  } catch {
-    // If there is an error in finding the book id or the user enters an invalid gibberish id, notFound intercepts the 
+  } catch (error) {
+    // If there is an error in finding the book id or the user enters an invalid gibberish id, notFound() intercepts the 
     // request and redirects them to our custom 404 page at not-found.tsx! Next.js keeps impressing me
-    notFound();
+
+    // But! Here is where we start resolving this Issue. Simply throwing notFound() here in the catch will have it act as
+    // a catch-all. We want to be able to distinguish between gibberish URLs and genuine network timeouts and errors!
+    if (error instanceof Error && error.message.includes('status: 404')) {
+      notFound(); 
+    }
+
+    // Now we can say with certainty: if the code reaches here, it's a 503 or timeout! Trigger `error.tsx`!
+    throw error;
   }
 
   // With the book fetched server side, we can now run this server side check to see if it's in the user's bookshelf or not

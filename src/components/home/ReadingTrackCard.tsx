@@ -90,8 +90,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
       setShowConfirmation(true);
       setTimeout(() => setShowConfirmation(false), 2000);
       router.refresh();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert('Failed to save notes. Please try again.');
     } finally {
       setIsSavingNotes(false);
@@ -128,8 +128,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
       setIsLocked(false);
       setShowNotesPrompt(true);
       router.refresh();
-    } catch (err) {
-      console.error("Error saving progress:", err);
+    } catch (error) {
+      console.error("Error saving progress:", error);
       // Escape hatch: If the network fails, revert the input back to the database truth
       setPageInput(book.current_page || 0);
       alert("Failed to save progress. Please try again.");
@@ -405,8 +405,8 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
               }
 
               router.refresh(); // The "magic" graceful Next.js refresh that we've used a lot in the codebase now! 
-            } catch (err) {
-              console.error("Failed to unassign:", err);
+            } catch (error) {
+              console.error("Failed to unassign:", error);
               // Only release the lock if it fails so the user can try again. 
               // If it succeeds, the component will unmount anyway when the refresh hits.
               setIsUnassigning(false);

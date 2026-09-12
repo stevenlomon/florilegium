@@ -22,8 +22,8 @@ import { pool } from '@/lib/db';
 //       success: "ok",
 //       data: bookshelfItems // No need to make it an array of Book objects; this *is* the array! We simply return it haha!
 //     });
-//   } catch (err) {
-//     console.error("Unexpected error when trying to retrieve user Bookshelf", err);
+//   } catch (error) {
+//     console.error("Unexpected error when trying to retrieve user Bookshelf", error);
 //     return NextResponse.json({ success: "not ok" }, { status: 500 });
 //   }
 // };
@@ -66,8 +66,8 @@ export async function PATCH(req: Request) {
       success: "ok",
       data: updatedHorizonSlot
     });
-  } catch (err) {
-    console.error("Unexpected error when trying to assign Horizon Book", err);
+  } catch (error) {
+    console.error("Unexpected error when trying to assign Horizon Book", error);
     return NextResponse.json({ success: "not ok" }, { status: 500 });
   }
 };

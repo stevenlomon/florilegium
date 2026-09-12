@@ -58,9 +58,9 @@ export async function POST(req: Request) {
       data: res.rows[0]
     });
 
-  } catch (err) {
-    console.error("Unexpected error saving recommendation context row:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error saving recommendation context row:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };
 
@@ -119,9 +119,9 @@ export async function PATCH(req: Request) {
       data: res.rows[0]
     });
 
-  } catch (err) {
-    console.error("Unexpected error updating recommendation context row:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error updating recommendation context row:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };
 
@@ -167,8 +167,8 @@ export async function DELETE(req: Request) {
     console.log(`Successfully deleted recommendation context row ${id}`);
     
     return NextResponse.json({ success: "ok" });
-  } catch (err) {
-    console.error("Unexpected error deleting recommendation context row:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error deleting recommendation context row:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };

@@ -65,8 +65,8 @@ export default function AddToBookshelfButton({ book, isAlreadyInBookshelf }: Add
         // setIsProcessing(false); // "Unlock the button again" -> Do not unlock the button!
         router.refresh(); // Tell the parent server component to update in the background
       }, 1500);
-    } catch (err) {
-      console.error("Failed to add book to bookshelf:", err);
+    } catch (error) {
+      console.error("Failed to add book to bookshelf:", error);
 
       // Error state: Let the user know, then reset
       setButtonText("Error!");

@@ -30,8 +30,8 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ success: "ok", data: res.rows[0] });
 
-  } catch (err) {
-    console.error("Unexpected error capturing first_name during user onboarding:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error capturing first_name during user onboarding:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };

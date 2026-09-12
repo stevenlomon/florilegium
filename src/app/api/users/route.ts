@@ -94,9 +94,9 @@ export async function POST(req: Request) {
     },
       { status: 201 }
     );
-  } catch (err) {
-    console.error("Unexpected error when trying to create new User", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error when trying to create new User", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };
 
@@ -162,8 +162,8 @@ export async function PATCH(req: Request) {
       data: res.rows[0]
     });
 
-  } catch (err) {
-    console.error("Unexpected error updating user profile:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error updating user profile:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };

@@ -25,8 +25,8 @@ export async function POST(req: Request) {
     await sendPasswordResetEmail(email, token, user.username);
 
     return NextResponse.json({ success: 'ok' });
-  } catch (err) {
-    console.error('Forgot password error:', err);
+  } catch (error) {
+    console.error('Forgot password error:', error);
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
   }
 }

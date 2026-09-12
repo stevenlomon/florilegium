@@ -34,8 +34,8 @@ export async function POST(req: Request) {
     await markTokenUsed(result.tokenId);
 
     return NextResponse.json({ success: 'ok' });
-  } catch (err) {
-    console.error('Password reset error:', err);
+  } catch (error) {
+    console.error('Password reset error:', error);
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
   }
 }

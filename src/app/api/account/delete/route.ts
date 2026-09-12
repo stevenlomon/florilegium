@@ -40,8 +40,8 @@ export async function DELETE() {
     (await cookies()).delete('florilegium-session');
 
     return NextResponse.json({ success: 'ok' });
-  } catch (err) {
-    console.error('Account deletion error:', err);
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error('Account deletion error:', error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

@@ -201,8 +201,8 @@ export default function ReadingTracksModal({ isOpen, onClose, targetSlot, onSucc
       handleClose(); // Delegate the entire local client state reset, cleanup and closure to our helper function
       onClose();
 
-    } catch (err) {
-      console.error("Failed to assign book to Reading Track:", err);
+    } catch (error) {
+      console.error("Failed to assign book to Reading Track:", error);
     } finally {
       setIsAssigning(false);
     }

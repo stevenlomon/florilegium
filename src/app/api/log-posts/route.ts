@@ -45,8 +45,8 @@ export async function POST(req: Request) {
       data: res.rows[0]
     });
 
-  } catch (err) {
-    console.error("Unexpected error saving log post:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error saving log post:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 }

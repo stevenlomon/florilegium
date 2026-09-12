@@ -17,8 +17,8 @@ export async function GET(request: Request) {
     
     const editions = await getEditionsForWork(workId);
     return NextResponse.json({ success: "ok", data: editions });
-  } catch (err) {
-    console.error("Editions Route Handler Error:", err);
+  } catch (error) {
+    console.error("Editions Route Handler Error:", error);
     return NextResponse.json({ error: "Failed to fetch editions" }, { status: 500 });
   }
 };

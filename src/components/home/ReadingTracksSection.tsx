@@ -167,8 +167,8 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
 
       setEditingTrackId(null);
       router.refresh(); // Now uncommented since we actually fetch the name and description from the database!
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert("Failed to save track updates. Please try again.");
     } finally {
       setIsSavingTrack(false);
@@ -195,8 +195,8 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
 
       // Ensure the server state matches in case there were orphaned UI elements
       router.refresh();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert("Failed to delete track. Please try again.");
     } finally {
       setIsDeletingTrack(false);
@@ -220,8 +220,8 @@ export default function ReadingTracksSection({ initialTrackMetadata, initialTrac
       setNewTrackTitle("");
       setNewTrackDescription("");
       router.refresh();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert("Failed to create track. Please try again.");
     } finally {
       setIsSavingNewTrack(false);

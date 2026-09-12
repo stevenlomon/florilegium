@@ -41,8 +41,8 @@ export default function LoginForm() {
       } else {
         setError("Invalid username or password. Please try again."); // Security best practice: never give away which one is incorrect to any potential malicious user
       }
-    } catch (err) {
-      console.error("Unexpected login fetch error:", err);
+    } catch (error) {
+      console.error("Unexpected login fetch error:", error);
       setError("Something went wrong. Check your connection and try again in a few moments.");
     } finally {
       setIsLoading(false);

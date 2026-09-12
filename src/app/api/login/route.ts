@@ -91,8 +91,8 @@ export async function POST(req: Request) {
       // Password failed
       return NextResponse.json({ success: "not ok" }, { status: 401 });
     }
-  } catch (err) {
-    console.error("Unexpected error when trying to login", err);
+  } catch (error) {
+    console.error("Unexpected error when trying to login", error);
     return NextResponse.json({ success: "not ok" }, { status: 500 });
   }
 };
