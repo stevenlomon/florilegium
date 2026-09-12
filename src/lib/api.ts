@@ -49,6 +49,7 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
     const res = await fetch(`${BASE_URL}/search.json?${params.toString()}`, {
       headers: getHeaders(),
       signal: AbortSignal.timeout(10000),
+      next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
     });
 
     if (!res.ok) {
@@ -354,6 +355,7 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
     // This fetch now remains completely untouched!
     const res = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_EDITION_SWITCHER}`, {
       headers: getHeaders(),
+      next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
     });
 
     if (!res.ok) throw new Error(`Open Library API returned status: ${res.status}`);
