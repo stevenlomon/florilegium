@@ -5,6 +5,13 @@ import { MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE, MAX_EDITIONS_FOR_EDITION_SWITCHER
 const BASE_URL = 'https://openlibrary.org';
 const COVER_BASE_URL = 'https://covers.openlibrary.org/b/id';
 
+// Centralized "Desk Caches" for the entire Node environment
+// We also centralize the artificial Labor Illusion latency logic to this single file! These are all conditionally applied 
+// from this file now instead of several other files across the codebase
+const searchDeskCache = new Map<string, Book[]>();
+const bookDeskCache = new Map<string, Book>();
+const editionsDeskCache = new Map<string, Edition[]>();
+
 // Small helper function so that we don't have to repeat headers
 function getHeaders() {
   // Open Library requires no API key!
@@ -17,9 +24,21 @@ function getHeaders() {
 };
 
 export const searchBooks = async (query: string, page = 1, limit = 5) => { // Keeping the exact same function defition like in the Pokémon project. Limit default dropped to 5 now with Open Library
+  const normalizedQuery = query.toLowerCase().trim(); // We want the cache to cover both "Dune" and "dune"
+  const cacheKey = `${normalizedQuery}-${page}-${limit}`;
+
+  // Before doing anything, check cache!
+    const cached = searchDeskCache.get(cacheKey);
+    if (cached) {
+      return { results: cached };
+    }
+  
   try {
+    // *ONLY* now that we've ensure it's the first time this session do we apply the artificial Labor Illusion latency!
+    await new Promise(resolve => setTimeout(resolve, 1600));
+
     const params = new URLSearchParams({
-      q: query,
+      q: normalizedQuery,
       page: page.toString(),
       limit: limit.toString(),
       fields: 'key,title,author_name,subject,cover_i,editions,editions.key,editions.number_of_pages' // We explicitly ask only for what we need. Now includes editions and page count
@@ -63,6 +82,8 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
       };
     });
 
+    // 4. Save to cache before returning
+    searchDeskCache.set(cacheKey, mappedBooks);
     return { results: mappedBooks };
 
   } catch (error) {
@@ -83,7 +104,15 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
 // Rather than trying to do double duty grabbing Works *and* Editions, this API function now goes back to only focusing on Works. We outsource 
 // the responsibility of fetching Editions to our new getEditionsForWork function below this one
 export const getBookById = async (id: string): Promise<Book> => {
+  // Before even jumping into the try and potentially fetching, check cache!
+  if (bookDeskCache.has(id)) {
+    return bookDeskCache.get(id)!;
+  }
+
   try {
+    // Once again: *ONLY* now that we've ensure it's the first time this session do we apply the artificial Labor Illusion latency!
+    await new Promise(resolve => setTimeout(resolve, 1600));
+
     let workId = id;
     let editionCoverUrl = '';
 
@@ -210,7 +239,7 @@ export const getBookById = async (id: string): Promise<Book> => {
     }
 
     // Map everything back into our UI's expected Book type
-    return {
+    const finalBook = {
       id: id,
       title: data.title || 'Unknown Title',
       authors: authors.length > 0 ? authors : [{ name: 'Unknown Author' }],
@@ -224,6 +253,11 @@ export const getBookById = async (id: string): Promise<Book> => {
       // editions: mappedEditions, Outsourced now to getEditionsForWork below
       isbn: defaultIsbn, // But we do include the ISBN now for the default edition
     };
+
+    // Cache it before returning
+    bookDeskCache.set(id, finalBook);
+    return finalBook;
+
   } catch (error) {
     console.error(`Server error fetching book details with id ${id} using getBookById:`, error);
 
@@ -238,7 +272,16 @@ export const getBookById = async (id: string): Promise<Book> => {
 // Dedicated API function purely for fetching Editions for a Work using our new constant
 // Now handles both Work IDs (ending in W) and Edition IDs (ending in M)
 export const getEditionsForWork = async (identifier: string): Promise<Edition[]> => {
+  // Before jumping into the try and potentially fetching, we check cache!
+  const cached = editionsDeskCache.get(identifier);
+  if (cached) {
+    return cached;
+  }
+
   try {
+    // Flexible Labor Illusion!
+    await new Promise(resolve => setTimeout(resolve, 1600));
+
     let workId = identifier;
 
     // If the identifier is an Edition ID (typically ends with 'M'), resolve the parent Work ID first!
@@ -287,6 +330,16 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
           isbn: primaryIsbn,
         };
       });
+    
+    // Before returning, update our current session "Desk Cache" memory with the resource
+    editionsDeskCache.set(identifier, completeEditions);
+
+    // And for editions we also index every individual edition in this list!
+    for (const ed of completeEditions) {
+      if (ed.id) {
+        editionsDeskCache.set(ed.id, completeEditions);
+      }
+    }
 
     return completeEditions;
   } catch (error) {
