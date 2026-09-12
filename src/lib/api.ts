@@ -34,8 +34,12 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
     }
   
   try {
-    // *ONLY* now that we've ensure it's the first time this session do we apply the artificial Labor Illusion latency!
-    await new Promise(resolve => setTimeout(resolve, 1600));
+    // *ONLY* now that we've ensure it's the first time this session do we apply the artificial Labor Illusion latency
+    // But we don't do it blindly anymore! No more rigid `await new Promise(resolve => setTimeout(resolve, 1600));`, 
+    // it's dynamic and flexible now
+    const TARGET_LATENCY = 2200; // 2.2 seconds for a weighty global search
+
+    const startTime = Date.now();
 
     const params = new URLSearchParams({
       q: normalizedQuery,
@@ -82,7 +86,13 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
       };
     });
 
-    // 4. Save to cache before returning
+    // Now, here before setting cache and returning, we check the stopwatch and pad the remaining time if the request was too fast!
+    const elapsed = Date.now() - startTime;
+    if (elapsed < TARGET_LATENCY) {
+      await new Promise(resolve => setTimeout(resolve, TARGET_LATENCY - elapsed));
+    }
+
+    // Save to cache before returning
     searchDeskCache.set(cacheKey, mappedBooks);
     return { results: mappedBooks };
 
@@ -110,8 +120,7 @@ export const getBookById = async (id: string): Promise<Book> => {
   }
 
   try {
-    // Once again: *ONLY* now that we've ensure it's the first time this session do we apply the artificial Labor Illusion latency!
-    await new Promise(resolve => setTimeout(resolve, 1600));
+    // There used to be rigid "blind" artificial Labor Illusion latency here. Natural latency *only* works perfectly good here!!
 
     let workId = id;
     let editionCoverUrl = '';
@@ -279,8 +288,9 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
   }
 
   try {
-    // Flexible Labor Illusion!
-    await new Promise(resolve => setTimeout(resolve, 1600));
+    // Flexible Labor Illusion! 
+    const TARGET_LATENCY = 1400; // 1.4 seconds for editions
+    const startTime = Date.now();
 
     let workId = identifier;
 
@@ -330,6 +340,11 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
           isbn: primaryIsbn,
         };
       });
+
+    const elapsed = Date.now() - startTime;
+    if (elapsed < TARGET_LATENCY) {
+      await new Promise(resolve => setTimeout(resolve, TARGET_LATENCY - elapsed));
+    }
     
     // Before returning, update our current session "Desk Cache" memory with the resource
     editionsDeskCache.set(identifier, completeEditions);
