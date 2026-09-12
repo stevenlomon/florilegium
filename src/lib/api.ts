@@ -1,5 +1,5 @@
 import { Book, Author, Edition } from './types';
-import { MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE, MAX_EDITIONS_FOR_EDITION_SWITCHER } from './constants';
+import { MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE, MAX_EDITIONS_FOR_EDITION_SWITCHER, OPEN_LIBRARY_PAGE_SEARCH_RESULT_LIMIT as LIMIT } from './constants';
 
 // For our communication with the Open Library (dropped Gutenberg) where we'll get all book data
 const BASE_URL = 'https://openlibrary.org';
@@ -11,6 +11,7 @@ const COVER_BASE_URL = 'https://covers.openlibrary.org/b/id';
 const searchDeskCache = new Map<string, Book[]>();
 const bookDeskCache = new Map<string, Book>();
 const editionsDeskCache = new Map<string, Edition[]>();
+const archiveDeskCache = new Map<string, { searchResults: any[]; totalResults: number; totalPages: number }>();
 
 // Small helper function so that we don't have to repeat headers
 function getHeaders() {
@@ -101,6 +102,58 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
     }
   }
 };
+
+// This is the function I mistook `searchBooks` for. The logic for this function lived in /app/search/page.tsx, now it will live here.
+// This is the "Full Catalog" search
+export const searchArchive = async (query: string, page = 1) => {
+  const normalizedQuery = query.toLowerCase().trim();
+  const cacheKey = `${normalizedQuery}-${page}`;
+
+  // Before doing anything, we check cache
+  const cached = archiveDeskCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    // This is the logic I had living in `searchBooks`. Conditional dynamic artificial latency!
+    const TARGET_LATENCY = 2200; // The weighty 2.2s minimum latency for deep archive dives
+    const startTime = Date.now();
+
+    const res = await fetch(
+      `${BASE_URL}/search.json?q=${encodeURIComponent(normalizedQuery)}&page=${page}&limit=${LIMIT}`,
+      {
+        headers: getHeaders(),
+        signal: AbortSignal.timeout(10000),
+        next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch search result data from Open Library');
+    }
+
+    const data = await res.json();
+    const searchResults = data.docs || [];
+    const totalResults = data.numFound || 0;
+    const totalPages = Math.ceil(totalResults / LIMIT);
+
+    const elapsed = Date.now() - startTime;
+    if (elapsed < TARGET_LATENCY) {
+      await new Promise((resolve) => setTimeout(resolve, TARGET_LATENCY - elapsed));
+    }
+
+    const payload = { searchResults, totalResults, totalPages };
+
+    archiveDeskCache.set(cacheKey, payload);
+
+    return payload;
+    
+  } catch (error) {
+    console.error('Archive Search Error:', error);
+    throw error;
+  }
+}; 
 
 // Rather than trying to do double duty grabbing Works *and* Editions, this API function now goes back to only focusing on Works. We outsource 
 // the responsibility of fetching Editions to our new getEditionsForWork function below this one

@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { OPEN_LIBRARY_PAGE_SEARCH_RESULT_LIMIT as LIMIT } from '@/lib/constants';
 import SearchResultsGrid from '@/components/search/SearchResultGrid';
+import { searchArchive } from '@/lib/api';
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string, page?: string }>; }) {
   const params = await searchParams;
@@ -22,35 +22,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     )
   };
 
-  // DATA FETCHING (Pure Server-Side!)
-  // Open Library Search API natively supports pagination via &page=
-  // And as for Next.js when it comes to pagination, the URL is our state! There is no `useState`! And since we are using the URL and 
-  // nothing else as the state for pagination, everything that is organic for the web just.. works! Bookmarking, sharing and using the 
-  // browser's native and ancient Back and Forward all work out the box because every page turn is a real URL navigation!
-  
-  // Introducing artificial "Labor illusion" latency (1.2) seconds. If we *didn't* have this line of code here... the app would be able
-  // to show us 658 results of "The Hobbit" faster than I can blink. That's what it felt like haha! There *needs* to be some latency! Or
-  // else I simply won't trust it!! This all ties to the "Labor Effect" which is a real and really fascinating psychological phenomenon!
-  await new Promise((resolve) => setTimeout(resolve, 1200));
-  const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&page=${page}&limit=${LIMIT}`, {
-    // We cache search results for an hour to keep the app fast and respect Open Library's servers
-    // The search result data is stored in teh Next.js Data Cache (essentially, the hard drive/memory of the server running our app,
-    // which in the case of Florilegium will be Vercel!)
-    next: { revalidate: 3600 }
-    // With the line above, my brain connected the dot to `revalidatePath`. The difference is that this is *Time-based Revalidation*. We 
-    // use it for 3rd party APIs where data doesn't change by the second
-    // `revalidatePath('/bookshelf')` as an example would tell the server "Hey, the user just updated their bookshelf! Throw away your
-    // cached version of the bookshelf page and fetch fresh data right this instance". This would be an example of *On-Demand Revalidation*
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch search result data from Open Library");
-  }
-
-  const data = await res.json();
-  const searchResults = data.docs || [];
-  const totalResults = data.numFound || 0;
-  const totalPages = Math.ceil(totalResults / LIMIT);
+  // The entire code block with the endearing comments of me essentially learning about server side rendering and reflecting
+  // on the Labor Illusion for the first time.. good times :) Visible on GitHub which kindly acts as a time capsule
+  // All that logic is now moved to api.ts!
+  const { searchResults, totalResults, totalPages } = await searchArchive(query, page);
 
   // ZERO RESULTS STATE
   if (searchResults.length === 0) {
