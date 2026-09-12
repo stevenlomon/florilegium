@@ -34,12 +34,9 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
     }
   
   try {
-    // *ONLY* now that we've ensure it's the first time this session do we apply the artificial Labor Illusion latency
-    // But we don't do it blindly anymore! No more rigid `await new Promise(resolve => setTimeout(resolve, 1600));`, 
-    // it's dynamic and flexible now
-    const TARGET_LATENCY = 2200; // 2.2 seconds for a weighty global search
-
-    const startTime = Date.now();
+    // I had *completely* misunderstood this function. This is not for the "retrieve all results for the hobbit" result; this
+    // is for typing something in the navbar search and seeing the 5 title "sneak peak" dropdown!!!
+    // The debounce already waits 400ms so natural latency *only* is the way to go here!
 
     const params = new URLSearchParams({
       q: normalizedQuery,
@@ -85,12 +82,6 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
         default_edition_id: editionId,
       };
     });
-
-    // Now, here before setting cache and returning, we check the stopwatch and pad the remaining time if the request was too fast!
-    const elapsed = Date.now() - startTime;
-    if (elapsed < TARGET_LATENCY) {
-      await new Promise(resolve => setTimeout(resolve, TARGET_LATENCY - elapsed));
-    }
 
     // Save to cache before returning
     searchDeskCache.set(cacheKey, mappedBooks);
