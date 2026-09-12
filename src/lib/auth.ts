@@ -27,21 +27,21 @@ export async function getCurrentUser() {
     const currentUser = res.rows[0];
 
     return currentUser || null;
-  } catch (err: unknown) {
+  } catch (error: unknown) {
     // Next.js throws DYNAMIC_SERVER_USAGE during 'npm run build' to mark routes as dynamic.
     // We must re-throw it so Next.js can switch the route mode without logging a fake error!
 
     // Safely check if the error is an object and contains the Next.js specific digest without using `any`
     if (
-      err !== null && 
-      typeof err === 'object' && 
-      'digest' in err && 
-      err.digest === 'DYNAMIC_SERVER_USAGE'
+      error !== null && 
+      typeof error === 'object' && 
+      'digest' in error && 
+      error.digest === 'DYNAMIC_SERVER_USAGE'
     ) {
-      throw err;
+      throw error;
     }
 
-    console.error("Unexpected Auth helper error:", err);
+    console.error("Unexpected Auth helper error:", error);
     return null;
   }
 };

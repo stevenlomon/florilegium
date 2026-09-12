@@ -40,8 +40,8 @@ export async function PATCH(req: Request) {
     }
 
     return NextResponse.json({ success: "ok" });
-  } catch (err) {
-    console.error("Error updating email:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Error updating email:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 }

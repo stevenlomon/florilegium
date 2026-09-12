@@ -61,8 +61,8 @@ export default function RegisterForm() {
 
       setVerificationSent(true);
       
-    } catch (err) {
-      console.error("Unexpected registration error:", err);
+    } catch (error) {
+      console.error("Unexpected registration error:", error);
       setError("Something went wrong. Check your connection and try again.");
     } finally {
       setIsLoading(false);

@@ -98,8 +98,8 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
       setSearchTerm('');
       onClose();
 
-    } catch (err) {
-      console.error("Failed to assign book to Horizon:", err);
+    } catch (error) {
+      console.error("Failed to assign book to Horizon:", error);
     } finally {
       setIsAssigning(false);
     }

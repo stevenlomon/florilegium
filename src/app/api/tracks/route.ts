@@ -73,8 +73,8 @@ import { getCurrentUser } from '@/lib/auth';
 //       success: "ok",
 //       data: res.rows
 //     });
-//   } catch (err) {
-//     console.error("Error fetching reading tracks:", err);
+//   } catch (error) {
+//     console.error("Error fetching reading tracks:", error);
 //     return NextResponse.json({ success: "not ok" }, { status: 500 });
 //   }
 // };
@@ -123,9 +123,9 @@ export async function POST(req: Request) {
       client.release();
     }
 
-  } catch (err) {
-    console.error("Unexpected error creating reading track:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error creating reading track:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };
 
@@ -180,9 +180,9 @@ export async function PATCH(req: Request) {
       data: res.rows[0]
     });
 
-  } catch (err) {
-    console.error("Unexpected error updating reading track:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error updating reading track:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };
 
@@ -250,8 +250,8 @@ export async function DELETE(req: Request) {
     } finally {
       client.release();
     }
-  } catch (err) {
-    console.error("Unexpected error deleting reading track:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error deleting reading track:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };

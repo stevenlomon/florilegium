@@ -55,8 +55,8 @@ export default function AccountDetailsSection({ initialUsername, initialFirstNam
       setIsEditing(false);
       // The Magic Refresh: Next.js re-fetches the Server Component in the background
       router.refresh();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       setError("Something went wrong. Please try again.");
     } finally {
       setIsSaving(false);

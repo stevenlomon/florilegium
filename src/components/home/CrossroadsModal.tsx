@@ -45,8 +45,8 @@ export default function CrossroadsModal({ bookTitle, trackId, isHorizonBook, onC
         router.refresh(); // Tell the server to empty the slot on the UI
       }, 350); // Properly fine tuned to feel *just right* haha
 
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert("Failed to step away from the book. Please try again.");
       setIsShelving(null);
     }

@@ -20,8 +20,8 @@ export async function GET(request: Request) {
 
     // Send the clean JSON back to the Browser (client component)
     return NextResponse.json(data);
-  } catch (err) {
-    console.error("Search Route Handler Error:", err);
+  } catch (error) {
+    console.error("Search Route Handler Error:", error);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
   }
 };

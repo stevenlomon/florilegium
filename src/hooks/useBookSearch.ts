@@ -55,10 +55,10 @@ export function useBookSearch(errorLogPrefix = "Book search error:") {
 
         const data = await res.json();
         setResults(data.results || []);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        console.error(errorLogPrefix, err);
-        setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        console.error(errorLogPrefix, error);
+        setError(error instanceof Error ? error.message : "An unexpected error occurred.");
         setResults([]);
       } finally {
         if (!controller.signal.aborted) {

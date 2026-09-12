@@ -166,8 +166,8 @@ export async function POST(req: Request) {
       client.release();
     }
 
-  } catch (err) {
-    console.error("Unexpected error in reading track assignment:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error in reading track assignment:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };

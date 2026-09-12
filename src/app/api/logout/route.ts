@@ -7,8 +7,8 @@ export async function POST() {
     (await cookies()).delete('florilegium-session');
 
     return NextResponse.json({ success: "ok" });
-  } catch (err) {
-    console.error("Unexpected error during logout:", err);
+  } catch (error) {
+    console.error("Unexpected error during logout:", error);
     return NextResponse.json({ success: "not ok" }, { status: 500 });
   }
 };

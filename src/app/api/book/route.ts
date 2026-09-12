@@ -53,8 +53,8 @@ export async function POST(req: Request) {
         cover_image_url: book.cover_image_url
       }
     });
-  } catch (err) {
-    console.error("Unexpected error when trying to insert Open Libary book", err);
+  } catch (error) {
+    console.error("Unexpected error when trying to insert Open Libary book", error);
     return NextResponse.json({ success: "not ok" }, { status: 500 });
   }
 };

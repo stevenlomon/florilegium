@@ -50,9 +50,9 @@ export async function GET() {
       data: res.rows
     });
 
-  } catch (err) {
-    console.error("Unexpected error fetching bookshelf:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error fetching bookshelf:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -100,8 +100,8 @@ export async function POST(req: Request) {
         status_id: item.status_id,
       }
     });
-  } catch (err) {
-    console.error("Unexpected error when trying to insert Bookshelf item", err);
+  } catch (error) {
+    console.error("Unexpected error when trying to insert Bookshelf item", error);
     return NextResponse.json({ success: "not ok" }, { status: 500 });
   }
 };
@@ -425,9 +425,9 @@ export async function PATCH(req: Request) {
       error: "No valid fields provided for update (expected user_rating or status_id (for now))"
     }, { status: 400 });
 
-  } catch (err) {
-    console.error("Unexpected error in user rating assignment:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error in user rating assignment:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };
 
@@ -490,8 +490,8 @@ export async function DELETE(req: Request) {
       client.release();
     }
 
-  } catch (err) {
-    console.error("Unexpected error in Bookshelf Item deletion:", err);
-    return NextResponse.json({ success: "not ok", error: (err as Error).message }, { status: 500 });
+  } catch (error) {
+    console.error("Unexpected error in Bookshelf Item deletion:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 };

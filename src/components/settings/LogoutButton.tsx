@@ -19,8 +19,8 @@ export default function LogoutButton() {
       } else {
         throw new Error("Failed to logout");
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert("Failed to log out. Please try again.");
       setIsLoggingOut(false);
     }

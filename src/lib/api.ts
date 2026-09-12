@@ -65,14 +65,14 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
 
     return { results: mappedBooks };
 
-  } catch (err) {
-    // Whether `err` is already of type Error or not, we log the raw, ugly error to the server console for US to debug
-    console.error(`Server error fetching books using searchBooks:`, err);
+  } catch (error) {
+    // Whether `error` is already of type Error or not, we log the raw, ugly error to the server console for US to debug
+    console.error(`Server error fetching books using searchBooks:`, error);
 
     // Now; normalize the error so that the UI (our to-be-built `error.tsx`) always gets a predictable Error object
-    if (err instanceof Error) {
+    if (error instanceof Error) {
       // If it is *already* of type Error...
-      throw err; // ..simply toss it up the chain to the UI
+      throw error; // ..simply toss it up the chain to the UI
     } else {
       // Else..
       throw new Error("An unexpected network error occurred while contacting Open Libary."); // ..create our own Error object
@@ -101,8 +101,8 @@ export const getBookById = async (id: string): Promise<Book> => {
             editionCoverUrl = `${COVER_BASE_URL}/${editionData.covers[0]}-L.jpg`;
           }
         }
-      } catch (err) {
-        console.warn(`Could not resolve Edition ${id} to parent Work, falling back:`, err);
+      } catch (error) {
+        console.warn(`Could not resolve Edition ${id} to parent Work, falling back:`, error);
       }
     }
 
@@ -205,8 +205,8 @@ export const getBookById = async (id: string): Promise<Book> => {
           }
         }
       }
-    } catch (err) {
-      console.warn(`Could not fetch editions for Work ${workId}:`, err);
+    } catch (error) {
+      console.warn(`Could not fetch editions for Work ${workId}:`, error);
     }
 
     // Map everything back into our UI's expected Book type
@@ -224,11 +224,11 @@ export const getBookById = async (id: string): Promise<Book> => {
       // editions: mappedEditions, Outsourced now to getEditionsForWork below
       isbn: defaultIsbn, // But we do include the ISBN now for the default edition
     };
-  } catch (err) {
-    console.error(`Server error fetching book details with id ${id} using getBookById:`, err);
+  } catch (error) {
+    console.error(`Server error fetching book details with id ${id} using getBookById:`, error);
 
-    if (err instanceof Error) {
-      throw err; //
+    if (error instanceof Error) {
+      throw error; //
     } else {
       throw new Error("An unexpected network error occurred while contacting Open Library."); //
     }
@@ -289,8 +289,8 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
       });
 
     return completeEditions;
-  } catch (err) {
-    console.error(`Error fetching editions for identifier ${identifier}:`, err);
+  } catch (error) {
+    console.error(`Error fetching editions for identifier ${identifier}:`, error);
     return []; // Return empty array on failure so the UI gracefully shows the zero-state
   }
 };
