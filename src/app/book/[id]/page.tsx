@@ -22,6 +22,9 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
     if (error instanceof Error && error.message.includes('status: 404')) {
       notFound(); 
     }
+
+    // Now we can say with certainty: if the code reaches here, it's a 503 or timeout! Trigger `error.tsx`!
+    throw error;
   }
 
   // With the book fetched server side, we can now run this server side check to see if it's in the user's bookshelf or not
