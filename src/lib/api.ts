@@ -29,7 +29,7 @@ function setBoundedCache<K, V>(map: Map<K, V>, key: K, value: V, limit: number) 
 const searchDeskCache = new Map<string, Book[]>();
 const bookDeskCache = new Map<string, Book>();
 const editionsDeskCache = new Map<string, Edition[]>();
-const archiveDeskCache = new Map<string, { searchResults: any[]; totalResults: number; totalPages: number }>();
+const archiveDeskCache = new Map<string, { searchResults: Record<string, unknown>[]; totalResults: number; totalPages: number }>();
 
 // Small helper function so that we don't have to repeat headers
 function getHeaders() {
@@ -49,6 +49,7 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
   // Before doing anything, check cache!
     const cached = searchDeskCache.get(cacheKey);
     if (cached) {
+      // In the three other API functions we add a "maintain trust delay" here. But the debouncing already has a 400ms delay built into it
       return { results: cached };
     }
   
@@ -131,6 +132,9 @@ export const searchArchive = async (query: string, page = 1) => {
   // Before doing anything, we check cache
   const cached = archiveDeskCache.get(cacheKey);
   if (cached) {
+    // In all of three other cases where cached data *would* be served instantaneously (which deteriorates trust), 
+    // we add a small 800ms / 1000ms / 1200ms artificial delay!
+    await new Promise(resolve => setTimeout(resolve, 1200));
     return cached;
   }
 
@@ -153,7 +157,7 @@ export const searchArchive = async (query: string, page = 1) => {
     }
 
     const data = await res.json();
-    const searchResults = data.docs || [];
+    const searchResults: Record<string, unknown>[] = data.docs || [];
     const totalResults = data.numFound || 0;
     const totalPages = Math.ceil(totalResults / LIMIT);
 
@@ -181,6 +185,7 @@ export const getBookById = async (id: string): Promise<Book> => {
   // Before even jumping into the try and potentially fetching, check cache!
   const cached = bookDeskCache.get(id);
   if (cached) {
+    await new Promise(resolve => setTimeout(resolve, 800));
     return cached;
   }
 
@@ -349,6 +354,7 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
   // Before jumping into the try and potentially fetching, we check cache!
   const cached = editionsDeskCache.get(identifier);
   if (cached) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     return cached;
   }
 

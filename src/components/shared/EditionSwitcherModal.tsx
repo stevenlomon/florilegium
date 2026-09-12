@@ -13,9 +13,6 @@ interface EditionSwitcherModalProps {
   currentEditionId?: string | null;
 }
 
-// Client-side session cache; the complement to the server-side "Desk Cache"
-const clientEditionsCache = new Map<string, Edition[]>();
-
 // This is the first Client Component in our new shared folder because this will be shared by the Detailed View Page and the Bookshelf Item Details Modal!
 // A user will be able to switch editions of a work before adding to Bookshelf *and* after adding to the Bookshelf
 // Now fetches editions rather than being handed them as a prop. Instead it's handed a workId
@@ -32,18 +29,6 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
   // useEffect for the fetching this Client Component now needs to do..
   useEffect(() => {
     if (!isOpen) return;
-
-    // Before doing anything, check our cache!
-    const cachedEditions = clientEditionsCache.get(workId);
-    if (cachedEditions) {
-      setEditions(cachedEditions);
-      setIsLoading(false);
-      return;
-    }
-
-    // If `cachedEditions` is `undefined` and that lookup didn't return, we clear stale editions before showing the loading spinner and
-    // continue with the fetch
-    setEditions([]);
 
     const fetchEditions = async () => {
       setIsLoading(true);
