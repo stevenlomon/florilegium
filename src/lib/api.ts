@@ -5,6 +5,24 @@ import { MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE, MAX_EDITIONS_FOR_EDITION_SWITCHER
 const BASE_URL = 'https://openlibrary.org';
 const COVER_BASE_URL = 'https://covers.openlibrary.org/b/id';
 
+// Cache Limits and LRU Helpers (LRU = Least-Recently-Used)
+const MAX_SEARCH_CACHE_SIZE = 100;
+const MAX_BOOK_CACHE_SIZE = 200;
+const MAX_EDITIONS_CACHE_SIZE = 500;
+
+// I'm gonna allow myself to "just buy" this one
+function setBoundedCache<K, V>(map: Map<K, V>, key: K, value: V, limit: number) {
+  if (map.has(key)) {
+    map.delete(key);
+  } else if (map.size >= limit) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey !== undefined) {
+      map.delete(oldestKey);
+    }
+  }
+  map.set(key, value);
+}
+
 // Centralized "Desk Caches" for the entire Node environment
 // We also centralize the artificial Labor Illusion latency logic to this single file! These are all conditionally applied 
 // from this file now instead of several other files across the codebase
@@ -85,8 +103,8 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
       };
     });
 
-    // Save to cache before returning
-    searchDeskCache.set(cacheKey, mappedBooks);
+    // Save to cache before returning, now using our bounded LRU
+    setBoundedCache(searchDeskCache, cacheKey, mappedBooks, MAX_SEARCH_CACHE_SIZE);
     return { results: mappedBooks };
 
   } catch (error) {
@@ -146,7 +164,8 @@ export const searchArchive = async (query: string, page = 1) => {
 
     const payload = { searchResults, totalResults, totalPages };
 
-    archiveDeskCache.set(cacheKey, payload);
+    // Save to cache before returning, now using our bounded LRU
+    setBoundedCache(archiveDeskCache, cacheKey, payload, MAX_SEARCH_CACHE_SIZE);
 
     return payload;
     
@@ -160,8 +179,9 @@ export const searchArchive = async (query: string, page = 1) => {
 // the responsibility of fetching Editions to our new getEditionsForWork function below this one
 export const getBookById = async (id: string): Promise<Book> => {
   // Before even jumping into the try and potentially fetching, check cache!
-  if (bookDeskCache.has(id)) {
-    return bookDeskCache.get(id)!;
+  const cached = bookDeskCache.get(id);
+  if (cached) {
+    return cached;
   }
 
   try {
@@ -308,8 +328,8 @@ export const getBookById = async (id: string): Promise<Book> => {
       isbn: defaultIsbn, // But we do include the ISBN now for the default edition
     };
 
-    // Cache it before returning
-    bookDeskCache.set(id, finalBook);
+    // Cache it before returning. Now using our bounded LRU
+    setBoundedCache(bookDeskCache, id, finalBook, MAX_BOOK_CACHE_SIZE);
     return finalBook;
 
   } catch (error) {
@@ -392,8 +412,8 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
       await new Promise(resolve => setTimeout(resolve, TARGET_LATENCY - elapsed));
     }
     
-    // Before returning, update our current session "Desk Cache" memory with the resource
-    editionsDeskCache.set(identifier, completeEditions);
+    // Before returning, update our current session "Desk Cache" memory with the resource. Now using LRU!
+    setBoundedCache(editionsDeskCache, identifier, completeEditions, MAX_EDITIONS_CACHE_SIZE);
 
     // And for editions we also index every individual edition in this list!
     for (const ed of completeEditions) {
