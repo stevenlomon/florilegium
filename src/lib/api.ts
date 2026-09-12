@@ -369,6 +369,7 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
     if (identifier.toUpperCase().endsWith('M')) {
       const bookRes = await fetch(`${BASE_URL}/books/${identifier}.json`, {
         headers: getHeaders(),
+        signal: AbortSignal.timeout(10000), // Enforce the same 10s timeout we use elsewhere
       });
       if (bookRes.ok) {
         const bookData = await bookRes.json();
@@ -381,6 +382,7 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
     // This fetch now remains completely untouched!
     const res = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_EDITION_SWITCHER}`, {
       headers: getHeaders(),
+      signal: AbortSignal.timeout(10000),
       next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
     });
 
@@ -431,6 +433,11 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
     return completeEditions;
   } catch (error) {
     console.error(`Error fetching editions for identifier ${identifier}:`, error);
-    return []; // Return empty array on failure so the UI gracefully shows the zero-state
+    // Surface the failure so the UI displays an **honest error** rather than a false zero-state
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error("An unexpected network error occurred while contacting Open Library.");
+    }
   }
 };

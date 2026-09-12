@@ -19,6 +19,7 @@ interface EditionSwitcherModalProps {
 export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelectEdition, currentEditionId }: EditionSwitcherModalProps) {
   const [editions, setEditions] = useState<Edition[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false); // We now properly track errors!
 
   // New state for tracking Open Library image failures
   const [failedImages, setFailedImages] = useState<string[]>([]);
@@ -32,15 +33,22 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
 
     const fetchEditions = async () => {
       setIsLoading(true);
+      setEditions([]); 
+      setError(false);
       try {
         // .. using our new API route!
         const res = await fetch(`/api/editions?workId=${workId}`);
-        if (res.ok) {
-          const json = await res.json();
-          setEditions(json.data || []);
+        const json = await res.json();
+
+        // If Next.js returns a 500 we manually throw an error!
+        if (!res.ok) {
+          throw new Error(json.error || "Failed to fetch editions");
         }
+
+        setEditions(json.data || []);
       } catch (error) {
         console.error("Failed to fetch editions:", error);
+        setError(true);
       } finally {
         setIsLoading(false);
       }
@@ -70,7 +78,9 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
             <p className="font-sans text-sm text-[#5C613E]">
               {isLoading
                 ? "Consulting the archives..."
-                : `Found ${editions.length} complete printings with verified cover scans and ISBN.`}
+                : error
+                  ? "The connection timed out."
+                  : `Found ${editions.length} complete printings with verified cover scans and ISBN.`}
             </p>
           </div>
           <button onClick={onClose} disabled={isLoading} className="text-[#5C613E] hover:text-[#2C302E] p-2 transition-colors disabled:opacity-50">
@@ -84,10 +94,13 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
         <div className="flex-1 overflow-y-auto p-8 relative">
           {isLoading ? (
             <div className="min-h-[40vh] flex flex-col items-center justify-center">
-              <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#E5E0D8] border-t-[#5C613E]"></div>
-              <p className="mt-4 font-serif italic text-sm text-[#5C613E] animate-pulse">
-                Pulling physical printings from the catalog...
-              </p>
+              {/* ... existing spinner ... */}
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center text-center opacity-70 h-full py-12 animate-in fade-in duration-300">
+              <span className="text-4xl mb-4">🌧️</span>
+              <p className="text-[#5C613E] font-serif text-lg">The archives are currently unreachable.</p>
+              <p className="text-[#5C613E]/70 font-sans text-xs mt-2 uppercase tracking-widest">Please try again in a few moments.</p>
             </div>
           ) : editions.length > 0 ? (
             <div className="flex flex-col gap-6">
