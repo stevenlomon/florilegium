@@ -25,6 +25,23 @@ describe('fetchWithRetry', () => {
     // `expect.any(Object)` signals "don't worry about the second options parameter containing the internal timeout signal."
     expect(mockFetch).toHaveBeenCalledWith(URL, expect.any(Object)); 
   });
+
+  test('retries on a complete network drop (temporary hiccup) and recovers', async () => {
+    // When mock requests are chained like these, they are queued FIFO. So order matters!
+    mockFetch.mockRejectedValueOnce(new Error('Network offline'));
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 200 });
+
+    // Filling out the optional parameters in fetchWithRetry now: 
+    // * empty init object
+    // * 1 retry
+    // * 1 delay ms so the retry fires instantly without slowing down the test runner
+    let URL = 'https://fake-test-library.org';
+    const res = await fetchWithRetry(URL, {}, 1, 1);
+
+    expect(mockFetch).toHaveBeenCalledTimes(2); // Two requests expected now..
+    expect(res.ok).toBe(true); // ..but all in all, the request is expected to have succeeded!
+    expect(mockFetch).toHaveBeenCalledWith(URL, expect.any(Object)); 
+  });
 });
 
 describe('setBoundedCache (LRU)', () => {
