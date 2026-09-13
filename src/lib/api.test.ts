@@ -81,6 +81,13 @@ describe('setBoundedCache (LRU)', () => {
     cache = new Map;
   });
 
-  // setBoundedCache tests to be added here
+  test('stores values normally when within the limit', () => {
+    setBoundedCache(cache, 'a', 'first', 2);
+    setBoundedCache(cache, 'b', 'second', 2);
+
+    expect(cache.size).toBe(2); // Still within limit, no eviction expected
+    expect(cache.get('a')).toBe('first');
+    expect(cache.get('b')).toBe('second');
+  });
   
 })
