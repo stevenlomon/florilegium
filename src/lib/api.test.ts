@@ -61,7 +61,7 @@ describe('fetchWithRetry', () => {
   });
 
   // We distinguish between a resolved response with a 500 status code and a network exception (a rejected promise)
-  test('throws an error if network exceptions persist across all retries', async () => {
+  test('an error is thrown if network exceptions persist across all retries', async () => {
     // Persistently rejects (e.g. AbortSignal timeout or dropped socket)
     mockFetch.mockRejectedValue(new Error('Connection aborted'));
 
@@ -81,7 +81,8 @@ describe('setBoundedCache (LRU)', () => {
     cache = new Map;
   });
 
-  test('stores values normally when within the limit', () => {
+  test('values are stored normally when within the limit', () => {
+    // Limit is explicitly set to 2 for these tests
     setBoundedCache(cache, 'a', 'first', 2);
     setBoundedCache(cache, 'b', 'second', 2);
 
@@ -89,5 +90,36 @@ describe('setBoundedCache (LRU)', () => {
     expect(cache.get('a')).toBe('first');
     expect(cache.get('b')).toBe('second');
   });
-  
-})
+
+  test('the oldest key (least recently used) is evicted when capacity is exceeded', () => {
+    setBoundedCache(cache, 'a', 'first', 2);
+    setBoundedCache(cache, 'b', 'second', 2);
+
+    // Limit is 2. The cache is full. 
+    // Inserting 'c' should force the oldest key ('a') out from the front of the Map.
+    setBoundedCache(cache, 'c', 'third', 2);
+
+    expect(cache.size).toBe(2); // The size ceiling is strictly maintained
+    expect(cache.has('a')).toBe(false); // 'a' was pushed out
+    expect(cache.get('b')).toBe('second');
+    expect(cache.get('c')).toBe('third');
+  });
+
+  test('a key\'s recency is refreshed when updated, protecting it from eviction', () => {
+    setBoundedCache(cache, 'a', 'first', 2);
+    setBoundedCache(cache, 'b', 'second', 2);
+
+    // Re-inserting 'a' triggers the `map.delete(key)` block in our helper before setting it again.
+    // This physically moves 'a' to the very back of the Map's insertion order (the "newest" spot).
+    setBoundedCache(cache, 'a', 'first-updated', 2);
+    
+    // Limit is 2. Inserting 'c' forces an eviction.
+    // Because 'a' was just bumped to the newest spot, 'b' is now the oldest and should be the one to be evicted!
+    setBoundedCache(cache, 'c', 'third', 2);
+
+    expect(cache.size).toBe(2);
+    expect(cache.has('b')).toBe(false); // 'b' is evicted
+    expect(cache.get('a')).toBe('first-updated'); // 'a' survived because we refreshed it!
+    expect(cache.get('c')).toBe('third');
+  });
+});
