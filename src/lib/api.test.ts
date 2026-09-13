@@ -19,11 +19,12 @@ describe('fetchWithRetry', () => {
     const res = await fetchWithRetry(URL);
 
     expect(mockFetch).toHaveBeenCalledTimes(1); // No retries should have been taking place
-    expect(res.ok).toBe(true);
-
+    
     // All our fetches have two arguments; URL and an Object with headers, `AbortSignal` etc. 
     // `expect.any(Object)` signals "don't worry about the second options parameter containing the internal timeout signal."
     expect(mockFetch).toHaveBeenCalledWith(URL, expect.any(Object)); 
+
+    expect(res.ok).toBe(true);
   });
 
   test('retries on a complete network drop (temporary hiccup) and recovers', async () => {
@@ -39,8 +40,37 @@ describe('fetchWithRetry', () => {
     const res = await fetchWithRetry(URL, {}, 1, 1);
 
     expect(mockFetch).toHaveBeenCalledTimes(2); // Two requests expected now..
-    expect(res.ok).toBe(true); // ..but all in all, the request is expected to have succeeded!
     expect(mockFetch).toHaveBeenCalledWith(URL, expect.any(Object)); 
+
+    expect(res.ok).toBe(true); // ..but all in all, the request is expected to have succeeded!
+  });
+
+  test('returns the failed response if all 5xx retries are exhausted', async () => {
+    // Will be applied to both requests
+    mockFetch.mockResolvedValue({ ok: false, status: 500 });
+
+    let URL = 'https://fake-test-library.org';
+    const res = await fetchWithRetry(URL, {}, 1, 1);
+
+    expect(mockFetch).toHaveBeenCalledTimes(2); // Two requests...
+    expect(mockFetch).toHaveBeenCalledWith(URL, expect.any(Object)); 
+
+    // .. but all in all, a failed request with 500 as the status code
+    expect(res.ok).toBe(false);
+    expect(res.status).toBe(500);
+  });
+
+  // We distinguish between a resolved response with a 500 status code and a network exception (a rejected promise)
+  test('throws an error if network exceptions persist across all retries', async () => {
+    // Persistently rejects (e.g. AbortSignal timeout or dropped socket)
+    mockFetch.mockRejectedValue(new Error('Connection aborted'));
+
+    // `.rejects.toThrow()` used now to assert against our expected error message
+    let URL = 'https://fake-test-library.org';
+    await expect(fetchWithRetry(URL, {}, 1, 1)).rejects.toThrow('Connection aborted');
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledWith(URL, expect.any(Object));
   });
 });
 
