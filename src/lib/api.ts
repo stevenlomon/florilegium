@@ -143,14 +143,19 @@ export const searchArchive = async (query: string, page = 1) => {
     const TARGET_LATENCY = 2200; // The weighty 2.2s minimum latency for deep archive dives
     const startTime = Date.now();
 
-    const res = await fetch(
-      `${BASE_URL}/search.json?q=${encodeURIComponent(normalizedQuery)}&page=${page}&limit=${LIMIT}`,
-      {
+    // We now explicitly restrict fields to avoid bloated responses and timeouts
+    const params = new URLSearchParams({
+      q: normalizedQuery, // We drop `encodeURIComponent` now that we have `URLSearchParams` to avoid double encoding
+      page: page.toString(), // `page` and `limit` were parsed into strings in the earlier code eventually so might as 
+      limit: LIMIT.toString(), // well pass them as strings to begin with
+      fields: 'key,title,author_name,cover_i,first_publish_year,edition_count',
+    });
+
+    const res = await fetch(`${BASE_URL}/search.json?${params.toString()}`, {
         headers: getHeaders(),
         signal: AbortSignal.timeout(10000),
         next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
-      }
-    );
+      });
 
     if (!res.ok) {
       throw new Error('Failed to fetch search result data from Open Library');
