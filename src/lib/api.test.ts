@@ -15,7 +15,7 @@ describe('fetchWithRetry', () => {
     // Force fetch to return a 200 OK immediately
     mockFetch.mockResolvedValueOnce({ ok: true, status: 200 });
 
-    let URL = 'https://fake-test-library.org';
+    const URL = 'https://fake-test-library.org';
     const res = await fetchWithRetry(URL);
 
     expect(mockFetch).toHaveBeenCalledTimes(1); // No retries should have been taking place
@@ -36,7 +36,7 @@ describe('fetchWithRetry', () => {
     // * empty init object
     // * 1 retry
     // * 1 delay ms so the retry fires instantly without slowing down the test runner
-    let URL = 'https://fake-test-library.org';
+    const URL = 'https://fake-test-library.org';
     const res = await fetchWithRetry(URL, {}, 1, 1);
 
     expect(mockFetch).toHaveBeenCalledTimes(2); // Two requests expected now..
@@ -49,7 +49,7 @@ describe('fetchWithRetry', () => {
     // Will be applied to both requests
     mockFetch.mockResolvedValue({ ok: false, status: 500 });
 
-    let URL = 'https://fake-test-library.org';
+    const URL = 'https://fake-test-library.org';
     const res = await fetchWithRetry(URL, {}, 1, 1);
 
     expect(mockFetch).toHaveBeenCalledTimes(2); // Two requests...
@@ -66,7 +66,7 @@ describe('fetchWithRetry', () => {
     mockFetch.mockRejectedValue(new Error('Connection aborted'));
 
     // `.rejects.toThrow()` used now to assert against our expected error message
-    let URL = 'https://fake-test-library.org';
+    const URL = 'https://fake-test-library.org';
     await expect(fetchWithRetry(URL, {}, 1, 1)).rejects.toThrow('Connection aborted');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
