@@ -10,7 +10,7 @@ const MAX_SEARCH_CACHE_SIZE = 100;
 const MAX_BOOK_CACHE_SIZE = 200;
 const MAX_EDITIONS_CACHE_SIZE = 500;
 
-// I'm gonna allow myself to "just buy" this one
+// I'm gonna allow myself to "just buy" this one for now until we write the test for it
 function setBoundedCache<K, V>(map: Map<K, V>, key: K, value: V, limit: number) {
   if (map.has(key)) {
     map.delete(key);
@@ -42,6 +42,52 @@ function getHeaders() {
   }
 };
 
+/**
+ * Executes a fetch request with a single retry for transient failures and temporary hiccups.
+ * If the second attempt fails, we render our error screen
+ * If the second attempt succeeds, the uses sees their resource and never knows the first error ever happened
+ * 
+ * Re-creates AbortSignal.timeout per attempt to prevent aborted signal reuse.
+ *
+ * Retries on:
+ * - Network exceptions / timeouts (AbortSignal timeout)
+ * - Server errors (HTTP 500, 502, 503, 504)
+ *
+ * @param url Request destination URL.
+ * @param init Fetch options (headers, next caching, etc.).
+ * @param retries Number of retry attempts before throwing.
+ * @param delayMs Backoff delay before the retry attempt.
+ * @param timeoutMs Per-attempt timeout in milliseconds.
+ */
+export async function fetchWithRetry(url: string, init: RequestInit = {}, retries = 1, delayMs = 500, timeoutMs = 10000): Promise<Response> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+
+      // If Open Library returns a transient 5xx error and we have retries left, wait and retry
+      if (!res.ok && res.status >= 500 && attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        continue;
+      }
+
+      return res;
+    } catch (error) {
+      // If this was the last attempt, bubble the error up
+      if (attempt >= retries) {
+        throw error;
+      }
+
+      // Wait 500ms before firing attempt #2
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw new Error('fetchWithRetry failed unexpectedly.');
+};
+
 export const searchBooks = async (query: string, page = 1, limit = 5) => { // Keeping the exact same function defition like in the Pokémon project. Limit default dropped to 5 now with Open Library
   const normalizedQuery = query.toLowerCase().trim(); // We want the cache to cover both "Dune" and "dune"
   const cacheKey = `${normalizedQuery}-${page}-${limit}`;
@@ -65,7 +111,7 @@ export const searchBooks = async (query: string, page = 1, limit = 5) => { // Ke
       fields: 'key,title,author_name,subject,cover_i,editions,editions.key,editions.number_of_pages' // We explicitly ask only for what we need. Now includes editions and page count
     });
 
-    const res = await fetch(`${BASE_URL}/search.json?${params.toString()}`, {
+    const res = await fetchWithRetry(`${BASE_URL}/search.json?${params.toString()}`, {
       headers: getHeaders(),
       signal: AbortSignal.timeout(10000),
       next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
@@ -151,7 +197,7 @@ export const searchArchive = async (query: string, page = 1) => {
       fields: 'key,title,author_name,cover_i,first_publish_year,edition_count',
     });
 
-    const res = await fetch(`${BASE_URL}/search.json?${params.toString()}`, {
+    const res = await fetchWithRetry(`${BASE_URL}/search.json?${params.toString()}`, {
         headers: getHeaders(),
         signal: AbortSignal.timeout(10000),
         next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
@@ -207,7 +253,7 @@ export const getBookById = async (id: string): Promise<Book> => {
 
     if (id.toUpperCase().endsWith('M')) {
       try {
-        const editionRes = await fetch(`${BASE_URL}/books/${id}.json`, {
+        const editionRes = await fetchWithRetry(`${BASE_URL}/books/${id}.json`, {
           headers: getHeaders(),
         });
         if (editionRes.ok) {
@@ -224,7 +270,7 @@ export const getBookById = async (id: string): Promise<Book> => {
       }
     }
 
-    const res = await fetch(`${BASE_URL}/works/${workId}.json`, {
+    const res = await fetchWithRetry(`${BASE_URL}/works/${workId}.json`, {
       headers: getHeaders(),
     });
 
@@ -252,7 +298,7 @@ export const getBookById = async (id: string): Promise<Book> => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const authorPromises = data.authors.map(async (a: any) => {
         if (a.author && a.author.key) {
-          const authorRes = await fetch(`${BASE_URL}${a.author.key}.json`, {
+          const authorRes = await fetchWithRetry(`${BASE_URL}${a.author.key}.json`, {
             headers: getHeaders(),
           });
           if (authorRes.ok) {
@@ -275,7 +321,7 @@ export const getBookById = async (id: string): Promise<Book> => {
     let defaultIsbn: string | null = null; // Needed now that we want to show ISBN for the Defaul Edition
 
     try {
-      const editionsRes = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE}`, {
+      const editionsRes = await fetchWithRetry(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_PAGE_COUNT_ESTIMATE}`, {
         headers: getHeaders(),
       });
 
@@ -377,7 +423,7 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
 
     // If the identifier is an Edition ID (typically ends with 'M'), resolve the parent Work ID first!
     if (identifier.toUpperCase().endsWith('M')) {
-      const bookRes = await fetch(`${BASE_URL}/books/${identifier}.json`, {
+      const bookRes = await fetchWithRetry(`${BASE_URL}/books/${identifier}.json`, {
         headers: getHeaders(),
         signal: AbortSignal.timeout(10000), // Enforce the same 10s timeout we use elsewhere
       });
@@ -390,7 +436,7 @@ export const getEditionsForWork = async (identifier: string): Promise<Edition[]>
     }
 
     // This fetch now remains completely untouched!
-    const res = await fetch(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_EDITION_SWITCHER}`, {
+    const res = await fetchWithRetry(`${BASE_URL}/works/${workId}/editions.json?limit=${MAX_EDITIONS_FOR_EDITION_SWITCHER}`, {
       headers: getHeaders(),
       signal: AbortSignal.timeout(10000),
       next: { revalidate: 3600 } // Combining our own cache with Next.js Data Cache!
