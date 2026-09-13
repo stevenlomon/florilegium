@@ -20,6 +20,8 @@ const TABS = [
 const SORT_OPTIONS = [
   { id: 'added-newest', label: 'Date Added (Newest)' },
   { id: 'added-oldest', label: 'Date Added (Oldest)' },
+  { id: 'finished-newest', label: 'Date Finished (Newest)' },
+  { id: 'finished-oldest', label: 'Date Finished (Oldest)' },
   { id: 'title-asc', label: 'Title A → Z' },
   { id: 'title-desc', label: 'Title Z → A' },
   { id: 'author-asc', label: 'Author A → Z' },
