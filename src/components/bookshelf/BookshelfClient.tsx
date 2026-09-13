@@ -50,6 +50,10 @@ const WAX_ROTATIONS = [
 
 // Helper to extract the absolute newest finished_at date from a book's journeys
 const getLatestFinishedAt = (book: BookshelfItem): number | null => {
+  // Important gatekeeper! If the book isn't explicitly marked as "Read" (status 3), 
+  // it shouldn't have a valid finished date for these sorting purposes!
+  if (Number(book.status_id) !== 3) return null;
+
   if (!book.journeys || book.journeys.length === 0) return null;
 
   let latest = -Infinity // This is the very first time I see the `Infinity` constant!
