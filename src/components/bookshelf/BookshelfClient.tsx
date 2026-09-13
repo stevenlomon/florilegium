@@ -48,6 +48,25 @@ const WAX_ROTATIONS = [
   "rotate-2",
 ] as const;
 
+// Helper to extract the absolute newest finished_at date from a book's journeys
+const getLatestFinishedAt = (book: BookshelfItem): number | null => {
+  if (!book.journeys || book.journeys.length === 0) return null;
+
+  let latest = -Infinity // This is the very first time I see the `Infinity` constant!
+  for (const journey of book.journeys) {
+    if (journey.finished_at) {
+      // We replace space with 'T' just in case to ensure cross-browser parsing of Postgres timestamps
+      const time = new Date(journey.finished_at.replace(' ', 'T')).getTime();
+      // By comparing with "negative infinity", we guarantee that the very latest is always chosen
+      if (time > latest) {
+        latest = time;
+      }
+    }
+  }
+
+  return latest === -Infinity ? null : latest;
+};
+
 export default function BookshelfClient({ initialBooks }: BookshelfClientProps) {
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null); // Updated to just store the Id and not the entire object. See why below
