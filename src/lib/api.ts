@@ -10,8 +10,20 @@ const MAX_SEARCH_CACHE_SIZE = 100;
 const MAX_BOOK_CACHE_SIZE = 200;
 const MAX_EDITIONS_CACHE_SIZE = 500;
 
-// I'm gonna allow myself to "just buy" this one for now until we write the test for it
-function setBoundedCache<K, V>(map: Map<K, V>, key: K, value: V, limit: number) {
+/**
+ * Inserts a key-value pair into a Map using the LRU algorithm.  
+ * Ensures that our "Desk Cache" doesn't grow indefinitely on the Servers's RAM.  
+ * 
+ * Relies on JavaScript Map's insertion-order guarantee (doesn't exist in regular Objects):
+ * - If the key already exists, it is deleted and re-inserted to refresh its recency.
+ * - If max capacity is reached, the oldest entry (the first item in map.keys()) is "evicted".
+ * 
+ * @param map The Map instance acting as the cache.
+ * @param key The identifier for the cached entry.
+ * @param value The data payload to store.
+ * @param limit Maximum number of entries allowed before eviction.
+ */
+export function setBoundedCache<K, V>(map: Map<K, V>, key: K, value: V, limit: number) {
   if (map.has(key)) {
     map.delete(key);
   } else if (map.size >= limit) {
@@ -21,7 +33,7 @@ function setBoundedCache<K, V>(map: Map<K, V>, key: K, value: V, limit: number) 
     }
   }
   map.set(key, value);
-}
+};
 
 // Centralized "Desk Caches" for the entire Node environment
 // We also centralize the artificial Labor Illusion latency logic to this single file! These are all conditionally applied 
@@ -44,8 +56,8 @@ function getHeaders() {
 
 /**
  * Executes a fetch request with a single retry for transient failures and temporary hiccups.
- * If the second attempt fails, we render our error screen
- * If the second attempt succeeds, the uses sees their resource and never knows the first error ever happened
+ * - If the second attempt fails, we render our error screen
+ * - If the second attempt succeeds, the uses sees their resource and never knows the first error ever happened
  * 
  * Re-creates AbortSignal.timeout per attempt to prevent aborted signal reuse.
  *
