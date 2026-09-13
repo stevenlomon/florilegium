@@ -77,7 +77,7 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
             </h2>
             <p className="font-sans text-sm text-[#5C613E]">
               {isLoading
-                ? "Consulting the archives..."
+                ? "\u00A0" /* Non-breaking space to prevent the header from collapsing */
                 : error
                   ? "The connection timed out."
                   : `Found ${editions.length} complete printings with verified cover scans and ISBN.`}
@@ -93,8 +93,14 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
         {/* CONTENT GRID */}
         <div className="flex-1 overflow-y-auto p-8 relative">
           {isLoading ? (
-            <div className="min-h-[40vh] flex flex-col items-center justify-center">
-              {/* ... existing spinner ... */}
+            <div className="min-h-[40vh] flex flex-col items-center justify-center opacity-80 animate-in fade-in duration-500">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#E5E0D8] border-t-[#424B2E] mb-6 shadow-sm"></div>
+              <p className="text-[#5C613E] font-serif text-lg">
+                Consulting the archives...
+              </p>
+              <p className="text-[#5C613E]/70 font-sans text-xs mt-2 uppercase tracking-widest">
+                Retrieving alternative printings
+              </p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center text-center opacity-70 h-full py-12 animate-in fade-in duration-300">
