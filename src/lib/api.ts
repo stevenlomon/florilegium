@@ -174,8 +174,13 @@ export const searchArchive = async (query: string, page = 1) => {
     return payload;
     
   } catch (error) {
+    // Now standardized to use the same Error handling as searchBooks and the other API functions in this file
     console.error('Archive Search Error:', error);
-    throw error;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('An unexpected network error occurred while contacting the archives.');
   }
 }; 
 
@@ -341,7 +346,7 @@ export const getBookById = async (id: string): Promise<Book> => {
     console.error(`Server error fetching book details with id ${id} using getBookById:`, error);
 
     if (error instanceof Error) {
-      throw error; //
+      throw error;
     } else {
       throw new Error("An unexpected network error occurred while contacting Open Library."); //
     }
