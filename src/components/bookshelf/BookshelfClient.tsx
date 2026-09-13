@@ -147,6 +147,31 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
     switch (sortOption) {
       case 'added-newest': return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
       case 'added-oldest': return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
+
+      case 'finished-newest': {
+        const aTime = getLatestFinishedAt(a);
+        const bTime = getLatestFinishedAt(b);
+        if (aTime === null && bTime === null) return 0;
+
+        // We want to force nulls to the bottom of the sorted books
+        if (aTime === null) return 1;
+        if (bTime === null) return -1;
+
+        return bTime - aTime;
+      }
+
+      case 'finished-oldest': {
+        const aTime = getLatestFinishedAt(a);
+        const bTime = getLatestFinishedAt(b);
+        if (aTime === null && bTime === null) return 0;
+
+        // We still want to force nulls to the bottom of the sorted books!
+        if (aTime === null) return 1; 
+        if (bTime === null) return -1; 
+
+        return aTime - bTime;
+      }
+
       case 'title-asc': return a.title.localeCompare(b.title);
       case 'title-desc': return b.title.localeCompare(a.title);
       case 'author-asc': return a.author.localeCompare(b.author);
