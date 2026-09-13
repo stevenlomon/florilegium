@@ -20,6 +20,8 @@ const TABS = [
 const SORT_OPTIONS = [
   { id: 'added-newest', label: 'Date Added (Newest)' },
   { id: 'added-oldest', label: 'Date Added (Oldest)' },
+  { id: 'finished-newest', label: 'Date Finished (Newest)' },
+  { id: 'finished-oldest', label: 'Date Finished (Oldest)' },
   { id: 'title-asc', label: 'Title A → Z' },
   { id: 'title-desc', label: 'Title Z → A' },
   { id: 'author-asc', label: 'Author A → Z' },
@@ -45,6 +47,29 @@ const WAX_ROTATIONS = [
   "-rotate-6",
   "rotate-2",
 ] as const;
+
+// Helper to extract the absolute newest finished_at date from a book's journeys
+const getLatestFinishedAt = (book: BookshelfItem): number | null => {
+  // Important gatekeeper! If the book isn't explicitly marked as "Read" (status 3), 
+  // it shouldn't have a valid finished date for these sorting purposes!
+  if (Number(book.status_id) !== 3) return null;
+
+  if (!book.journeys || book.journeys.length === 0) return null;
+
+  let latest = -Infinity // This is the very first time I see the `Infinity` constant!
+  for (const journey of book.journeys) {
+    if (journey.finished_at) {
+      // We replace space with 'T' just in case to ensure cross-browser parsing of Postgres timestamps
+      const time = new Date(journey.finished_at.replace(' ', 'T')).getTime();
+      // By comparing with "negative infinity", we guarantee that the very latest is always chosen
+      if (time > latest) {
+        latest = time;
+      }
+    }
+  }
+
+  return latest === -Infinity ? null : latest;
+};
 
 export default function BookshelfClient({ initialBooks }: BookshelfClientProps) {
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
@@ -126,6 +151,31 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
     switch (sortOption) {
       case 'added-newest': return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
       case 'added-oldest': return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
+
+      case 'finished-newest': {
+        const aTime = getLatestFinishedAt(a);
+        const bTime = getLatestFinishedAt(b);
+        if (aTime === null && bTime === null) return 0;
+
+        // We want to force nulls to the bottom of the sorted books
+        if (aTime === null) return 1;
+        if (bTime === null) return -1;
+
+        return bTime - aTime;
+      }
+
+      case 'finished-oldest': {
+        const aTime = getLatestFinishedAt(a);
+        const bTime = getLatestFinishedAt(b);
+        if (aTime === null && bTime === null) return 0;
+
+        // We still want to force nulls to the bottom of the sorted books!
+        if (aTime === null) return 1; 
+        if (bTime === null) return -1; 
+
+        return aTime - bTime;
+      }
+
       case 'title-asc': return a.title.localeCompare(b.title);
       case 'title-desc': return b.title.localeCompare(a.title);
       case 'author-asc': return a.author.localeCompare(b.author);
