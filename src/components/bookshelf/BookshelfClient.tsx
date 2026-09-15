@@ -9,6 +9,8 @@ interface BookshelfClientProps {
   initialBooks: BookshelfItem[];
 }
 
+const BOOKS_PER_BATCH = 36;
+
 const TABS = [
   { id: 'all', label: 'All Books' },
   { id: '1', label: 'Intend to Read' },
@@ -81,6 +83,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   // New state for the Bookshelf search!
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('added-newest');
+  const [visibleCount, setVisibleCount] = useState(BOOKS_PER_BATCH);
   const isMobile = useSyncExternalStore(
     (callback) => {
       const mql = window.matchMedia('(max-width: 1023px)');
@@ -203,7 +206,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); setVisibleCount(BOOKS_PER_BATCH); }}
                 className={`px-4 py-2 rounded-full text-sm font-sans transition-all ${activeTab === tab.id
                   ? 'bg-[#424B2E] text-white shadow-sm'
                   : 'bg-white/50 text-[#5C613E] hover:bg-[#EFEBE1]'
@@ -219,7 +222,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <select
             value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
+            onChange={(e) => { setSortOption(e.target.value); setVisibleCount(BOOKS_PER_BATCH); }}
             className="w-full lg:w-72 bg-white/50 border border-[#E5E0D8] rounded-md px-3 py-2 text-sm font-sans text-[#2C302E] focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm cursor-pointer"
           >
             {SORT_OPTIONS.map((opt) => (
@@ -234,13 +237,13 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
             <input
               type="text"
               value={localSearchTerm}
-              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              onChange={(e) => { setLocalSearchTerm(e.target.value); setVisibleCount(BOOKS_PER_BATCH); }}
               placeholder={isMobile ? "Search authors, titles, notes etc." : "Search authors, recommendation context, notes etc."}
               className="w-full bg-white/50 border border-[#E5E0D8] rounded-md pl-10 pr-4 py-2 text-sm font-serif text-[#2C302E] placeholder:text-[#5C613E]/50 focus:outline-none focus:border-[#424B2E] focus:ring-1 focus:ring-[#424B2E] transition-all shadow-sm"
             />
             {localSearchTerm && (
               <button
-                onClick={() => setLocalSearchTerm('')}
+                onClick={() => { setLocalSearchTerm(''); setVisibleCount(BOOKS_PER_BATCH); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -253,7 +256,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        {sortedBooks.map((book, index) => { // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
+        {sortedBooks.slice(0, visibleCount).map((book, index) => { // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
 
           // We now check if this specific book cover has failed
           const hasFailed = failedImages.includes(book.bookshelf_item_id);
@@ -394,6 +397,20 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           </div>
         )}
       </div>
+
+      {sortedBooks.length > visibleCount && (
+        <div className="flex flex-col items-center gap-2 pt-4">
+          <button
+            onClick={() => setVisibleCount((prev) => prev + BOOKS_PER_BATCH)}
+            className="bg-white/50 text-[#5C613E] font-sans text-sm font-medium tracking-wide px-8 py-2.5 rounded-md border border-[#E5E0D8] hover:bg-[#EFEBE1] hover:border-[#5C613E] transition-all shadow-sm"
+          >
+            Tend to more of the garden
+          </button>
+          <p className="font-serif text-xs italic text-[#5C613E]/60">
+            {sortedBooks.length - visibleCount} more {sortedBooks.length - visibleCount === 1 ? 'book' : 'books'} resting below
+          </p>
+        </div>
+      )}
 
       {/* The new modal at the very end of the return render statement */}
       <BookDetailsModal
