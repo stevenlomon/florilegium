@@ -37,7 +37,7 @@ export default function SearchResultsGrid({ searchResults }: SearchResultsGridPr
       
       <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 p-0 m-0 list-none">
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        {searchResults.map((work: any) => {
+        {searchResults.map((work: any, index: number) => {
           // Same Defensive Data Parsing. The need for this Client just proves it even strong: Open Library data is unfortunately extremely messy haha
           const title = work.title;
           const author = work.author_name ? work.author_name[0] : 'Unknown Author';
@@ -59,6 +59,8 @@ export default function SearchResultsGrid({ searchResults }: SearchResultsGridPr
                       fill
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading={index < 4 ? "eager" : "lazy"}
+                      fetchPriority={index < 4 ? "high" : "auto"}
                       onError={() => setFailedImages((prev) => [...prev, workId])} // onError is a native property of `Image`!
                     />
                   </>
