@@ -30,3 +30,8 @@ jobs:
 
       - name: Run Unit Tests
         run: npm run test
+
+      - name: Build
+        run: npm run build
+        env:
+          RESEND_API_KEY: re_dummy_ci_build_key
