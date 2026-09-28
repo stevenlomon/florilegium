@@ -63,7 +63,7 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
         b.title,
         b.author,
         b.cover_image_url,
-        b.page_count_estimate, -- In order to sort by it!
+        COALESCE(b.page_count_estimate, b.page_count_exact) AS page_count_estimate, -- In order to sort by it! Now grabs page_count_estimate falling back to page_count_exact, or vice versa; whichever is available
         COALESCE(
           json_agg(
             DISTINCT jsonb_build_object(
