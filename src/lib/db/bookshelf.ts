@@ -142,7 +142,22 @@ export async function checkBookInBookshelf(externalId: string): Promise<boolean>
   return res.rowCount !== null && res.rowCount > 0;
 };
 
-// Only fires when the book is already in the bookshelf and only writes when there's a null to fill. 
+// Simple function to fetch page count estimate and exact count from the database
+export async function getStoredPageCounts(externalId: string) {
+  const res = await pool.query({
+    name: 'get-stored-page-counts',
+    text: `
+      SELECT page_count_estimate, page_count_exact
+      FROM "Book"
+      WHERE external_id = $1
+    `,
+    values: [externalId]
+  });
+
+  return res.rows[0] as { page_count_estimate: number | null, page_count_exact: number | null } | undefined;
+}
+
+// Only fires when the book is already in the bookshelf and only writes when there's a null to fill.
 export async function backfillPageCounts(externalId: string, pageCountEstimate: number | null, pageCountExact: number | null) {
   if (!pageCountEstimate && !pageCountExact) return;
 
