@@ -1,5 +1,5 @@
 import { getBookById } from '@/lib/api';
-import { checkBookInBookshelf, backfillPageCounts } from '@/lib/db/bookshelf';
+import { checkBookInBookshelf, backfillPageCounts, getStoredPageCounts } from '@/lib/db/bookshelf';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/detail-page/BackButton';
 import BookDetailsClient from '@/components/detail-page/BookDetailsClient';
@@ -34,6 +34,19 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
   // Intentionally not awaited! It's fire-and-forget so it doesn't slow down page rendering.
   if (isAlreadyInBookshelf) {
     backfillPageCounts(id, book.page_count_estimate, book.page_count_exact ?? null);
+
+    // We *only* call getStoredPageCounts to extract from the database if at least one of the two API values are missing!
+    if (!book.page_count_estimate || !book.page_count_exact) {
+      const storedCounts = await getStoredPageCounts(id);
+      if (storedCounts) {
+        if (!book.page_count_estimate && storedCounts.page_count_estimate) {
+          book.page_count_estimate = storedCounts.page_count_estimate;
+        }
+        if (!book.page_count_exact && storedCounts.page_count_exact) {
+          book.page_count_exact = storedCounts.page_count_exact;
+        }
+      }
+    }
   }
 
   // Fallback if the API returns nothing
