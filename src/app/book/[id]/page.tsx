@@ -1,5 +1,5 @@
 import { getBookById } from '@/lib/api';
-import { checkBookInBookshelf } from '@/lib/db/bookshelf';
+import { checkBookInBookshelf, backfillPageCounts } from '@/lib/db/bookshelf';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/detail-page/BackButton';
 import BookDetailsClient from '@/components/detail-page/BookDetailsClient';
@@ -30,6 +30,11 @@ export default async function DetailedViewPage({ params }: { params: Promise<{ i
   // With the book fetched server side, we can now run this server side check to see if it's in the user's bookshelf or not
   // using our new Data Access Layer function! Which will be passed as a new prop to the client component
   const isAlreadyInBookshelf = await checkBookInBookshelf(id);
+
+  // Intentionally not awaited! It's fire-and-forget so it doesn't slow down page rendering.
+  if (isAlreadyInBookshelf) {
+    backfillPageCounts(id, book.page_count_estimate, book.page_count_exact ?? null);
+  }
 
   // Fallback if the API returns nothing
   if (!book) {
