@@ -31,8 +31,11 @@ export async function POST(req: Request) {
       text: `
         INSERT INTO "Book"(title, author, external_provider, external_id, page_count_estimate, page_count_exact, cover_image_url) 
         VALUES($1, $2, $3, $4, $5, $6, $7)
-        ON CONFLICT (external_id) 
-        DO UPDATE SET external_id = EXCLUDED.external_id
+        ON CONFLICT (external_id)
+        DO UPDATE SET -- Doesn't simply set external_id anymore! Proper backfill now of page_count_estimate, page_count_exact, and cover_image_url when they're null. But we use COALESCE to ensure that existing data is never overwritten!
+          page_count_estimate = COALESCE("Book".page_count_estimate, EXCLUDED.page_count_estimate),
+          page_count_exact = COALESCE("Book".page_count_exact, EXCLUDED.page_count_exact),
+          cover_image_url = COALESCE("Book".cover_image_url, EXCLUDED.cover_image_url)
         RETURNING *
       `,
       values: [body.title, body.author, body.external_provider, body.external_id, pageCountEstimate, pageCountExact, body.cover_image_url]
