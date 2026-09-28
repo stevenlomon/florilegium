@@ -141,3 +141,21 @@ export async function checkBookInBookshelf(externalId: string): Promise<boolean>
   // If rowCount is greater than 0, the book is already in the bookshelf!
   return res.rowCount !== null && res.rowCount > 0;
 };
+
+// Only fires when the book is already in the bookshelf and only writes when there's a null to fill. 
+export async function backfillPageCounts(externalId: string, pageCountEstimate: number | null, pageCountExact: number | null) {
+  if (!pageCountEstimate && !pageCountExact) return;
+
+  await pool.query({
+    name: 'backfill-page-counts',
+    text: `
+      UPDATE "Book"
+      SET
+        page_count_estimate = COALESCE(page_count_estimate, $2),
+        page_count_exact = COALESCE(page_count_exact, $3)
+      WHERE external_id = $1
+        AND (page_count_estimate IS NULL OR page_count_exact IS NULL)
+    `,
+    values: [externalId, pageCountEstimate, pageCountExact]
+  });
+}
