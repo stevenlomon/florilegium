@@ -184,7 +184,14 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
       case 'author-asc': return a.author.localeCompare(b.author);
       case 'author-desc': return b.author.localeCompare(a.author);
       case 'rating-desc': return (b.user_rating ?? 0) - (a.user_rating ?? 0);
-      case 'rating-asc': return (a.user_rating ?? 0) - (b.user_rating ?? 0);
+      case 'rating-asc': {
+        const aRating = a.user_rating;
+        const bRating = b.user_rating;
+        if (!aRating && !bRating) return 0;
+        if (!aRating) return 1;
+        if (!bRating) return -1;
+        return aRating - bRating;
+      }
       case 'est-page-count-desc': {
         const aCount = a.page_count_estimate;
         const bCount = b.page_count_estimate;
