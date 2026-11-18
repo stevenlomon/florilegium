@@ -186,7 +186,7 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
             disabled={isSaving}
             placeholder="+ Add a tag"
             size={Math.max(inputValue.length + 1, 10)}
-            className="px-6 py-2.5 text-sm font-sans rounded-full border border-dashed border-[#424B2E]/30 hover:border-[#424B2E]/50 focus:border-[#424B2E] bg-transparent outline-none text-[#424B2E] placeholder:text-[#5C613E]/50 transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 text-sm font-sans rounded-full border border-dashed border-[#E5E0D8] hover:border-[#5C613E]/50 hover:bg-white/50 focus:border-[#424B2E] bg-transparent outline-none text-[#424B2E] placeholder:text-[#5C613E]/50 transition-colors disabled:opacity-50"
           />
 
           {showSuggestions && inputValue.trim() && suggestions.length > 0 && (
