@@ -128,5 +128,49 @@ export async function DELETE(req: Request) {
 // tag they wish to rename, which would sever all ties to bookshelf items, re-create it with the new name, and then
 // re-assign all bookshelf items. Really, really bad UX
 export async function PATCH(req: Request) {
-  // Code to be added
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, name } = body;
+
+    if (!id || !name || !name.trim()) {
+      return NextResponse.json({ error: "Missing required fields: id and name" }, { status: 400 });
+    }
+
+    const trimmedName = name.trim();
+
+    if (trimmedName.length > 50) {
+      return NextResponse.json({ error: "Tag name cannot exceed 50 characters" }, { status: 400 });
+    }
+
+    const query = {
+      name: 'rename-user-tag',
+      text: `
+        UPDATE "Tag"
+        SET name = $1
+        WHERE id = $2 AND user_id = $3
+        RETURNING *
+      `,
+      values: [trimmedName, id, user.id]
+    };
+
+    const res = await pool.query(query);
+
+    if (res.rowCount === 0) {
+      return NextResponse.json({ error: "Tag not found or unauthorized" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: "ok",
+      data: res.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Unexpected error renaming tag:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
+  }
 }
