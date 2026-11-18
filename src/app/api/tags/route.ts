@@ -4,7 +4,34 @@ import { pool } from '@/lib/db';
 
 // Full Tag CRUD
 export async function GET() {
-  // Code to be added
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const query = {
+      name: 'get-user-tags',
+      text: `
+        SELECT id, name, created_at
+        FROM "Tag"
+        WHERE user_id = $1
+        ORDER BY name ASC
+      `,
+      values: [user.id]
+    };
+
+    const res = await pool.query(query);
+
+    return NextResponse.json({
+      success: "ok",
+      data: res.rows
+    });
+
+  } catch (error) {
+    console.error("Unexpected error fetching tags:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
+  }
 }
 
 export async function POST() {
