@@ -62,6 +62,7 @@ export interface BookshelfItem {
   stored_current_page?: number;
   custom_page_count?: number | null;
   added_at: string;
+  tags: Tag[];
 }
 
 export interface Recommendation {
@@ -84,4 +85,10 @@ export interface ReadingJourney {
   note_type?: string | null;
   pages_read?: number | null;
   log_post_created_at?: string | null;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  // created_at exists in the database for internal reference but is not used in the UI for now
 }
