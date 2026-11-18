@@ -18,11 +18,13 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
   const [tags, setTags] = useState<Tag[]>(existingTags); // Pre-filled by the prop
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   // Further state to be added here as needed
 
   const inputRef = useRef<HTMLInputElement>(null); // The text input element
   const suggestionsRef = useRef<HTMLDivElement>(null); // The dropdown list below it
   
+  const router = useRouter();
 
   useEffect(() => {
     // Without this useEffect, the dropdown would stat open forever until the user pressed Escape or typed something. 
@@ -55,17 +57,73 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
 
   // One helper function if the tag already exists in the database...
   const attachTag = async (tag: Tag) => {
-    // Code to be added here
-  }
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/bookshelf/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookshelf_item_id: bookshelfItemId, tag_id: tag.id }),
+      });
+
+      if (!res.ok) throw new Error('Failed to attach tag');
+
+      setTags((prev) => [...prev, tag]);
+      setInputValue('');
+      setShowSuggestions(false);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // ...and one if it doesn't. `handleKeyDown` decides which one to call
   const createAndAttachTag = async (name: string) => {
-    // Code to be added here
-  }
+    setIsSaving(true);
+    try {
+      const createRes = await fetch('/api/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!createRes.ok) {
+        const data = await createRes.json();
+        if (createRes.status === 409) {
+          alert('Tag already exists'); // TODO: ugly altert for now for testing; polish it up later
+        } else {
+          throw new Error(data.error || 'Failed to create tag');
+        }
+        return;
+      }
+
+      const { data: newTag } = await createRes.json();
+
+      await attachTag(newTag); // This one calls the other helper function
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const detachTag = async (tagId: number) => {
-    // Code to be added here
-  }
+    try {
+      const res = await fetch('/api/bookshelf/tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookshelf_item_id: bookshelfItemId, tag_id: tagId }),
+      });
+
+      if (!res.ok) throw new Error('Failed to detach tag');
+
+      setTags((prev) => prev.filter((t) => t.id !== tagId));
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // If the typed text matches an existing tag (case-insensitive), it attaches that one. 
   // Otherwise it creates a new tag AND attaches it in sequence.
