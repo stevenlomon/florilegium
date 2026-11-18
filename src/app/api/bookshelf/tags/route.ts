@@ -56,6 +56,43 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
- // Code to be added
+ try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { bookshelf_item_id, tag_id } = body;
+
+    if (!bookshelf_item_id || !tag_id) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const query = {
+      name: 'detach-tag-from-bookshelf-item',
+      text: `
+        DELETE FROM "Bookshelf_Item_Tag"
+        WHERE bookshelf_item_id = $1 AND tag_id = $2
+        AND EXISTS (
+          SELECT 1 FROM "Bookshelf_Item" WHERE id = $1 AND user_id = $3
+        )
+        RETURNING *
+      `,
+      values: [bookshelf_item_id, tag_id, user.id]
+    };
+
+    const res = await pool.query(query);
+
+    if (res.rowCount === 0) {
+      return NextResponse.json({ error: "Tag association not found or unauthorized" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: "ok" });
+
+  } catch (error) {
+    console.error("Unexpected error detaching tag:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
+  }
 }
 
