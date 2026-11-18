@@ -154,65 +154,60 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
         Tags
       </h3>
 
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
-          {tags.map((tag) => (
-            <span
-              key={tag.id}
-              className="flex items-center gap-1.5 px-3 py-1 bg-[#424B2E]/10 text-[#424B2E] text-xs font-sans rounded-full border border-[#424B2E]/20"
-            >
-              {tag.name}
-              <button
-                type="button"
-                onClick={() => detachTag(tag.id)}
-                className="text-[#424B2E]/50 hover:text-[#8C3A3A] transition-colors font-bold"
-                title={`Remove ${tag.name}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-            setShowSuggestions(true);
-          }}
-          onFocus={() => setShowSuggestions(true)}
-          onKeyDown={handleKeyDown}
-          disabled={isSaving}
-          placeholder={tags.length > 0 ? '+ Add another tag' : '+ Add a tag'}
-          className="w-full p-3 border-2 border-dashed border-[#E5E0D8] hover:border-[#5C613E]/50 focus:border-[#5C613E]/50 rounded-md bg-transparent outline-none text-sm font-serif italic text-[#424B2E] placeholder:text-[#5C613E]/70 transition-colors disabled:opacity-50"
-        />
-
-        {showSuggestions && inputValue.trim() && suggestions.length > 0 && (
-          <div
-            ref={suggestionsRef}
-            className="absolute z-10 w-full mt-1 bg-white border border-[#E5E0D8] rounded-md shadow-lg max-h-40 overflow-y-auto"
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <span
+            key={tag.id}
+            className="flex items-center gap-1.5 px-5 py-2 bg-[#424B2E]/10 text-[#424B2E] text-sm font-sans rounded-full border border-[#424B2E]/20"
           >
-            {suggestions.map((tag) => (
-              <button
-                key={tag.id}
-                type="button"
-                onClick={() => attachTag(tag)}
-                className="w-full text-left px-3 py-2 text-sm font-sans text-[#424B2E] hover:bg-[#424B2E]/5 transition-colors"
-              >
-                {tag.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+            {tag.name}
+            <button
+              type="button"
+              onClick={() => detachTag(tag.id)}
+              className="text-[#424B2E]/50 hover:text-[#8C3A3A] transition-colors font-bold"
+              title={`Remove ${tag.name}`}
+            >
+              ×
+            </button>
+          </span>
+        ))}
 
-      <p className="text-[#5C613E]/50 text-[11px] font-serif italic mt-2">
-        Type a tag name and press Enter to add. Existing tags are suggested as you type.
-      </p>
+        <div className="relative">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            disabled={isSaving}
+            placeholder="+ Add a tag"
+            size={Math.max(inputValue.length + 1, 10)}
+            className="px-6 py-2.5 text-sm font-sans rounded-full border border-dashed border-[#424B2E]/30 hover:border-[#424B2E]/50 focus:border-[#424B2E] bg-transparent outline-none text-[#424B2E] placeholder:text-[#5C613E]/50 transition-colors disabled:opacity-50"
+          />
+
+          {showSuggestions && inputValue.trim() && suggestions.length > 0 && (
+            <div
+              ref={suggestionsRef}
+              className="absolute z-10 left-0 mt-1 bg-white border border-[#E5E0D8] rounded-md shadow-lg max-h-40 overflow-y-auto min-w-[160px]"
+            >
+              {suggestions.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => attachTag(tag)}
+                  className="w-full text-left px-3 py-2 text-sm font-sans text-[#424B2E] hover:bg-[#424B2E]/5 transition-colors"
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
