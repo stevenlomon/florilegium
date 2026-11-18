@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
         -- Same "trick"/pattern used in other files for ownership but now for "dual ownership"! For a tag to be attached to a 
         -- bookshelf item, the bookshelf item need to belong to the user AND the tag needs to belong to the user
-        SELECT $1, $2
+        SELECT $1::varchar, $2::integer -- To avoid ambiguity and the "inconsistent types deduced for parameter $1" bug, we need to cast these parameters explicitly!
         WHERE EXISTS (
           SELECT 1 FROM "Bookshelf_Item" WHERE id = $1 AND user_id = $3
         )
