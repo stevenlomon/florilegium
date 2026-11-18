@@ -34,17 +34,62 @@ export async function GET() {
   }
 }
 
-export async function POST() {
-  // Code to be added
+export async function POST(req: Request) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { name } = body;
+
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Tag name is required" }, { status: 400 });
+    }
+
+    const trimmedName = name.trim();
+
+    if (trimmedName.length > 50) {
+      return NextResponse.json({ error: "Tag name cannot exceed 50 characters" }, { status: 400 });
+    }
+
+    const query = {
+      name: 'create-user-tag',
+      text: `
+        INSERT INTO "Tag" (user_id, name)
+        VALUES ($1, $2)
+        ON CONFLICT (user_id, name) DO NOTHING -- Looks a bit strange but this is to work with the UNIQUE constraint and to allow for the 409 error below rather than a unhelpful and generic 500 error
+        RETURNING *
+      `,
+      values: [user.id, trimmedName]
+    };
+
+    const res = await pool.query(query);
+
+    // The name conflict UNIQUE constraint is handled by the server and the Frontend shows a user friendly message in response to the 409
+    if (res.rowCount === 0) {
+      return NextResponse.json({ error: "Tag already exists" }, { status: 409 });
+    }
+
+    return NextResponse.json({
+      success: "ok",
+      data: res.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Unexpected error creating tag:", error);
+    return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
+  }
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   // Code to be added
 }
 
 // We don't want to rely on DELETE only for renaming tags. Without the PATCH route, a user would have to delete the 
 // tag they wish to rename, which would sever all ties to bookshelf items, re-create it with the new name, and then
 // re-assign all bookshelf items. Really, really bad UX
-export async function PATCH() {
+export async function PATCH(req: Request) {
   // Code to be added
 }
