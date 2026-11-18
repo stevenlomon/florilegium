@@ -50,6 +50,9 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
     // pure JSON! JSON Binary supports equality comparisons which is needed when - not if! - our second LEFT JOIN generates duplicates!
     // So this is why both COALESCE clauses now don't have `json_build_object(` but rather the new improved `DISTINCT jsonb_build_object(`!
     // UPDATE: A third LEFT JOIN haha! Reading_Log_Post has entered the picture in order to show the raw thoughts captured upon finishing a book
+    // UPDATE: We also now have a *fourth* COALESCE clause for the tags haha! I will take Claude's word for it: it will still work smoothly, Postgres
+    // handles this efficiently. `DISTINCT jsonb_build_object` also prevents massive Cartesian products. If we start seeing slow page loads on the
+    // bookshelf is when we'd start to want considering optimizing by doing something like moving tags into a correlated subquery. No pre-optimization
     text: `
       SELECT
         bi.id AS bookshelf_item_id,
@@ -96,10 +99,21 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
           LEFT JOIN "Reading_Log_Post" rlp ON rj.id = rlp.reading_journey_id
           WHERE rj.bookshelf_item_id = bi.id),
           '[]'
-        ) AS journeys
+        ) AS journeys,
+          COALESCE(
+            json_agg(
+              DISTINCT jsonb_build_object(
+                'id', t.id,
+                'name', t.name
+              )
+            ) FILTER (WHERE t.id IS NOT NULL),
+            '[]'
+          ) AS tags
       FROM "Bookshelf_Item" bi
       JOIN "Book" b ON bi.book_id = b.id
       LEFT JOIN "Recommendation_Context_Row" rcr ON bi.id = rcr.bookshelf_item_id
+      LEFT JOIN "Bookshelf_Item_Tag" bit ON bi.id = bit.bookshelf_item_id
+      LEFT JOIN "Tag" t ON bit.tag_id = t.id
       WHERE bi.user_id = $1
       GROUP BY bi.id, b.id
       ORDER BY bi.added_at DESC
