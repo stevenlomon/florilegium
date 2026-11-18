@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useSyncExternalStore } from 'react';
+import { useRouter } from 'next/navigation'; // For tag update refresh
 import Image from 'next/image';
 import { type BookshelfItem, Tag } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
@@ -86,6 +87,14 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
   const [sortOption, setSortOption] = useState('added-newest');
   const [visibleCount, setVisibleCount] = useState(BOOKS_PER_BATCH);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
+
+  // New state for editing tags
+  const [editingTagId, setEditingTagId] = useState<number | null>(null);
+  const [editingTagName, setEditingTagName] = useState('');
+  const [confirmDeleteTagId, setConfirmDeleteTagId] = useState<number | null>(null);
+
+  const router = useRouter();
+
   const isMobile = useSyncExternalStore(
     (callback) => {
       const mql = window.matchMedia('(max-width: 1023px)');
@@ -222,6 +231,45 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
       default: return 0;
     }
   });
+
+  const handleRenameTag = async (tagId: number) => {
+    const trimmed = editingTagName.trim();
+    if (!trimmed) return;
+
+    try {
+      const res = await fetch('/api/tags', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: tagId, name: trimmed }),
+      });
+
+      if (!res.ok) throw new Error('Failed to rename tag');
+
+      setEditingTagId(null);
+      setEditingTagName('');
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteTag = async (tagId: number) => {
+    try {
+      const res = await fetch('/api/tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: tagId }),
+      });
+
+      if (!res.ok) throw new Error('Failed to delete tag');
+
+      setSelectedTags(prev => prev.filter(id => id !== tagId));
+      setConfirmDeleteTagId(null);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -456,24 +504,76 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
               <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {allUserTags.map(tag => (
-                  <button
-                    key={tag.id}
-                    onClick={() => {
-                      setSelectedTags(prev =>
-                        prev.includes(tag.id)
-                          ? prev.filter(id => id !== tag.id)
-                          : [...prev, tag.id]
-                      );
-                      setVisibleCount(BOOKS_PER_BATCH);
-                    }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all ${
-                      selectedTags.includes(tag.id)
-                        ? 'bg-[#424B2E] text-white shadow-sm'
-                        : 'bg-white/50 text-[#5C613E] border border-[#E5E0D8] hover:bg-[#EFEBE1]'
-                    }`}
-                  >
-                    {tag.name}
-                  </button>
+                  editingTagId === tag.id ? (
+                    <div key={tag.id} className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={editingTagName}
+                        onChange={(e) => setEditingTagName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameTag(tag.id);
+                          if (e.key === 'Escape') { setEditingTagId(null); setEditingTagName(''); }
+                        }}
+                        autoFocus
+                        className="px-2 py-1 text-xs font-sans rounded-full border border-[#424B2E] bg-white outline-none text-[#424B2E] w-24"
+                      />
+                      <button
+                        onClick={() => handleRenameTag(tag.id)}
+                        className="text-[#424B2E] hover:text-[#424B2E]/70 transition-colors"
+                        title="Save"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      </button>
+                      {confirmDeleteTagId === tag.id ? (
+                        <button
+                          onClick={() => handleDeleteTag(tag.id)}
+                          className="text-[#8C3A3A] text-[10px] font-sans font-bold"
+                        >
+                          Sure?
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteTagId(tag.id)}
+                          className="text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
+                          title="Delete tag"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div key={tag.id} className="group/tag relative flex items-center">
+                      <button
+                        onClick={() => {
+                          setSelectedTags(prev =>
+                            prev.includes(tag.id)
+                              ? prev.filter(id => id !== tag.id)
+                              : [...prev, tag.id]
+                          );
+                          setVisibleCount(BOOKS_PER_BATCH);
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all ${
+                          selectedTags.includes(tag.id)
+                            ? 'bg-[#424B2E] text-white shadow-sm'
+                            : 'bg-white/50 text-[#5C613E] border border-[#E5E0D8] hover:bg-[#EFEBE1]'
+                        }`}
+                      >
+                        {tag.name}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTagId(tag.id);
+                          setEditingTagName(tag.name);
+                          setConfirmDeleteTagId(null);
+                        }}
+                        className="absolute -right-1 -top-1 opacity-0 group-hover/tag:opacity-100 bg-white border border-[#E5E0D8] rounded-full p-0.5 shadow-sm transition-opacity"
+                        title="Edit tag"
+                      >
+                        <svg className="w-2.5 h-2.5 text-[#5C613E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                      </button>
+                    </div>
+                  )
                 ))}
               </div>
               {selectedTags.length > 0 && (
