@@ -85,6 +85,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('added-newest');
   const [visibleCount, setVisibleCount] = useState(BOOKS_PER_BATCH);
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const isMobile = useSyncExternalStore(
     (callback) => {
       const mql = window.matchMedia('(max-width: 1023px)');
@@ -147,7 +148,15 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
       }
     }
 
-    // If it passed both the tab check and the search check, keep it!
+    // 3. Filter by selected tags (AND logic: book must have ALL selected tags)
+    if (selectedTags.length > 0) {
+      const hasAllTags = selectedTags.every(tagId =>
+        book.tags.some(t => t.id === tagId)
+      );
+      if (!hasAllTags) return false;
+    }
+
+    // If it passes the tab check, search check, *and* tag check, keep it!
     return true;
   });
 
@@ -276,8 +285,10 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
 
       </div>
 
-      {/* GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+      {/* GRID + TAG SIDEBAR */}
+      <div className="flex gap-6">
+        <div className="flex-1 min-w-0 flex flex-col gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {sortedBooks.slice(0, visibleCount).map((book, index) => { // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
 
           // We now check if this specific book cover has failed
@@ -411,6 +422,10 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
               <p className="text-[#5C613E] font-serif italic text-lg">
                 No notes, authors, or titles found matching &quot;{localSearchTerm}&quot;.
               </p>
+            ) : selectedTags.length > 0 ? (
+              <p className="text-[#5C613E] font-serif italic text-lg">
+                No books match all selected tags.
+              </p>
             ) : (
               <p className="text-[#5C613E] font-serif italic text-lg">
                 No books found in this section.
@@ -433,6 +448,46 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
           </p>
         </div>
       )}
+        </div>
+
+        {allUserTags.length > 0 && (
+          <div className="hidden xl:block w-52 shrink-0">
+            <div className="sticky top-8">
+              <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {allUserTags.map(tag => (
+                  <button
+                    key={tag.id}
+                    onClick={() => {
+                      setSelectedTags(prev =>
+                        prev.includes(tag.id)
+                          ? prev.filter(id => id !== tag.id)
+                          : [...prev, tag.id]
+                      );
+                      setVisibleCount(BOOKS_PER_BATCH);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all ${
+                      selectedTags.includes(tag.id)
+                        ? 'bg-[#424B2E] text-white shadow-sm'
+                        : 'bg-white/50 text-[#5C613E] border border-[#E5E0D8] hover:bg-[#EFEBE1]'
+                    }`}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+              {selectedTags.length > 0 && (
+                <button
+                  onClick={() => { setSelectedTags([]); setVisibleCount(BOOKS_PER_BATCH); }}
+                  className="mt-3 text-xs font-sans text-[#8C3A3A] hover:text-[#8C3A3A]/80 transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* The new modal at the very end of the return render statement */}
       <BookDetailsModal
