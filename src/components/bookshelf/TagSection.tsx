@@ -19,7 +19,6 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  // Further state to be added here as needed
 
   const inputRef = useRef<HTMLInputElement>(null); // The text input element
   const suggestionsRef = useRef<HTMLDivElement>(null); // The dropdown list below it
@@ -129,13 +128,91 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
   // Otherwise it creates a new tag AND attaches it in sequence.
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      // Code to be added here
+      e.preventDefault();
+      const trimmed = inputValue.trim();
+      if (!trimmed) return;
+
+      // This is different from suggestions and auto-completion. This is looking for full exact matches to decide
+      // "Do we attach this existing tag or create a new one and attach it?"
+      const existingMatch = allUserTags.find(
+        (t) => t.name.toLowerCase() === trimmed.toLowerCase()
+      );
+
+      if (existingMatch) {
+        if (!tags.some((t) => t.id === existingMatch.id)) {
+          attachTag(existingMatch);
+        }
+      } else {
+        createAndAttachTag(trimmed);
+      }
     }
-  }
+  };
 
   return (
-    // Return render statement to be added here
-    <>
-    </>
+    <section>
+      <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">
+        Tags
+      </h3>
+
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {tags.map((tag) => (
+            <span
+              key={tag.id}
+              className="flex items-center gap-1.5 px-3 py-1 bg-[#424B2E]/10 text-[#424B2E] text-xs font-sans rounded-full border border-[#424B2E]/20"
+            >
+              {tag.name}
+              <button
+                type="button"
+                onClick={() => detachTag(tag.id)}
+                className="text-[#424B2E]/50 hover:text-[#8C3A3A] transition-colors font-bold"
+                title={`Remove ${tag.name}`}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setShowSuggestions(true)}
+          onKeyDown={handleKeyDown}
+          disabled={isSaving}
+          placeholder={tags.length > 0 ? '+ Add another tag' : '+ Add a tag'}
+          className="w-full p-3 border-2 border-dashed border-[#E5E0D8] hover:border-[#5C613E]/50 focus:border-[#5C613E]/50 rounded-md bg-transparent outline-none text-sm font-serif italic text-[#424B2E] placeholder:text-[#5C613E]/70 transition-colors disabled:opacity-50"
+        />
+
+        {showSuggestions && inputValue.trim() && suggestions.length > 0 && (
+          <div
+            ref={suggestionsRef}
+            className="absolute z-10 w-full mt-1 bg-white border border-[#E5E0D8] rounded-md shadow-lg max-h-40 overflow-y-auto"
+          >
+            {suggestions.map((tag) => (
+              <button
+                key={tag.id}
+                type="button"
+                onClick={() => attachTag(tag)}
+                className="w-full text-left px-3 py-2 text-sm font-sans text-[#424B2E] hover:bg-[#424B2E]/5 transition-colors"
+              >
+                {tag.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <p className="text-[#5C613E]/50 text-[11px] font-serif italic mt-2">
+        Type a tag name and press Enter to add. Existing tags are suggested as you type.
+      </p>
+    </section>
   );
 }
