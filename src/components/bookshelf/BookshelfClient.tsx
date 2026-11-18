@@ -2,11 +2,12 @@
 
 import { useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
-import { type BookshelfItem } from '@/lib/types';
+import { type BookshelfItem, Tag } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
 
 interface BookshelfClientProps {
   initialBooks: BookshelfItem[];
+  allUserTags: Tag[];
 }
 
 const BOOKS_PER_BATCH = 36;
@@ -73,7 +74,7 @@ const getLatestFinishedAt = (book: BookshelfItem): number | null => {
   return latest === -Infinity ? null : latest;
 };
 
-export default function BookshelfClient({ initialBooks }: BookshelfClientProps) {
+export default function BookshelfClient({ initialBooks, allUserTags }: BookshelfClientProps) {
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null); // Updated to just store the Id and not the entire object. See why below
 
@@ -439,6 +440,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
         isOpen={!!selectedBook} // Only open if there IS selectedBook. The double `!!`, called "Double Bang" is essentially a neat shorthand in this scenario of writing `isOpen={selectedBook !== null ? true : false}`
         onClose={() => setSelectedBookId(null)}
         book={selectedBook}
+        allUserTags={allUserTags}
       />
     </div>
   )
