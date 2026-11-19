@@ -299,7 +299,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
 
         {/* Mobile Tag Filters (below xl only) */}
         {allUserTags.length > 0 && (
-          <div className="xl:hidden flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="xl:hidden flex flex-wrap gap-2">
             {allUserTags.map(tag => (
               <button
                 key={tag.id}
@@ -311,7 +311,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
                   );
                   setVisibleCount(BOOKS_PER_BATCH);
                 }}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-sans transition-all ${
+                className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all ${
                   selectedTags.includes(tag.id)
                     ? 'bg-[#424B2E] text-white shadow-sm'
                     : 'bg-white/50 text-[#5C613E] border border-[#E5E0D8] hover:bg-[#EFEBE1]'
@@ -323,7 +323,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
             {selectedTags.length > 0 && (
               <button
                 onClick={() => { setSelectedTags([]); setVisibleCount(BOOKS_PER_BATCH); }}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-sans text-[#8C3A3A] border border-[#8C3A3A]/30 hover:bg-[#8C3A3A]/10 transition-all"
+                className="px-3 py-1.5 rounded-full text-xs font-sans text-[#8C3A3A] border border-[#8C3A3A]/30 hover:bg-[#8C3A3A]/10 transition-all"
               >
                 Clear
               </button>
