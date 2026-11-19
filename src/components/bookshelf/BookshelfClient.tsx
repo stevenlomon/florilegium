@@ -323,9 +323,9 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
             {selectedTags.length > 0 && (
               <button
                 onClick={() => { setSelectedTags([]); setVisibleCount(BOOKS_PER_BATCH); }}
-                className="px-3 py-1.5 rounded-full text-xs font-sans text-[#8C3A3A] border border-[#8C3A3A]/30 hover:bg-[#8C3A3A]/10 transition-all"
+                className="basis-full mt-1 text-xs font-sans text-[#8C3A3A] hover:text-[#8C3A3A]/80 transition-colors text-left"
               >
-                Clear
+                Clear filters
               </button>
             )}
           </div>
