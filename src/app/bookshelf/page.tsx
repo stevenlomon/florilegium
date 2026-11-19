@@ -1,5 +1,6 @@
 import BookshelfClient from '@/components/bookshelf/BookshelfClient';
 import { getDetailedBookshelf } from '@/lib/db/bookshelf';
+import { getUserTags } from '@/lib/db/tags';
 
 export const dynamic = 'force-dynamic'; // Signals to Next.js that this page is server-rendered per request!
 
@@ -31,6 +32,7 @@ export default async function BookshelfPage() {
   // user to interact with. This same "server seeding the client state" pattern will be implemented for the Reading Routes UI too! While the 
   // Horizon will be purely server side!
   const initialBooks = await getDetailedBookshelf();
+  const allUserTags = await getUserTags();
 
   return (
     <div className="min-h-screen max-w-7xl mx-auto px-8 py-12">
@@ -42,7 +44,7 @@ export default async function BookshelfPage() {
       </header>
 
       {/* Pass the server-fetched data straight into our interactive client component */}
-      <BookshelfClient initialBooks={initialBooks} />
+      <BookshelfClient initialBooks={initialBooks} allUserTags={allUserTags} />
     </div>
   );
 }

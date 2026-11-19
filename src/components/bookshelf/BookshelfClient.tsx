@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useSyncExternalStore } from 'react';
+import { useRouter } from 'next/navigation'; // For tag update refresh
 import Image from 'next/image';
-import { type BookshelfItem } from '@/lib/types';
+import { type BookshelfItem, Tag } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
 
 interface BookshelfClientProps {
   initialBooks: BookshelfItem[];
+  allUserTags: Tag[];
 }
 
 const BOOKS_PER_BATCH = 36;
@@ -73,7 +75,7 @@ const getLatestFinishedAt = (book: BookshelfItem): number | null => {
   return latest === -Infinity ? null : latest;
 };
 
-export default function BookshelfClient({ initialBooks }: BookshelfClientProps) {
+export default function BookshelfClient({ initialBooks, allUserTags }: BookshelfClientProps) {
   const [activeTab, setActiveTab] = useState('all'); // Defaults to 'all', is set to '1', '2', '3', or '4' by the Filtering button onClick
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null); // Updated to just store the Id and not the entire object. See why below
 
@@ -84,6 +86,15 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('added-newest');
   const [visibleCount, setVisibleCount] = useState(BOOKS_PER_BATCH);
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+
+  // New state for editing tags
+  const [editingTagId, setEditingTagId] = useState<number | null>(null);
+  const [editingTagName, setEditingTagName] = useState('');
+  const [confirmDeleteTagId, setConfirmDeleteTagId] = useState<number | null>(null);
+
+  const router = useRouter();
+
   const isMobile = useSyncExternalStore(
     (callback) => {
       const mql = window.matchMedia('(max-width: 1023px)');
@@ -146,7 +157,15 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
       }
     }
 
-    // If it passed both the tab check and the search check, keep it!
+    // 3. Filter by selected tags (AND logic: book must have ALL selected tags)
+    if (selectedTags.length > 0) {
+      const hasAllTags = selectedTags.every(tagId =>
+        book.tags.some(t => t.id === tagId)
+      );
+      if (!hasAllTags) return false;
+    }
+
+    // If it passes the tab check, search check, *and* tag check, keep it!
     return true;
   });
 
@@ -213,6 +232,45 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
     }
   });
 
+  const handleRenameTag = async (tagId: number) => {
+    const trimmed = editingTagName.trim();
+    if (!trimmed) return;
+
+    try {
+      const res = await fetch('/api/tags', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: tagId, name: trimmed }),
+      });
+
+      if (!res.ok) throw new Error('Failed to rename tag');
+
+      setEditingTagId(null);
+      setEditingTagName('');
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteTag = async (tagId: number) => {
+    try {
+      const res = await fetch('/api/tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: tagId }),
+      });
+
+      if (!res.ok) throw new Error('Failed to delete tag');
+
+      setSelectedTags(prev => prev.filter(id => id !== tagId));
+      setConfirmDeleteTagId(null);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8">
       {/* FILTER TABS, SORT & SEARCH */}
@@ -238,6 +296,40 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
             )
           })}
         </div>
+
+        {/* Mobile Tag Filters (below xl only) */}
+        {allUserTags.length > 0 && (
+          <div className="xl:hidden flex flex-wrap gap-2">
+            {allUserTags.map(tag => (
+              <button
+                key={tag.id}
+                onClick={() => {
+                  setSelectedTags(prev =>
+                    prev.includes(tag.id)
+                      ? prev.filter(id => id !== tag.id)
+                      : [...prev, tag.id]
+                  );
+                  setVisibleCount(BOOKS_PER_BATCH);
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all ${
+                  selectedTags.includes(tag.id)
+                    ? 'bg-[#424B2E] text-white shadow-sm'
+                    : 'bg-white/50 text-[#5C613E] border border-[#E5E0D8] hover:bg-[#EFEBE1]'
+                }`}
+              >
+                {tag.name}
+              </button>
+            ))}
+            {selectedTags.length > 0 && (
+              <button
+                onClick={() => { setSelectedTags([]); setVisibleCount(BOOKS_PER_BATCH); }}
+                className="px-3 py-1.5 rounded-full text-xs font-sans text-[#8C3A3A] border border-[#8C3A3A]/30 hover:bg-[#8C3A3A]/10 transition-all"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Row 2: Sort + Search (side-by-side on desktop, stacked on mobile) */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
@@ -275,8 +367,10 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
 
       </div>
 
-      {/* GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+      {/* GRID + TAG SIDEBAR */}
+      <div className="flex gap-6">
+        <div className="flex-1 min-w-0 flex flex-col gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {sortedBooks.slice(0, visibleCount).map((book, index) => { // Grab the index for the `priority` property in the Image component (to silence a warning, see below)
 
           // We now check if this specific book cover has failed
@@ -410,6 +504,10 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
               <p className="text-[#5C613E] font-serif italic text-lg">
                 No notes, authors, or titles found matching &quot;{localSearchTerm}&quot;.
               </p>
+            ) : selectedTags.length > 0 ? (
+              <p className="text-[#5C613E] font-serif italic text-lg">
+                No books match all selected tags.
+              </p>
             ) : (
               <p className="text-[#5C613E] font-serif italic text-lg">
                 No books found in this section.
@@ -432,6 +530,98 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
           </p>
         </div>
       )}
+        </div>
+
+        {allUserTags.length > 0 && (
+          <div className="hidden xl:block w-52 shrink-0">
+            <div className="sticky top-8">
+              <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {allUserTags.map(tag => (
+                  editingTagId === tag.id ? (
+                    <div key={tag.id} className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={editingTagName}
+                        onChange={(e) => setEditingTagName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameTag(tag.id);
+                          if (e.key === 'Escape') { setEditingTagId(null); setEditingTagName(''); }
+                        }}
+                        autoFocus
+                        className="px-2 py-1 text-xs font-sans rounded-full border border-[#424B2E] bg-white outline-none text-[#424B2E] w-24"
+                      />
+                      <button
+                        onClick={() => handleRenameTag(tag.id)}
+                        className="text-[#424B2E] hover:text-[#424B2E]/70 transition-colors"
+                        title="Save"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      </button>
+                      {confirmDeleteTagId === tag.id ? (
+                        <button
+                          onClick={() => handleDeleteTag(tag.id)}
+                          className="text-[#8C3A3A] text-[10px] font-sans font-bold"
+                        >
+                          Sure?
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteTagId(tag.id)}
+                          className="text-[#5C613E]/50 hover:text-[#8C3A3A] transition-colors"
+                          title="Delete tag"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div key={tag.id} className="group/tag relative flex items-center">
+                      <button
+                        onClick={() => {
+                          setSelectedTags(prev =>
+                            prev.includes(tag.id)
+                              ? prev.filter(id => id !== tag.id)
+                              : [...prev, tag.id]
+                          );
+                          setVisibleCount(BOOKS_PER_BATCH);
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all ${
+                          selectedTags.includes(tag.id)
+                            ? 'bg-[#424B2E] text-white shadow-sm'
+                            : 'bg-white/50 text-[#5C613E] border border-[#E5E0D8] hover:bg-[#EFEBE1]'
+                        }`}
+                      >
+                        {tag.name}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTagId(tag.id);
+                          setEditingTagName(tag.name);
+                          setConfirmDeleteTagId(null);
+                        }}
+                        className="absolute -right-1 -top-1 opacity-0 group-hover/tag:opacity-100 bg-white border border-[#E5E0D8] rounded-full p-0.5 shadow-sm transition-opacity"
+                        title="Edit tag"
+                      >
+                        <svg className="w-2.5 h-2.5 text-[#5C613E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                      </button>
+                    </div>
+                  )
+                ))}
+              </div>
+              {selectedTags.length > 0 && (
+                <button
+                  onClick={() => { setSelectedTags([]); setVisibleCount(BOOKS_PER_BATCH); }}
+                  className="mt-3 text-xs font-sans text-[#8C3A3A] hover:text-[#8C3A3A]/80 transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* The new modal at the very end of the return render statement */}
       <BookDetailsModal
@@ -439,6 +629,7 @@ export default function BookshelfClient({ initialBooks }: BookshelfClientProps) 
         isOpen={!!selectedBook} // Only open if there IS selectedBook. The double `!!`, called "Double Bang" is essentially a neat shorthand in this scenario of writing `isOpen={selectedBook !== null ? true : false}`
         onClose={() => setSelectedBookId(null)}
         book={selectedBook}
+        allUserTags={allUserTags}
       />
     </div>
   )

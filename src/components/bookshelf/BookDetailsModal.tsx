@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { type BookshelfItem, Edition } from '@/lib/types';
+import { type BookshelfItem, Edition, Tag } from '@/lib/types';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import StarRating from './StarRating';
 import StatusDropdown from './StatusDropdown';
@@ -12,14 +12,16 @@ import RecommendationContextSection from './RecommendationContextSection';
 import ReviewSection from './ReviewSection';
 import JourneyTimeline from './JourneyTimeline';
 import EditionSwitcherModal from '../shared/EditionSwitcherModal';
+import TagSection from './TagSection';
 
 interface BookDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   book: BookshelfItem | null;
+  allUserTags: Tag[];
 }
 
-export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsModalProps) {
+export default function BookDetailsModal({ isOpen, onClose, book, allUserTags }: BookDetailsModalProps) {
   // Edition Switching state
   const [isEditionModalOpen, setIsEditionModalOpen] = useState(false);
   const [isUpdatingEdition, setIsUpdatingEdition] = useState(false);
@@ -260,6 +262,13 @@ export default function BookDetailsModal({ isOpen, onClose, book }: BookDetailsM
                 statusId={book.status_id} // New prop in order to generate the new "JOURNEY ON HOLD" and "JOURNEY ENDED" statuses
               />
             </section>
+
+            {/* TAGS */}
+            <TagSection
+              bookshelfItemId={book.bookshelf_item_id}
+              existingTags={book.tags}
+              allUserTags={allUserTags}
+            />
 
             {/* The Deletion Zone at the very bottom */}
             <div className="mt-2 pt-8 border-t border-[#E5E0D8] flex flex-col items-end">
