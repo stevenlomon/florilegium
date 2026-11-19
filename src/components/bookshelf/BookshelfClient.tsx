@@ -11,7 +11,7 @@ interface BookshelfClientProps {
   allUserTags: Tag[];
 }
 
-const BOOKS_PER_BATCH = 36;
+const BOOKS_PER_BATCH = 40;
 
 const TABS = [
   { id: 'all', label: 'All Books' },
