@@ -91,35 +91,32 @@ export async function DELETE(req: Request) {
     }
 
     const body = await req.json();
-    const { bookshelf_item_id, tag_id } = body;
+    const { id } = body;
 
-    if (!bookshelf_item_id || !tag_id) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: "Missing required field: id" }, { status: 400 });
     }
 
     const query = {
-      name: 'detach-tag-from-bookshelf-item',
+      name: 'delete-user-tag', // This should not be detach! That's in api/bookshelf/tags/route.ts. This should be 'delete-user-tag'
       text: `
-        DELETE FROM "Bookshelf_Item_Tag"
-        WHERE bookshelf_item_id = $1 AND tag_id = $2
-        AND EXISTS ( -- Check ownership: a tag to be deleted must belong to the user in question and be attached to a matching bookshelf item by bookshelf_item_id
-          SELECT 1 FROM "Bookshelf_Item" WHERE id = $1 AND user_id = $3
-        )
+        DELETE FROM "Tag"
+        WHERE id = $1 AND user_id = $2
         RETURNING *
       `,
-      values: [bookshelf_item_id, tag_id, user.id]
+      values: [id, user.id]
     };
 
     const res = await pool.query(query);
 
     if (res.rowCount === 0) {
-      return NextResponse.json({ error: "Tag association not found or unauthorized" }, { status: 404 });
+      return NextResponse.json({ error: "Tag not found or unauthorized" }, { status: 404 });
     }
 
     return NextResponse.json({ success: "ok" });
 
   } catch (error) {
-    console.error("Unexpected error detaching tag:", error);
+    console.error("Unexpected error deleting tag:", error);
     return NextResponse.json({ success: "not ok", error: (error as Error).message }, { status: 500 });
   }
 }
