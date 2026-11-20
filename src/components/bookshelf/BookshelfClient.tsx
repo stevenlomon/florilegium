@@ -544,7 +544,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
 
         {allUserTags.length > 0 && (
           <div className="hidden xl:block w-52 shrink-0">
-            <div className="sticky top-8">
+            <div className="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto">
               <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {(tagsExpanded ? allUserTags : allUserTags.slice(0, COLLAPSED_TAGS_LIMIT)).map(tag => (
