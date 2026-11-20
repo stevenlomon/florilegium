@@ -69,6 +69,13 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
       setTags((prev) => [...prev, tag]);
       setInputValue('');
       setShowSuggestions(false);
+
+      // NEW: Add focus after clearing state! Doesn't work without the setTimeout! We need to for the re-render. 
+      // The 0 doesn't mean "zero delay", apparently it means “run this after the current call stack finishes.”
+      // This lets React finish the re-render cycle (including processing `setIsSaving(false)`  and re-enabling 
+      // the input) before the focus fires.
+      setTimeout(() => inputRef.current?.focus(), 0); 
+
       router.refresh();
     } catch (error) {
       console.error(error);
@@ -90,7 +97,8 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
       if (!createRes.ok) {
         const data = await createRes.json();
         if (createRes.status === 409) {
-          alert('Tag already exists'); // TODO: ugly altert for now for testing; polish it up later
+          alert('Tag already exists'); // TODO: ugly alert for now for testing; polish it up later
+          setTimeout(() => inputRef.current?.focus(), 0);
         } else {
           throw new Error(data.error || 'Failed to create tag');
         }
