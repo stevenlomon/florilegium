@@ -21,9 +21,9 @@ globalForPg.pgPool || new Pool({ // ..except for this. Check the global object a
   },
 
   // NEW: Optimizations for Aiven's 20-connection limit
-  max: 5, // Limit each Next.js instance to max 5 connections instead of the default 10. 5 pooled connections cycling in milliseconds 
+  max: 2, // Limit each Next.js instance to max 2 connections instead of the default 10. 2 pooled connections cycling in milliseconds
   // handles the traffic to the server with my current user count. Until the user count and concurrent request grows!
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds so they don't hold slots open
+  idleTimeoutMillis: 10000, // Close idle clients after 10 seconds so they don't hold slots open
   connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection fails
 });
 
