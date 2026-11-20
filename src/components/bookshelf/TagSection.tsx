@@ -20,6 +20,9 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // New state for up/down navigation for sifting through auto-complete suggestions. -1 to signal "Nothing is highlighted yet"
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+
   const inputRef = useRef<HTMLInputElement>(null); // The text input element
   const suggestionsRef = useRef<HTMLDivElement>(null); // The dropdown list below it
   
@@ -135,8 +138,38 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
   // If the typed text matches an existing tag (case-insensitive), it attaches that one. 
   // Otherwise it creates a new tag AND attaches it in sequence.
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Three new cases for the up/down navigation of auto-complete suggestions now before the user hits Enter!
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex(prev =>
+        prev < suggestions.length - 1 ? prev + 1 : prev
+      );
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex(prev => (prev > 0 ? prev - 1 : -1));
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
+      return;
+    }
+    
     if (e.key === 'Enter') {
       e.preventDefault();
+
+      // This intended action - highlighting something and pressing Enter - needs to take priority
+      // over everything else! Thus it's placed even before our early return block
+      if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+        attachTag(suggestions[highlightedIndex]);
+        setHighlightedIndex(-1);
+        return;
+      }
+
       const trimmed = inputValue.trim();
       if (!trimmed) return;
 
@@ -188,6 +221,7 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
             onChange={(e) => {
               setInputValue(e.target.value);
               setShowSuggestions(true);
+              setHighlightedIndex(-1); // NEW: Reset highlight now too!
             }}
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
@@ -202,12 +236,17 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
               ref={suggestionsRef}
               className="absolute z-10 left-0 mt-1 bg-white border border-[#E5E0D8] rounded-md shadow-lg max-h-40 overflow-y-auto min-w-[160px]"
             >
-              {suggestions.map((tag) => (
+              {suggestions.map((tag, index) => (
+                // NEW: Highlight styling to the suggestion buttons
                 <button
                   key={tag.id}
                   type="button"
                   onClick={() => attachTag(tag)}
-                  className="w-full text-left px-3 py-2 text-sm font-sans text-[#424B2E] hover:bg-[#424B2E]/5 transition-colors"
+                  className={`w-full text-left px-3 py-2 text-sm font-sans text-[#424B2E] transition-colors ${
+                    index === highlightedIndex
+                      ? 'bg-[#424B2E]/10'
+                      : 'hover:bg-[#424B2E]/5'
+                  }`}
                 >
                   {tag.name}
                 </button>
