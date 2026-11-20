@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'; // For tag update refresh
 import Image from 'next/image';
 import { type BookshelfItem, Tag } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
+import { COLLAPSED_TAGS_LIMIT } from '@/lib/constants';
 
 interface BookshelfClientProps {
   initialBooks: BookshelfItem[];
@@ -87,6 +88,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
   const [sortOption, setSortOption] = useState('added-newest');
   const [visibleCount, setVisibleCount] = useState(BOOKS_PER_BATCH);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [tagsExpanded, setTagsExpanded] = useState(false); // New state for expanding/collapsing
 
   // New state for editing tags
   const [editingTagId, setEditingTagId] = useState<number | null>(null);
@@ -300,7 +302,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
         {/* Mobile Tag Filters (below xl only) */}
         {allUserTags.length > 0 && (
           <div className="xl:hidden flex flex-wrap gap-2">
-            {allUserTags.map(tag => (
+            {(tagsExpanded ? allUserTags : allUserTags.slice(0, COLLAPSED_TAGS_LIMIT)).map(tag => (
               <button
                 key={tag.id}
                 onClick={() => {
@@ -320,6 +322,14 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
                 {tag.name}
               </button>
             ))}
+            {allUserTags.length > COLLAPSED_TAGS_LIMIT && (
+              <button
+                onClick={() => setTagsExpanded(prev => !prev)}
+                className="px-3 py-1.5 text-xs font-sans text-[#5C613E]/70 hover:text-[#5C613E] transition-colors"
+              >
+                {tagsExpanded ? 'Show fewer' : `+${allUserTags.length - COLLAPSED_TAGS_LIMIT} more`}
+              </button>
+            )}
             {selectedTags.length > 0 && (
               <button
                 onClick={() => { setSelectedTags([]); setVisibleCount(BOOKS_PER_BATCH); }}
@@ -533,11 +543,11 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
         </div>
 
         {allUserTags.length > 0 && (
-          <div className="hidden xl:block w-52 shrink-0">
-            <div className="sticky top-8">
+          <div className="hidden xl:block w-56 shrink-0">
+            <div className="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden">
               <h3 className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C613E] mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {allUserTags.map(tag => (
+                {(tagsExpanded ? allUserTags : allUserTags.slice(0, COLLAPSED_TAGS_LIMIT)).map(tag => (
                   editingTagId === tag.id ? (
                     <div key={tag.id} className="flex items-center gap-1">
                       <input
@@ -609,6 +619,14 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
                     </div>
                   )
                 ))}
+                {allUserTags.length > COLLAPSED_TAGS_LIMIT && (
+                  <button
+                    onClick={() => setTagsExpanded(prev => !prev)}
+                    className="px-3 py-1.5 text-xs font-sans text-[#5C613E]/70 hover:text-[#5C613E] transition-colors"
+                  >
+                    {tagsExpanded ? 'Show fewer' : `+${allUserTags.length - COLLAPSED_TAGS_LIMIT} more`}
+                  </button>
+                )}
               </div>
               {selectedTags.length > 0 && (
                 <button
