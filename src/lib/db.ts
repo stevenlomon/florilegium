@@ -17,7 +17,7 @@ export const pool =
 globalForPg.pgPool || new Pool({ // ..except for this. Check the global object and create a new Pool only as fallback
   connectionString: process.env.DATABASE_URL, // We can combine our credentials into one Aiven string
   ssl: {
-    rejectUnauthorized: false, // To fix `no encryption` error
+    ca: process.env.AIVEN_CA_CERT, // Now using a real CA certificate for proper security!
   },
 
   // NEW: Optimizations for Aiven's 20-connection limit
