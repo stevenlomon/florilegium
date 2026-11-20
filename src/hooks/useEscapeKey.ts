@@ -7,7 +7,7 @@ export function useEscapeKey(onClose: () => void, isOpen: boolean = true) {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !e.defaultPrevented) { // NEW: Check if the event was already handled (like in the tag suggestion dropdown!)
         onClose();
       }
     };

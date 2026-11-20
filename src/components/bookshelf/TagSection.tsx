@@ -154,8 +154,12 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
     }
 
     if (e.key === 'Escape') {
-      setShowSuggestions(false);
-      setHighlightedIndex(-1);
+      if (showSuggestions && inputValue.trim() && suggestions.length > 0) {
+        e.preventDefault();
+        e.stopPropagation(); // Important: we need to stop event bubbling! Pressing escape when suggestions are shown should only close the suggestions dropdown, not the entire modal!
+        setShowSuggestions(false);
+        setHighlightedIndex(-1);
+      }
       return;
     }
     
