@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'; // For tag update refresh
 import Image from 'next/image';
 import { type BookshelfItem, Tag } from '@/lib/types';
 import BookDetailsModal from './BookDetailsModal';
+import { COLLAPSED_TAGS_LIMIT } from '@/lib/constants';
 
 interface BookshelfClientProps {
   initialBooks: BookshelfItem[];
@@ -87,6 +88,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
   const [sortOption, setSortOption] = useState('added-newest');
   const [visibleCount, setVisibleCount] = useState(BOOKS_PER_BATCH);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [tagsExpanded, setTagsExpanded] = useState(false); // New state for expanding/collapsing
 
   // New state for editing tags
   const [editingTagId, setEditingTagId] = useState<number | null>(null);
