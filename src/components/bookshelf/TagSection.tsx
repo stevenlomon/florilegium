@@ -25,7 +25,8 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
 
   const inputRef = useRef<HTMLInputElement>(null); // The text input element
   const suggestionsRef = useRef<HTMLDivElement>(null); // The dropdown list below it
-  
+  const pendingFocusRef = useRef(false); // New ref for the auto-focus to work in production
+
   const router = useRouter();
 
   useEffect(() => {
@@ -50,6 +51,14 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // New useEffect for the auto-focus to work in production
+  useEffect(() => {
+    if (pendingFocusRef.current && !isSaving) {
+      pendingFocusRef.current = false;
+      inputRef.current?.focus();
+    }
+  }, [isSaving]);
+
   // The no-API request auto-complete suggestions!
   const suggestions = allUserTags.filter(
     (t) =>
@@ -73,11 +82,11 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
       setInputValue('');
       setShowSuggestions(false);
 
-      // NEW: Add focus after clearing state! Doesn't work without the setTimeout! We need to for the re-render. 
-      // The 0 doesn't mean "zero delay", apparently it means “run this after the current call stack finishes.”
-      // This lets React finish the re-render cycle (including processing `setIsSaving(false)`  and re-enabling 
-      // the input) before the focus fires.
-      setTimeout(() => inputRef.current?.focus(), 0); 
+      // NEW: Add focus after clearing state! This lets React finish the re-render cycle (including processing `setIsSaving(false)`
+      // and re-enabling the input) before the focus fires.
+      // UPDATE: But apparently `setTimeout` doesn't cut it for production. So we'll try a ref flag (new pendingFocusRef) + `useEffect` 
+      // combo for it to survive the `router.refresh()` which is rather instant on localhost but takes more time in production
+      pendingFocusRef.current = true;
 
       router.refresh();
     } catch (error) {
@@ -101,7 +110,7 @@ export default function TagSection({ bookshelfItemId, existingTags, allUserTags 
         const data = await createRes.json();
         if (createRes.status === 409) {
           alert('Tag already exists'); // TODO: ugly alert for now for testing; polish it up later
-          setTimeout(() => inputRef.current?.focus(), 0);
+          pendingFocusRef.current = true;
         } else {
           throw new Error(data.error || 'Failed to create tag');
         }
