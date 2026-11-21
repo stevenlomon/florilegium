@@ -204,6 +204,20 @@ export async function POST(req: Request) {
         );
       }
 
+      // These window functions for the auto-updating dynamic reading journey rendering logic is one 
+      // of the few things in the app code base I am completely okay to have as a black box. It works!
+      await client.query(`
+        WITH renumbered AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY finished_at ASC NULLS LAST) AS new_iteration
+          FROM "Reading_Journey"
+          WHERE bookshelf_item_id = $1
+        )
+        UPDATE "Reading_Journey" rj
+        SET iteration = renumbered.new_iteration
+        FROM renumbered
+        WHERE rj.id = renumbered.id
+      `, [bookshelf_item_id]);
+
       await client.query('COMMIT');
 
       return NextResponse.json({
