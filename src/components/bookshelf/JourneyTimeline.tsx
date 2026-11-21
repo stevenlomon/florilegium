@@ -372,7 +372,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                                 ? (journey.started_at ? `${formatDate(journey.started_at)} — ${formatDate(journey.finished_at)}` : `Finished ${formatDate(journey.finished_at)}`)
                                 : (journey.started_at ? formatDate(journey.started_at) : ''))
                             : isFirstOfDuplicate
-                              ? (journey.started_at ? formatDate(journey.started_at) : '')
+                              ? (journey.log_post_created_at ? formatDate(journey.log_post_created_at) : '')
                               : isLastOfDuplicate && isFinished
                                 ? formatDate(journey.finished_at)
                                 : (journey.log_post_created_at ? formatDate(journey.log_post_created_at) : '')}
