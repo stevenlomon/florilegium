@@ -110,7 +110,7 @@ export default function ChangePasswordSection() {
                 <input
                   id="currentPassword"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="off"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   autoFocus
