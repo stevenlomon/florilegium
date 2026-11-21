@@ -83,7 +83,7 @@ export async function GET() {
         row.custom_page_count != null ? String(row.custom_page_count) : (row.page_count != null ? String(row.page_count) : ''),
         String(row.times_read || 0),
         escapeCsvField(recommendedBy),
-        addedAt,
+        escapeCsvField(addedAt),
       ].join(','));
     }
 
