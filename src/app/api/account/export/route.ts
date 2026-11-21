@@ -74,16 +74,16 @@ export async function GET() {
 
       // Push to the array as a comma-separated row
       csvRows.push([
+        escapeCsvField(addedAt),
         escapeCsvField(row.title || ''),
         escapeCsvField(row.author || ''),
         STATUS_LABELS[row.status_id] || 'Unknown',
-        row.user_rating != null ? String(row.user_rating) : '',
-        escapeCsvField(tags),
-        escapeCsvField(row.review || ''),
         row.custom_page_count != null ? String(row.custom_page_count) : (row.page_count != null ? String(row.page_count) : ''),
         String(row.times_read || 0),
+        row.user_rating != null ? String(row.user_rating) : '',
+        escapeCsvField(row.review || ''),
+        escapeCsvField(tags),
         escapeCsvField(recommendedBy),
-        escapeCsvField(addedAt),
       ].join(','));
     }
 
