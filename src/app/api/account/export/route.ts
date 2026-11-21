@@ -57,7 +57,7 @@ export async function GET() {
       [user.id]
     );
 
-    const headers = ['Title', 'Author', 'Status', 'Rating', 'Tags', 'Review', 'Page Count', 'Times Read', 'Recommended By', 'Added At'];
+    const headers = ['Added At', 'Title', 'Author', 'Status', 'Page Count', 'Times Read', 'Rating', 'Review', 'Tags', 'Recommended By'];
     
     // csvRows is simply an array where the first value is the headers/columns row. We will push the rest of the rows below
     const csvRows = [headers.join(',')];
