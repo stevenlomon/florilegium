@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import LogoutButton from '@/components/settings/LogoutButton';
 import AccountDetailsSection from '@/components/settings/AccountSettingsSection';
 import DismantleAccountButton from '@/components/settings/DismantleAccountButton';
+import ChangePasswordSection from '@/components/settings/ChangePasswordSection';
 
 export const dynamic = 'force-dynamic'; // Signals to Next.js that this page is server-rendered per request!
 
@@ -68,7 +69,7 @@ export default async function SettingsPage() {
             Data & Sovereignty
           </h2>
           <div className="bg-white/50 border border-[#E5E0D8] rounded-md shadow-sm flex flex-col">
-            
+
             <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E5E0D8]">
               <div className="max-w-md">
                 <p className="font-sans text-sm font-semibold text-[#2C302E]">Export Library</p>
@@ -80,7 +81,9 @@ export default async function SettingsPage() {
                 Export (Soon)
               </button>
             </div>
-            
+
+            <ChangePasswordSection />
+
             <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="max-w-md">
                 <p className="font-sans text-sm font-semibold text-[#8C3A3A]">Dismantle Account</p>
