@@ -110,6 +110,7 @@ export default function ChangePasswordSection() {
                 <input
                   id="currentPassword"
                   type="password"
+                  autoComplete="current-password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   autoFocus
@@ -124,6 +125,7 @@ export default function ChangePasswordSection() {
                 <input
                   id="newPassword"
                   type="password"
+                  autoComplete="new-password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="bg-transparent border-b border-[#E5E0D8] focus:border-[#424B2E] outline-none py-1 font-sans text-sm text-[#2C302E] transition-colors"
@@ -137,6 +139,7 @@ export default function ChangePasswordSection() {
                 <input
                   id="confirmNewPassword"
                   type="password"
+                  autoComplete="new-password"
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   className="bg-transparent border-b border-[#E5E0D8] focus:border-[#424B2E] outline-none py-1 font-sans text-sm text-[#2C302E] transition-colors"
