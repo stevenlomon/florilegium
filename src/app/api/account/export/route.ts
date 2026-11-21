@@ -63,14 +63,11 @@ export async function GET() {
     const csvRows = [headers.join(',')];
 
     for (const row of result.rows) {
+      const addedAt = new Date(row.added_at).toISOString().split('T')[0];
+      
       // We want tags and recommendedBy as comma-separated strings
       const tags = (row.tags as string[]).join(', ');
       const recommendedBy = (row.recommended_by as string[]).join(', ');
-
-      // And we want addedAt as a human-readable string rather than ISO
-      const addedAt = new Date(row.added_at).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric',
-      });
 
       // Push to the array as a comma-separated row
       csvRows.push([
