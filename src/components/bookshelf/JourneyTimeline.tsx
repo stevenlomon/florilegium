@@ -212,7 +212,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
             }
 
             return (
-              <div key={`${journey.id}-${thisIdSeenCount}`} className="relative z-10 flex items-start gap-4 group">
+              <div key={`${journey.id}-${thisIdSeenCount}`} className={`relative z-10 flex items-start gap-4 group ${isFirstOfDuplicate ? 'mt-8' : ''}`}>
                 {!isLatest && sortedJourneys.length > 1 && (
                   <div className="absolute left-3.75 top-1/2 bottom-0 w-px bg-[#E5E0D8] -z-10" style={{ marginBottom: '-24px' }} />
                 )}
@@ -240,6 +240,13 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                       }`}
                   >
                     <span className="font-sans text-[10px] font-bold">{journey.iteration}</span>
+                  </div>
+                )}
+
+                {/* Journey Start Header — only for journeys with multiple log posts */}
+                {isFirstOfDuplicate && journey.started_at && (
+                  <div className="absolute -top-5 left-0 right-0 text-center font-sans text-[10px] font-bold uppercase tracking-widest text-[#5C613E]/70">
+                    {journey.iteration === 1 ? '1st' : journey.iteration === 2 ? '2nd' : journey.iteration === 3 ? '3rd' : `${journey.iteration}th`} Journey — Started {formatDate(journey.started_at)}
                   </div>
                 )}
 
