@@ -19,8 +19,16 @@ export default function ResetPasswordForm() {
     setIsLoading(true);
     setError('');
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    // Now updated from only requiring at least 6 characters to requiring at least 8 characters + a combination
+    // of at least one letter and one number
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      setError('Password must contain at least one letter and one number.');
       setIsLoading(false);
       return;
     }
@@ -87,6 +95,7 @@ export default function ResetPasswordForm() {
           <input
             id="password"
             type="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -101,6 +110,7 @@ export default function ResetPasswordForm() {
           <input
             id="confirmPassword"
             type="password"
+            autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
