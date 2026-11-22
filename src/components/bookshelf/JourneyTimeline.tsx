@@ -302,7 +302,7 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                           <div className="flex items-center mr-2">
                             <button
                               type="button"
-                              onClick={() => handleDeleteJourney(journey.id, journey.log_post_id)}
+                              onClick={() => handleDeleteJourney(journey.id, totalForThisId === 1 ? undefined : journey.log_post_id)} // Standalone journey passes log_post_id as `undefined` in order to achieve the effect of one delete. Multi-log-post journeys still pass log_post_id as before
                               onMouseLeave={() => setConfirmDeleteId(null)}
                               onBlur={() => setConfirmDeleteId(null)}
                               disabled={isUpdating || isDeleting || hasNotes}
