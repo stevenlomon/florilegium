@@ -16,7 +16,7 @@ const globalForPg = global as unknown as { pgPool: Pool }; // I've never seen tw
 export const pool = 
 globalForPg.pgPool || new Pool({ // ..except for this. Check the global object and create a new Pool only as fallback
   connectionString: process.env.DATABASE_URL,
-  ssl: true, // Apparently Supabase handles SSL natively! No custom CA certificate needed
+  ssl: { rejectUnauthorized: false }, // Supabase's Supavisor pooler uses a certificate Node.js can't fully verify; connection is still encrypted. This is Supabase's own recommended approach for their transaction pooler.
 
   // Connection pool tuning for Supabase's Supavisor (transaction-mode pooling on port 6543)
   // Same values as the Aiven instance for now until the demand asks otherwise
