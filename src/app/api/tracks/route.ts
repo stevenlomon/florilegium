@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       }
 
       const query = {
-        name: 'insert-reading-track',
+        // name: 'insert-reading-track',
         text: `
           INSERT INTO "Reading_Track" (user_id, name, description)
           VALUES ($1, $2, $3)
@@ -151,7 +151,7 @@ export async function PATCH(req: Request) {
     }
 
     const query = {
-      name: 'update-reading-track',
+      // name: 'update-reading-track',
       // COALESCE is our best friend here! I've gone from being absolutely terrified of it to now seeing it as a friend haha!
       // If $1 (name) is null, it just overwrites the column with its own existing value.
       text: `

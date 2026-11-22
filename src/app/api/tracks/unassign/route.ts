@@ -37,7 +37,7 @@ export async function PATCH(req: Request) {
       // Building out the unassignment for slot 2 since it's 10x simpler and less complex. It's not multi-step at all; we simply clear the 
       // follow_up_book_id on the Reading_Track table. The Bookshelf_Item is completely untouched and remains Intend to Read.
       const query = {
-        name: 'unassign-follow-up-book',
+        // name: 'unassign-follow-up-book',
         // In a sea of monster queries... simple by-the-book queries like these are so welcome haha
         text: `
           UPDATE "Reading_Track" 

@@ -18,7 +18,7 @@ export async function getCurrentUser() {
 
     // Fetch the user directly from Postgres using the extracted userId!
     const query = {
-      name: 'fetch-current-user',
+      // name: 'fetch-current-user',
       text: 'SELECT * FROM "User" WHERE id = $1',
       values: [userId],
     };

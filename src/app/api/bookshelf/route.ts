@@ -12,9 +12,9 @@ export async function GET() {
     }
 
     const query = {
-      name: 'get-user-bookshelf-all-api',
+      // name: 'get-user-bookshelf-all-api',
       text: `
-        SELECT 
+        SELECT
           bi.id AS bookshelf_item_id,
           bi.status_id,
           bi.user_rating,
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     const { book_id, status_id, horizon_slot = null } = body; // horizon_slot defaults to null
 
     const query = {
-      name: 'upsert-user-bookshelf-item', // Upgraded from insert to upsert!
+      // name: 'upsert-user-bookshelf-item',
       // `ON CONFLICT`, `DO UPDATE SET` and `COALESCE` all work in harmony to ensure no duplicates
       text: `
         INSERT INTO "Bookshelf_Item"(id, user_id, book_id, status_id, horizon_slot) 
@@ -142,11 +142,11 @@ export async function PATCH(req: Request) {
       }
 
       const query = {
-        name: 'update-user-rating',
+        // name: 'update-user-rating',
         text: `
-        UPDATE "Bookshelf_Item" 
-        SET user_rating = $1 
-        WHERE id = $2 AND user_id = $3 
+        UPDATE "Bookshelf_Item"
+        SET user_rating = $1
+        WHERE id = $2 AND user_id = $3
         RETURNING *
       `,
         values: [user_rating, bookshelf_item_id, user.id]
@@ -314,11 +314,11 @@ export async function PATCH(req: Request) {
       } else {
         // Else, we fall back to what we already had. Standard read status update
         const query = {
-          name: 'update-status-id',
+          // name: 'update-status-id',
           text: `
-          UPDATE "Bookshelf_Item" 
-          SET status_id = $1 
-          WHERE id = $2 AND user_id = $3 
+          UPDATE "Bookshelf_Item"
+          SET status_id = $1
+          WHERE id = $2 AND user_id = $3
           RETURNING *
         `,
           values: [status_id, bookshelf_item_id, user.id]
@@ -343,11 +343,11 @@ export async function PATCH(req: Request) {
       }
 
       const query = {
-        name: 'update-custom-page-count',
+        // name: 'update-custom-page-count',
         text: `
-        UPDATE "Bookshelf_Item" 
-        SET custom_page_count = $1 
-        WHERE id = $2 AND user_id = $3 
+        UPDATE "Bookshelf_Item"
+        SET custom_page_count = $1
+        WHERE id = $2 AND user_id = $3
         RETURNING *
       `,
         values: [custom_page_count, bookshelf_item_id, user.id]
@@ -372,11 +372,11 @@ export async function PATCH(req: Request) {
     // Our new Review gatekeeper
     if (review !== undefined) {
       const query = {
-        name: 'update-review',
+        // name: 'update-review',
         text: `
-        UPDATE "Bookshelf_Item" 
-        SET review = $1 
-        WHERE id = $2 AND user_id = $3 
+        UPDATE "Bookshelf_Item"
+        SET review = $1
+        WHERE id = $2 AND user_id = $3
         RETURNING *
       `,
         // If it's an empty string, we convert it to null to keep the DB clean
@@ -401,7 +401,7 @@ export async function PATCH(req: Request) {
     // Our book_id "Gatekeeper" handles Edition Swapping by updating the linked book_id!
     if (book_id !== undefined) {
       const query = {
-        name: 'update-bookshelf-item-book-id',
+        // name: 'update-bookshelf-item-book-id',
         text: `
       UPDATE "Bookshelf_Item"
       SET book_id = $1

@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const newLogId = crypto.randomUUID();
 
     const query = {
-      name: 'insert-reading-log-post',
+      // name: 'insert-reading-log-post',
       text: `
         INSERT INTO "Reading_Log_Post" (id, user_id, reading_journey_id, notes, note_type, pages_read)
         VALUES ($1, $2, $3, $4, $5, $6)

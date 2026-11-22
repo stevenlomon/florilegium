@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const newRowId = crypto.randomUUID();
 
     const query = {
-      name: 'insert-recommendation-context-row',
+      // name: 'insert-recommendation-context-row',
       text: `
         INSERT INTO "Recommendation_Context_Row" (id, bookshelf_item_id, recommended_by, link, notes) 
         VALUES ($1, $2, $3, $4, $5) 
@@ -85,7 +85,7 @@ export async function PATCH(req: Request) {
     }
 
     const query = {
-      name: 'update-recommendation-context-row',
+      // name: 'update-recommendation-context-row',
       // We use EXISTS to guarantee this recommendation belongs to a Bookshelf Item owned by the current user. Same trick used in 
       // the Reading Journey PATCH and the check to see if a book already exists in a user's bookshelf!
       text: `
@@ -142,7 +142,7 @@ export async function DELETE(req: Request) {
     }
 
     const query = {
-      name: 'delete-recommendation-context-row',
+      // name: 'delete-recommendation-context-row',
       // Using EXISTS as an inline security check to ensure this recommendation 
       // is attached to a Bookshelf_Item owned by the currently authenticated user.
       text: `

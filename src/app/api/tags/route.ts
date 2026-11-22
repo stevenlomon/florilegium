@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     const query = {
-      name: 'get-user-tags',
+      // name: 'get-user-tags',
       text: `
         SELECT id, name, created_at
         FROM "Tag"
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     }
 
     const query = {
-      name: 'create-user-tag',
+      // name: 'create-user-tag',
       text: `
         INSERT INTO "Tag" (user_id, name)
         VALUES ($1, $2)
@@ -98,7 +98,7 @@ export async function DELETE(req: Request) {
     }
 
     const query = {
-      name: 'delete-user-tag', // This should not be detach! That's in api/bookshelf/tags/route.ts. This should be 'delete-user-tag'
+      // name: 'delete-user-tag',
       text: `
         DELETE FROM "Tag"
         WHERE id = $1 AND user_id = $2
@@ -145,7 +145,7 @@ export async function PATCH(req: Request) {
     }
 
     const query = {
-      name: 'rename-user-tag',
+      // name: 'rename-user-tag',
       text: `
         UPDATE "Tag"
         SET name = $1

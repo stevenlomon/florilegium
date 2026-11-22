@@ -14,7 +14,7 @@ export async function getUserTags(): Promise<Tag[]> {
 
   // And unlike the three other files in this db folder, this query is super simple haha
   const query = {
-    name: 'get-user-tags-server',
+    // name: 'get-user-tags-server',
     text: `
       SELECT id, name
       FROM "Tag"
