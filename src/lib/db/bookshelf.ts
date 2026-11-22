@@ -18,7 +18,7 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
   // Til Monday, there will only be polishing of the features that are already implemented and UX polishes. Maintaining! To get familiar with
   // the codebase that has *already* grown a bit faster than I can wrap my mind around.
   const query = {
-    name: 'get-user-bookshelf-all',
+    // name: 'get-user-bookshelf-all',
     // It is Monday morning and I have had Gemini act infinitely patient senior developer and... this query is not as scary anymore! In fact!
     // COALESCE is by far the *least* scary part and the easiest to understand! Let's take this in the order it unfolded and clicked with me,
     // starting with the question I first asked: why can't we just JOIN the three tables Book, Bookshelf_Item, and Recommendation_Context_Row?
@@ -134,7 +134,7 @@ export async function checkBookInBookshelf(externalId: string): Promise<boolean>
   if (!user) return false;
 
   const query = {
-    name: 'check-book-in-bookshelf',
+    // name: 'check-book-in-bookshelf',
     // `SELECT 1` is completely new to me, this is my first time seeing it. But it's a super neat tool to have in our SQL Toolbox! It's
     // super efficient in situtations like these where we actually don't wanna fetch any row data from our database, we simply want the 
     // answer to the question: Is there a match of this instance in the database? It's a boolean question! So we can think of `SELECT 1` 
@@ -159,7 +159,7 @@ export async function checkBookInBookshelf(externalId: string): Promise<boolean>
 // Simple function to fetch page count estimate and exact count from the database
 export async function getStoredPageCounts(externalId: string) {
   const res = await pool.query({
-    name: 'get-stored-page-counts',
+    // name: 'get-stored-page-counts',
     text: `
       SELECT page_count_estimate, page_count_exact
       FROM "Book"
@@ -176,7 +176,7 @@ export async function backfillPageCounts(externalId: string, pageCountEstimate: 
   if (!pageCountEstimate && !pageCountExact) return;
 
   await pool.query({
-    name: 'backfill-page-counts',
+    // name: 'backfill-page-counts',
     text: `
       UPDATE "Book"
       SET

@@ -42,11 +42,11 @@ export async function PATCH(req: Request) {
     const { bookshelf_item_id, horizon_slot } = body;
 
     const query = {
-      name: 'update-horizon-slot',
+      // name: 'update-horizon-slot',
       text: `
-        UPDATE "Bookshelf_Item" 
-        SET horizon_slot = $1 
-        WHERE id = $2 AND user_id = $3 
+        UPDATE "Bookshelf_Item"
+        SET horizon_slot = $1
+        WHERE id = $2 AND user_id = $3
         RETURNING *
       `,
       values: [horizon_slot, bookshelf_item_id, user.id] // user.id protects the row!

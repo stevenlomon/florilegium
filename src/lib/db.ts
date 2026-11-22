@@ -15,12 +15,11 @@ const globalForPg = global as unknown as { pgPool: Pool }; // I've never seen tw
 // This remains mostly unchanged compared to the Biscord code..
 export const pool = 
 globalForPg.pgPool || new Pool({ // ..except for this. Check the global object and create a new Pool only as fallback
-  connectionString: process.env.DATABASE_URL, // We can combine our credentials into one Aiven string
-  ssl: {
-    ca: process.env.AIVEN_CA_CERT, // Now using a real CA certificate for proper security!
-  },
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // Supabase's Supavisor pooler uses a certificate Node.js can't fully verify; connection is still encrypted. This is Supabase's own recommended approach for their transaction pooler.
 
-  // NEW: Optimizations for Aiven's 20-connection limit
+  // Connection pool tuning for Supabase's Supavisor (transaction-mode pooling on port 6543)
+  // Same values as the Aiven instance for now until the demand asks otherwise
   max: 2, // Limit each Next.js instance to max 2 connections instead of the default 10. 2 pooled connections cycling in milliseconds
   // handles the traffic to the server with my current user count. Until the user count and concurrent request grows!
   idleTimeoutMillis: 10000, // Close idle clients after 10 seconds so they don't hold slots open

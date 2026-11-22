@@ -17,7 +17,7 @@ export async function PATCH(req: Request) {
     }
 
     const query = {
-      name: 'update-user-first-name',
+      // name: 'update-user-first-name',
       text: 'UPDATE "User" SET first_name = $1 WHERE id = $2 RETURNING *',
       values: [first_name.trim(), user.id]
     };

@@ -17,12 +17,12 @@ export async function getReadingTracks() {
 
   // The first query only focuses on the Reading Track metadata: name and description
   const tracksQuery = {
-    name: 'get-user-reading-tracks-metadata',
+    // name: 'get-user-reading-tracks-metadata',
     text: `
-      SELECT 
-        id, 
-        name AS title, 
-        description 
+      SELECT
+        id,
+        name AS title,
+        description
       FROM "Reading_Track" 
       WHERE user_id = $1 
       ORDER BY id ASC
@@ -33,7 +33,7 @@ export async function getReadingTracks() {
 
   // Our previous monster query haha. Focuses only on fetching the assigned books (in any)
   const assignmentsQuery = {
-    name: 'get-user-reading-track-assignments',
+    // name: 'get-user-reading-track-assignments',
     // Also quite a chonky query. We're need JOIN cuz a simple 'SELECT * FROM "Reading_Track" WHERE user_id = $1' wouldn't
     // return title, author and the cover_image_url! 
     // And we glue together the two subqueries that use JOIN with a UNION ALL. Instead of adding data horizontally with more columns

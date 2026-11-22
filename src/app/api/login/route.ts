@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const query1 = {
-      name: 'fetch-username-match',
+      // name: 'fetch-username-match',
       text: 'SELECT * FROM "User" WHERE username = $1',
       values: [body.username],
     }
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // Now that we have a username match, we check if the password match
     const query2 = {
-      name: 'fetch-hashed-password',
+      // name: 'fetch-hashed-password',
       text: 'SELECT hashed_password FROM "Auth" WHERE user_id = $1',
       values: [user.id]
     }

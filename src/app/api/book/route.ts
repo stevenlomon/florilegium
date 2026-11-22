@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     // The server provides all data except id that Postgres can automatically generate. It's here that I realize that I can't possibly
     // include goodreads_url since the URL contains an id that I can't possibly know haha. The row is now deleted from the table
     const query = {
-      name: 'upsert-open-library-book', // Upgrade: insert to upsert!
+      // name: 'upsert-open-library-book',
       // We now check if the book has already been added from Open Library with ON CONFLICT. DO UPDATE SET forces Postgres to return the row if it already existed
       text: `
         INSERT INTO "Book"(title, author, external_provider, external_id, page_count_estimate, page_count_exact, cover_image_url) 

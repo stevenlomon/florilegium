@@ -10,7 +10,7 @@ export async function getHorizonBooks() {
   }
 
   const query = {
-      name: 'get-user-bookshelf-for-horizon', // Specific Horizon fetch query for now. We'll build it out with dynamic parameters later as needed
+      // name: 'get-user-bookshelf-for-horizon',
       // The query itself is a chonky one, slightly overwhelming to look at haha! But we need a JOIN cuz we need data from both the
       // Bookshelf_Item and the Book table. They're joined on book_id (id in the Book table). This is Database 101 coming back haha
       // `WHERE bi.user_id = $1` This is a crucial line to ensure we only return results for the user in question

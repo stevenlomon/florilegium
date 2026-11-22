@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     }
 
     const query = {
-      name: 'attach-tag-to-bookshelf-item',
+      // name: 'attach-tag-to-bookshelf-item',
       text: `
         INSERT INTO "Bookshelf_Item_Tag" (bookshelf_item_id, tag_id)
 
@@ -70,7 +70,7 @@ export async function DELETE(req: Request) {
     }
 
     const query = {
-      name: 'detach-tag-from-bookshelf-item',
+      // name: 'detach-tag-from-bookshelf-item',
       text: `
         DELETE FROM "Bookshelf_Item_Tag"
         WHERE bookshelf_item_id = $1 AND tag_id = $2

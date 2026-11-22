@@ -145,11 +145,11 @@ export async function PATCH(req: Request) {
 
     // Execute the update
     const query = {
-      name: 'update-user-profile',
+      // name: 'update-user-profile',
       text: `
-        UPDATE "User" 
-        SET username = $1, first_name = $2 
-        WHERE id = $3 
+        UPDATE "User"
+        SET username = $1, first_name = $2
+        WHERE id = $3
         RETURNING id, username, first_name
       `,
       values: [cleanUsername, cleanFirstName, user.id]

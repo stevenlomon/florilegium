@@ -100,7 +100,7 @@ export async function PATCH(req: Request) {
     }
 
     const query = {
-      name: 'update-active-journey-progress',
+      // name: 'update-active-journey-progress',
       // First time EXISTS is used in the codebase! It acts as an inline security check here to ensure this user actually owns the bookshelf 
       // item. It's especially important to do these types of checks when using UPDATE. "But we have other UPDATE clauses in the codebase?"
       // Yes. But in these other cases we're looking at *direct ownership*. Here, in the case of updating current_page of the Reading Journey,
