@@ -390,8 +390,8 @@ export default function JourneyTimeline({ bookshelfItemId, journeys = [], status
                     {journeyStatusLabel !== 'Completed Read' && (
                       <p className="font-sans text-xs text-[#5C613E]/80 mt-3">
                         {journeyStatusLabel === 'Active Read' && `Currently on page ${journey.current_page}`}
-                        {journeyStatusLabel === 'Journey On Hold' && `Put on hold at page ${journey.current_page}`}
-                        {journeyStatusLabel === 'Journey Put on Hold' && `Journey put on hold at page ${journey.pages_read ?? journey.current_page}`}
+                        {journeyStatusLabel === 'Journey On Hold' && (journey.current_page === 0 ? 'Put on hold before properly starting' : `Put on hold at page ${journey.current_page}`)}
+                        {journeyStatusLabel === 'Journey Put on Hold' && ((journey.pages_read ?? journey.current_page) === 0 ? 'Journey put on hold before properly starting' : `Journey put on hold at page ${journey.pages_read ?? journey.current_page}`)}
                         {journeyStatusLabel === 'Journey Ended' && `Journey ended at page ${journey.pages_read ?? journey.current_page}`}
                         {journeyStatusLabel === 'Reading Note' && `At page ${journey.pages_read ?? journey.current_page}`}
                       </p>
