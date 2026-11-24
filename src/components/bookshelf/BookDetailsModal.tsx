@@ -186,11 +186,11 @@ export default function BookDetailsModal({ isOpen, onClose, book, allUserTags }:
             <Link href={`/book/${book.external_id}`} className="shrink-0 self-stretch md:self-auto">
               <div className="relative w-28 h-full md:w-24 md:h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden bg-[#EFEBE1]/50">
                 {/* UPDATED: The Image Fallback Logic */}
-                {book.cover_image_url && !imageFailed ? (
+                {(book.custom_cover_url || book.cover_image_url) && !imageFailed ? (
                   <>
                     <div className="absolute inset-0 skeleton-shimmer" />
                     <Image
-                      src={book.cover_image_url}
+                      src={book.custom_cover_url || book.cover_image_url!}
                       alt={book.title}
                       fill
                       sizes='96px' // To silence "[browser] Image with src "https://covers.openlibrary.org/b/id/10590366-L.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance." warning
@@ -320,6 +320,8 @@ export default function BookDetailsModal({ isOpen, onClose, book, allUserTags }:
         workId={book.external_id as string} // Automatically handles Work IDs or Edition IDs via Option B!
         currentEditionId={book.external_id}
         onSelectEdition={handleEditionSelect}
+        bookshelfItemId={book.bookshelf_item_id}
+        onCoverUploaded={() => router.refresh()}
       />
     </>
   )

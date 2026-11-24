@@ -52,6 +52,7 @@ export interface BookshelfItem {
   title: string;
   author: string;
   cover_image_url: string | null;
+  custom_cover_url: string | null;
   horizon_slot: number | null;
   page_count_estimate: number | null; // Our old page_count column..
   page_count_exact?: number | null;   // .. now split into two distinct columns

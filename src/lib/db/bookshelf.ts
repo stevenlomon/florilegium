@@ -61,6 +61,7 @@ export async function getDetailedBookshelf(): Promise<BookshelfItem[]> {
         bi.review,
         bi.horizon_slot, -- For the new Horizon Crest!
         bi.added_at,
+        bi.custom_cover_url,
         b.id AS book_id,
         b.external_id,
         b.title,

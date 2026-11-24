@@ -11,6 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
     "bcrypt": "^6.0.0",
     "jose": "^6.2.3",
     "next": "^16.3.5",

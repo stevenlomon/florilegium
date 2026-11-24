@@ -463,11 +463,11 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
                 })()}
 
                 {/* UPDATED: Swap to the fallback if the image throws an error */}
-                {book.cover_image_url && !hasFailed ? (
+                {(book.custom_cover_url || book.cover_image_url) && !hasFailed ? (
                   <>
                     <div className="absolute inset-0 skeleton-shimmer" />
                     <Image
-                      src={book.cover_image_url}
+                      src={book.custom_cover_url || book.cover_image_url!}
                       alt={`Cover of ${book.title}`}
                       fill
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
