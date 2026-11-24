@@ -24,3 +24,16 @@ function getSupabase() {
     },
   });
 }
+
+const EXTENSIONS: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+
+export const ALLOWED_MIME_TYPES = Object.keys(EXTENSIONS);
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+export async function uploadBookCover(userId: string, bookshelfItemId: string, buffer: Buffer, mimeType: string): Promise<{ path: string; url: string }> {
+  return {path: "Code to be written soon", url: "Code to be written soon"}
+}
