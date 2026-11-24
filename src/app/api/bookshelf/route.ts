@@ -34,7 +34,8 @@ export async function GET() {
             ORDER BY rj.finished_at IS NULL DESC, rj.iteration DESC
             LIMIT 1
           ) AS stored_current_page,
-          bi.custom_page_count
+          bi.custom_page_count,
+          bi.custom_cover_url
         FROM "Bookshelf_Item" bi
         JOIN "Book" b ON bi.book_id = b.id
         WHERE bi.user_id = $1
