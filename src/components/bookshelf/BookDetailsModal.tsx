@@ -183,8 +183,8 @@ export default function BookDetailsModal({ isOpen, onClose, book, allUserTags }:
             </button>
 
             {/* Miniature Cover */}
-            <Link href={`/book/${book.external_id}`} className="shrink-0 self-stretch md:self-auto">
-              <div className="relative w-28 h-full md:w-24 md:h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden bg-[#EFEBE1]/50">
+            <Link href={`/book/${book.external_id}`} className="shrink-0 self-start">
+              <div className="relative w-28 aspect-2/3 md:w-24 md:aspect-auto md:h-36 rounded shadow-sm border border-[#E5E0D8] overflow-hidden bg-[#EFEBE1]/50">
                 {/* UPDATED: The Image Fallback Logic */}
                 {(book.custom_cover_url || book.cover_image_url) && !imageFailed ? (
                   <>
