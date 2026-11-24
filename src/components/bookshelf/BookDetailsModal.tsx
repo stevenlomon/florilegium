@@ -320,6 +320,8 @@ export default function BookDetailsModal({ isOpen, onClose, book, allUserTags }:
         workId={book.external_id as string} // Automatically handles Work IDs or Edition IDs via Option B!
         currentEditionId={book.external_id}
         onSelectEdition={handleEditionSelect}
+        bookshelfItemId={book.bookshelf_item_id}
+        onCoverUploaded={() => router.refresh()}
       />
     </>
   )

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { type Edition } from '@/lib/types';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
+import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/supabase-storage';
 
 interface EditionSwitcherModalProps {
   isOpen: boolean;
@@ -11,18 +12,25 @@ interface EditionSwitcherModalProps {
   workId: string;
   onSelectEdition: (edition: Edition) => void;
   currentEditionId?: string | null;
+  bookshelfItemId?: string | null;
+  onCoverUploaded?: () => void;
 }
 
 // This is the first Client Component in our new shared folder because this will be shared by the Detailed View Page and the Bookshelf Item Details Modal!
 // A user will be able to switch editions of a work before adding to Bookshelf *and* after adding to the Bookshelf
 // Now fetches editions rather than being handed them as a prop. Instead it's handed a workId
-export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelectEdition, currentEditionId }: EditionSwitcherModalProps) {
+export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelectEdition, currentEditionId, bookshelfItemId, onCoverUploaded }: EditionSwitcherModalProps) {
   const [editions, setEditions] = useState<Edition[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false); // We now properly track errors!
 
   // New state for tracking Open Library image failures
   const [failedImages, setFailedImages] = useState<string[]>([]);
+
+  // Custom cover upload state
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Our new useEscapeKey custom hook! Simply listens for changes in the isOpen state
   useEscapeKey(onClose, isOpen);
@@ -56,6 +64,49 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
 
     fetchEditions();
   }, [isOpen, workId]);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !bookshelfItemId) return;
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      setUploadError("Only JPG, PNG, and WebP images are allowed.");
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError("Image must be under 5 MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bookshelf_item_id', bookshelfItemId);
+
+      const res = await fetch('/api/bookshelf/cover', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Upload failed");
+      }
+
+      onCoverUploaded?.();
+      onClose();
+    } catch (err) {
+      console.error("Cover upload error:", err);
+      setUploadError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   if (!isOpen) return null; // Early return guard clause
 
@@ -199,6 +250,30 @@ export default function EditionSwitcherModal({ isOpen, onClose, workId, onSelect
             <div className="flex flex-col items-center justify-center text-center opacity-70 h-full py-12">
               <span className="text-4xl mb-4">🍂</span>
               <p className="text-[#5C613E] font-serif text-lg">No alternative printings found with covers.</p>
+
+              {bookshelfItemId && (
+                <div className="mt-8 flex flex-col items-center gap-3 opacity-100">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ALLOWED_MIME_TYPES.join(',')}
+                    onChange={handleCoverUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="font-sans text-xs font-bold tracking-widest uppercase py-3 px-6 rounded-md transition-all shadow-sm bg-[#424B2E] text-[#FCF9F2] hover:bg-[#343b24] hover:shadow-md disabled:opacity-50"
+                  >
+                    {isUploading ? "Uploading..." : "Upload Custom Cover"}
+                  </button>
+                  <p className="font-sans text-[10px] text-[#5C613E]/70 tracking-wide">JPG, PNG, or WebP — max 5 MB</p>
+                  {uploadError && (
+                    <p className="font-sans text-xs text-[#8C3A3A] mt-1">{uploadError}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
