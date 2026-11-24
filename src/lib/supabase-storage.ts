@@ -35,5 +35,35 @@ export const ALLOWED_MIME_TYPES = Object.keys(EXTENSIONS);
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 export async function uploadBookCover(userId: string, bookshelfItemId: string, buffer: Buffer, mimeType: string): Promise<{ path: string; url: string }> {
-  return {path: "Code to be written soon", url: "Code to be written soon"}
+  const supabase = getSupabase();
+
+  const extension = EXTENSIONS[mimeType];
+  if (!extension) {
+    throw new Error(`Unsupported image type: ${mimeType}`);
+  }
+
+  const path = `${userId}/${bookshelfItemId}/${randomUUID()}.${extension}`;
+
+  const { error } = await supabase.storage.from(BUCKET).upload(path, buffer, {
+    contentType: mimeType,
+    upsert: false, // For the same reason in the e-store. We want the upload to fail is the path already exists. *Not* overwrite
+  });
+
+  if (error) {
+    throw new Error(`Could not upload cover: ${error.message}`);
+  }
+
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+
+  return { path, url: data.publicUrl };
+}
+
+export async function removeBookCover(path: string): Promise<void> {
+  const supabase = getSupabase();
+
+  const { error } = await supabase.storage.from(BUCKET).remove([path]);
+
+  if (error) {
+    throw new Error(`Could not delete cover: ${error.message}`);
+  }
 }
