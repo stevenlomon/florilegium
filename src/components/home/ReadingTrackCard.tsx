@@ -183,7 +183,7 @@ export default function ReadingTrackCard({ book, isCurrentlyReading, onFinishBoo
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-[#EFEBE1]/50 border-4 border-transparent group-hover:border-white/20 transition-all">
             <h3 className="font-heading text-base text-[#2C302E] leading-tight line-clamp-3 mb-2">{book.title}</h3>
-            <p className="font-sans text-[10px] text-[#5C613E] line-clamp-2">{book.author}</p>
+            <p className="font-sans text-[10px] text-[#5C613E] line-clamp-2">{book.author.split(';')[0].trim()}</p>
           </div>
         )}
       </Link>

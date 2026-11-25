@@ -156,7 +156,7 @@ export default function HorizonSection({ initialBooks }: HorizonSectionProps) {
                       {assignedBook.title}
                     </h3>
                     <p className="font-sans text-xs text-[#5C613E] line-clamp-2">
-                      {assignedBook.author}
+                      {assignedBook.author.split(';')[0].trim()}
                     </p>
                   </div>
                 )}

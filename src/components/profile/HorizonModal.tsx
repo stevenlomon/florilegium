@@ -174,7 +174,7 @@ export default function HorizonModal({ isOpen, onClose, targetSlot, onSuccess }:
                       className="w-full text-left p-4 rounded-md transition-colors hover:bg-[#EFEBE1]/60 flex flex-col group"
                     >
                       <span className="text-[#2C302E] font-heading font-normal text-xl leading-tight group-hover:text-[#424B2E]">{book.title}</span>
-                      <span className="text-[#5C613E] font-sans text-xs mt-1">{book.author} {book.status_id === 2 && <span className="text-[#424B2E] font-medium ml-2">• Currently Reading</span>}</span>
+                      <span className="text-[#5C613E] font-sans text-xs mt-1">{book.author.split(';')[0].trim()} {book.status_id === 2 && <span className="text-[#424B2E] font-medium ml-2">• Currently Reading</span>}</span>
                     </button>
                   </li>
                 ))}
