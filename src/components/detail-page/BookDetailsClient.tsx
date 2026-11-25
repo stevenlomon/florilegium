@@ -152,7 +152,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
               })
               .slice(0, 4)
               .map((subject: string, idx: number) => (
-                <span key={idx} className="bg-[#EFEBE1] text-[#424B2E] text-xs font-sans px-3 py-1 rounded-full">
+                <span key={idx} className="bg-[#EFEBE1] text-[#424B2E] text-xs font-sans px-3 py-1 rounded-full capitalize">
                   {subject}
                 </span>
               ))}
