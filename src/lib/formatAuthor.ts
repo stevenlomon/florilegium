@@ -2,10 +2,27 @@ const SURNAME_PARTICLES = ['van', 'von', 'de', 'di', 'del', 'le', 'la', 'el', 'd
 
 const FILTERED_AUTHORS = ['sparknotes', 'cliffsnotes', 'shmoop'];
 
+const CJK_RANGE = /[　-鿿가-힯豈-﫿]/;
+
 export function formatAuthorName(name: string): string {
   let cleaned = name.replace(/ʹ/g, '').trim();
 
   if (!cleaned) return 'Unknown Author';
+
+  if (CJK_RANGE.test(cleaned)) return cleaned;
+
+  const suffixMatch = cleaned.match(/,\s*(Jr\.?|Sr\.?|II|III|IV|V)\s*$/i);
+  if (suffixMatch) {
+    const withoutSuffix = cleaned.slice(0, suffixMatch.index!).trim();
+    const suffix = suffixMatch[1];
+    if (!withoutSuffix.includes(',')) {
+      const formatted = formatAuthorName(withoutSuffix);
+      return formatted.includes(',')
+        ? formatted.replace(',', ' ' + suffix + ',')
+        : formatted + ' ' + suffix;
+    }
+    return cleaned;
+  }
 
   if (cleaned.includes(',')) return cleaned;
 
