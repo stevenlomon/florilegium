@@ -27,7 +27,7 @@ export default function AddToBookshelfButton({ book, isAlreadyInBookshelf }: Add
         'method': 'POST',
         'body': JSON.stringify({
           "title": book.title,
-          "author": book.authors.map(a => a.name).join(', ') || 'Unknown Author', // Open Library gives us an object. Extract the names into a clean, comma-separated string
+          "author": [...new Map(book.authors.map(a => [a.name.toLowerCase(), a.name])).values()].join(', ') || 'Unknown Author', // Open Library gives us an object. Extract the names into a clean, comma-separated string. Deduplicates case-insensitively (keeps the last casing)
           "external_provider": 'Open Library',
           "external_id": book.id,
           // "page_count": book.page_count,

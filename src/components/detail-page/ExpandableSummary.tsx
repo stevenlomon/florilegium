@@ -18,6 +18,12 @@ export default function ExpandableSummary({ text }: { text: string | null }) {
     .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]*>/g, '')
+    .replace(/^\\+/, '')
+    .replace(/\(\[source\]\([^)]*\)\)/gi, '')
+    .replace(/\(\[source\]\[[^\]]*\]\)/gi, '')
+    .replace(/([.!?])([A-Z])/g, '$1 $2')
+    .replace(/\n---[\s\S]*$/, '')
+    .replace(/^"([\s\S]*)"[-\s]*$/, '$1')
     .trim();
 
   const needsExpansion = cleanedText.length > CHARACTER_LIMIT;
