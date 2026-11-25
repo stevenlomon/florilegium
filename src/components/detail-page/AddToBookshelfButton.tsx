@@ -1,5 +1,6 @@
 'use client' // The button will need onClick. Is imported onto the Detailed View Page Server Component
 import { Book } from '@/lib/types';
+import { formatAuthors } from '@/lib/formatAuthor';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -27,7 +28,7 @@ export default function AddToBookshelfButton({ book, isAlreadyInBookshelf }: Add
         'method': 'POST',
         'body': JSON.stringify({
           "title": book.title,
-          "author": [...new Map(book.authors.map(a => [a.name.toLowerCase(), a.name])).values()].join(', ') || 'Unknown Author', // Open Library gives us an object. Extract the names into a clean, comma-separated string. Deduplicates case-insensitively (keeps the last casing)
+          "author": formatAuthors(book.authors), // Formats each author to "Surname, Given", deduplicates case-insensitively, joins with "; ", and filters out SparkNotes etc.
           "external_provider": 'Open Library',
           "external_id": book.id,
           // "page_count": book.page_count,
