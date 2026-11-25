@@ -5,7 +5,7 @@ const FILTERED_AUTHORS = ['sparknotes', 'cliffsnotes', 'shmoop'];
 const CJK_RANGE = /[　-鿿가-힯豈-﫿]/;
 
 export function formatAuthorName(name: string): string {
-  let cleaned = name.replace(/ʹ/g, '').trim();
+  const cleaned = name.replace(/ʹ/g, '').trim();
 
   if (!cleaned) return 'Unknown Author';
 
