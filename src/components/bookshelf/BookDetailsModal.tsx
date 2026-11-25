@@ -210,7 +210,7 @@ export default function BookDetailsModal({ isOpen, onClose, book, allUserTags }:
             {/* Core Metadata */}
             <div className="flex flex-col justify-center flex-1 min-w-0">
               <h2 className="font-heading text-2xl md:text-3xl text-[#2C302E] leading-tight mb-1">{book.title}</h2>
-              <p className="font-sans text-sm text-[#5C613E] mb-3 md:mb-6">{book.author}</p>
+              <p className="font-sans text-sm text-[#5C613E] mb-3 md:mb-6">{book.author.split(';')[0].trim()}</p>
 
               {/* SWITCH EDITION BUTTON FOR THE BOOKSHELF UI */}
               <div className="mb-4">

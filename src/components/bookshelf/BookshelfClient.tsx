@@ -481,7 +481,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#EFEBE1]/50">
                     <h3 className="font-heading text-lg text-[#2C302E] leading-tight line-clamp-3 mb-2">{book.title}</h3>
-                    <p className="font-sans text-xs text-[#5C613E] line-clamp-2">{book.author}</p>
+                    <p className="font-sans text-xs text-[#5C613E] line-clamp-2">{book.author.split(';')[0].trim()}</p>
                   </div>
                 )}
 
@@ -499,7 +499,7 @@ export default function BookshelfClient({ initialBooks, allUserTags }: Bookshelf
                   {book.title}
                 </h3>
                 <p className="font-sans text-[11px] text-[#5C613E] mt-1 line-clamp-1">
-                  {book.author}
+                  {book.author.split(';')[0].trim()}
                 </p>
               </div>
             </div>

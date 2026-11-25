@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { type Book, type Edition } from '@/lib/types';
+import { formatAuthors } from '@/lib/formatAuthor';
 import AddToBookshelfButton from './AddToBookshelfButton';
 import ExpandableSummary from './ExpandableSummary';
 import EditionSwitcherModal from '../shared/EditionSwitcherModal';
@@ -72,7 +73,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
           ) : (
             <div className="w-full aspect-2/3 rounded shadow-sm border border-[#E5E0D8] bg-[#EFEBE1]/50 flex flex-col items-center justify-center p-6 text-center">
               <h3 className="font-heading text-2xl text-[#2C302E] leading-tight line-clamp-4 mb-2">{displayTitle}</h3>
-              <p className="font-sans text-sm text-[#5C613E] line-clamp-2">{book.authors?.[0]?.name || 'Unknown Author'}</p>
+              <p className="font-sans text-sm text-[#5C613E] line-clamp-2">{formatAuthors(book.authors || [])}</p>
             </div>
           )}
         </div>
@@ -85,7 +86,7 @@ export default function BookDetailsClient({ book, isAlreadyInBookshelf }: BookDe
 
           {/* METADATA ROW */}
           <div className="flex flex-wrap items-center gap-3 text-sm font-sans text-[#5C613E] mb-6">
-            <span className="text-lg text-[#2C302E]">{book.authors?.[0]?.name || 'Unknown Author'}</span>
+            <span className="text-lg text-[#2C302E]">{formatAuthors(book.authors || [])}</span>
 
             {/* The new Tactile Hover Page Count Logic */}
             {(estimatePages || exactPages) ? (
